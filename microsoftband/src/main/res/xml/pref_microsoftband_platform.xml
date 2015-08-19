@@ -1,0 +1,23 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="Device Info">
+        <Preference
+            android:key="platformName"
+            android:title="Name"
+            android:summary=""
+            />
+        <Preference
+            android:key="platformId"
+            android:title="MAC Address"
+            android:summary=""
+            />
+    </PreferenceCategory>
+    <ListPreference
+        android:title="Location"
+        android:key="location"
+        android:entries="@array/wrist_entries"
+        android:entryValues="@array/wrist_entries" />
+    <PreferenceCategory android:title="Sensors"
+        android:key="dataSourceType">
+    </PreferenceCategory>
+</PreferenceScreen>

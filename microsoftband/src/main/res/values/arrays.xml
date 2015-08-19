@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="wrist_entries">
+        <item>LEFT_WRIST</item>
+        <item>RIGHT_WRIST</item>
+        <item>OTHER</item>
+    </string-array>
+    <string-array name="frequency_entries">
+        <item>OFF</item>
+        <item>7.8125 Hz</item>
+        <item>31.25 Hz</item>
+        <item>62.5 Hz</item>
+    </string-array>
+</resources>

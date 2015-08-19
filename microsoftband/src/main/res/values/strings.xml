@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">microsoftband</string>
+    <string name="title_activity_activity_current_settings">Current Settings</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+</resources>
