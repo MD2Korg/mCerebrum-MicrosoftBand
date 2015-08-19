@@ -46,25 +46,18 @@ import java.util.EmptyStackException;
 public class MicrosoftBandPlatforms {
     private static final String TAG = MicrosoftBandPlatforms.class.getSimpleName();
     private ArrayList<MicrosoftBandPlatform> microsoftBandPlatforms=new ArrayList<>();
-    private static MicrosoftBandPlatforms instance=null;
     Context context;
-    public static MicrosoftBandPlatforms getInstance(Context context){
-        Log.d(TAG, "instance=" + instance);
-        if(instance==null)
-                instance=new MicrosoftBandPlatforms(context);
-        return instance;
-    }
-    private MicrosoftBandPlatforms(Context context) {
+    public MicrosoftBandPlatforms(Context context) {
         Log.d(TAG,"Constructor()...");
         this.context=context;
         microsoftBandPlatforms.clear();
         readDataSourceFromFile();
-        addOthers();
+        addAvailableButNotConfigured();
         Log.d(TAG, "Constructor()... size="+microsoftBandPlatforms.size());
         Log.d(TAG, "...Constructor()");
     }
-    void addOthers(){
-        Log.d(TAG, "addOthers...");
+    void addAvailableButNotConfigured(){
+        Log.d(TAG, "addAvailableButNotConfigured...");
         BandInfo[] bandInfos=Device.findBandInfo();
         for (int i = 0; i < bandInfos.length; i++) {
             String platformId = bandInfos[i].getMacAddress();
@@ -103,10 +96,14 @@ public class MicrosoftBandPlatforms {
         }
         Log.d(TAG,"...readDataSourceFromFile()");
     }
-    public void show(){
+    public String toString(){
+        String string="";
         for(int i=0;i<microsoftBandPlatforms.size();i++){
-            microsoftBandPlatforms.get(i).show();
+            string=string+"platform "+String.valueOf(i)+"[";
+            string=string+microsoftBandPlatforms.get(i).toString();
+            string+="]";
         }
+        return string;
     }
 
     public void deleteMicrosoftBandPlatform(String platformId) {
@@ -140,15 +137,12 @@ public class MicrosoftBandPlatforms {
     public void register(DataKitApi dataKitApi) {
         for(int i=0;i<microsoftBandPlatforms.size();i++) {
             microsoftBandPlatforms.get(i).register(dataKitApi);
-
         }
     }
     public void unregister(){
         for(int i=0;i<microsoftBandPlatforms.size();i++) {
-//            microsoftBandPlatforms.get(i).stopConnection();
             microsoftBandPlatforms.get(i).unregister();
         }
         microsoftBandPlatforms.clear();
-        instance=null;
     }
 }

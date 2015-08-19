@@ -13,6 +13,7 @@ import org.md2k.datakitapi.source.platform.PlatformBuilder;
 import org.md2k.datakitapi.time.DateTime;
 import org.md2k.utilities.Report.Log;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 /**
@@ -42,18 +43,21 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class MicrosoftBandPlatform extends Device {
+public class MicrosoftBandPlatform extends Device implements Serializable{
     private static final String TAG = MicrosoftBandPlatform.class.getSimpleName();
     private String location;
     private DataKitApi mDataKitApi;
 
     private ArrayList<MicrosoftBandDataSource> microsoftBandDataSources;
 
-    public void show() {
+    public String toString() {
+        String string="";
         for (int i = 0; i < microsoftBandDataSources.size(); i++) {
-            Log.d(TAG, "PlatformId=" + platformId + " platformName=" + platformName + " Location=" + location);
-            microsoftBandDataSources.get(i).show();
+            string=string+"PlatformID="+platformId+" platformName="+platformName+" Location="+location+" Sensors=[";
+            string+=microsoftBandDataSources.get(i).toString();
+            string+="]";
         }
+        return string;
     }
 
     private void assignDataSource() {

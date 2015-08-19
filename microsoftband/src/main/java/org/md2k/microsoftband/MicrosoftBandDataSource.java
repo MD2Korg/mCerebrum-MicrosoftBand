@@ -93,8 +93,8 @@ public class MicrosoftBandDataSource {
         return dataSourceType;
     }
 
-    public void show() {
-        Log.d(TAG, "datasourcetype=" + dataSourceType + " frequency=" + frequency + " enabled=" + enabled);
+    public String toString() {
+        return "datasourcetype=" + dataSourceType + " frequency=" + frequency + " enabled=" + enabled;
     }
 
     public double getFrequency() {

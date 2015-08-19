@@ -52,7 +52,7 @@ public class ServiceMicrosoftBands extends Service {
     }
 
     void initialize() {
-        microsoftBandPlatforms = null;
+        microsoftBandPlatforms = new MicrosoftBandPlatforms(ServiceMicrosoftBands.this);
         isRunning = false;
         dataKitApi = new DataKitApi(getBaseContext());
         myBlueTooth = new MyBlueTooth(ServiceMicrosoftBands.this, new BlueToothCallBack() {
@@ -82,7 +82,6 @@ public class ServiceMicrosoftBands extends Service {
         }
     };
     void connectDevice() {
-        microsoftBandPlatforms=MicrosoftBandPlatforms.getInstance(ServiceMicrosoftBands.this);
         microsoftBandPlatforms.register(dataKitApi);
     }
 

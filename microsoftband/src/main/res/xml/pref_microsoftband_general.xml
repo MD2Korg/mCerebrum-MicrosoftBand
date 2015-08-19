@@ -1,13 +1,18 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-        <Preference
-            android:key="bluetooth_onoff"
-            android:title="Pair MicrosoftBand"
-            />
     <PreferenceCategory
-        android:title="Configured Bands"
-        android:key="microsoftband_configured">
-    </PreferenceCategory>
+        android:title="Bluetooth"></PreferenceCategory>
+    <Preference
+        android:key="bluetooth_onoff"
+        android:enabled="false"
+        android:title="Bluetooth Status" />
+
+    <Preference
+        android:key="bluetooth_settings"
+        android:title="Add/Remove MicrosoftBand" />
     <PreferenceCategory
-        android:title="Available Devices"
-        android:key="microsoftband_available" />
+        android:key="microsoftband_configured"
+        android:title="Configured Bands"></PreferenceCategory>
+    <PreferenceCategory
+        android:key="microsoftband_available"
+        android:title="Available Devices" />
 </PreferenceScreen>

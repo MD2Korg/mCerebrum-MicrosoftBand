@@ -14,6 +14,7 @@ import com.microsoft.band.ConnectionState;
 import org.md2k.datakitapi.source.platform.PlatformType;
 import org.md2k.utilities.Report.Log;
 
+import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 /**
@@ -43,7 +44,7 @@ import java.util.concurrent.TimeoutException;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public abstract class Device{
+public abstract class Device implements Serializable{
     private static final String TAG = Device.class.getSimpleName();
     protected Context context;
     protected String platformId;

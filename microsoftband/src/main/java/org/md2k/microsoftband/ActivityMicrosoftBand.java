@@ -234,7 +234,7 @@ public class ActivityMicrosoftBand extends Activity {
         updateServiceSwitch();
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter("microsoftband"));
-        ArrayList<MicrosoftBandPlatform> microsoftBandPlatforms=MicrosoftBandPlatforms.getInstance(ActivityMicrosoftBand.this).getMicrosoftBandPlatform();
+        ArrayList<MicrosoftBandPlatform> microsoftBandPlatforms=new MicrosoftBandPlatforms(ActivityMicrosoftBand.this).getMicrosoftBandPlatform();
         serviceStatus();
         showActiveSensors(microsoftBandPlatforms);
         prepareTable(microsoftBandPlatforms);

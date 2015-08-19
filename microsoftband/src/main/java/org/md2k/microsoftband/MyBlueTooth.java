@@ -39,19 +39,16 @@ public class MyBlueTooth {
     BlueToothCallBack blueToothCallBack;
     Context context;
 
-    MyBlueTooth(Context context,BlueToothCallBack blueToothCallBack){
-        this.context=context;
-        this.blueToothCallBack=blueToothCallBack;
+    public void enable(Context context, BlueToothCallBack blueToothCallBack) {
         context.registerReceiver(mReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
-    }
-
-    public void enable() {
+        this.blueToothCallBack=blueToothCallBack;
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) return;
         if (!mBluetoothAdapter.isEnabled()) {
             mBluetoothAdapter.enable();
         }
     }
+    public void
     public void close(){
         context.unregisterReceiver(mReceiver);
 
