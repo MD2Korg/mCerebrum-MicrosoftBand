@@ -80,7 +80,8 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
     @Override
     protected void onDestroy() {
         myBlueTooth.close();
-        microsoftBandPlatforms.unregister();
+        if(microsoftBandPlatforms!=null)
+            microsoftBandPlatforms.unregister();
         super.onDestroy();
     }
 

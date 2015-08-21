@@ -9,8 +9,12 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -20,6 +24,7 @@ import org.md2k.datakitapi.datatype.DataTypeDoubleArray;
 import org.md2k.datakitapi.datatype.DataTypeFloat;
 import org.md2k.datakitapi.datatype.DataTypeFloatArray;
 import org.md2k.datakitapi.time.DateTime;
+import org.md2k.utilities.Apps;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,17 +61,49 @@ public class ActivityMicrosoftBand extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_microsoftband);
-        Log.d(TAG, "OnCreate()");
-        setupButtonSettings();
-    }
-    private void setupButtonSettings() {
-        final Button button_settings = (Button) findViewById(R.id.button_settings);
-        button_settings.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Intent intent = new Intent(ActivityMicrosoftBand.this, ActivityMicrosoftBandSettings.class);
-                startActivity(intent);
+        Switch service=(Switch) findViewById(R.id.switchService);
+        service.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Log.d(TAG, "isChecked=" + isChecked);
+                Intent intent = new Intent(ActivityMicrosoftBand.this, ServiceMicrosoftBands.class);
+                if (isChecked) {
+                    starttimestamp = 0;
+                    startService(intent);
+                } else {
+                    stopService(intent);
+                }
             }
         });
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_settings, menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, ActivityMicrosoftBandSettings.class);
+            startActivity(intent);
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+    void updateServiceSwitch(){
+        Switch service = (Switch) findViewById(R.id.switchService);
+        if (Apps.isServiceRunning(ActivityMicrosoftBand.this, Constants.SERVICE_NAME)) {
+            service.setChecked(true);
+        }
+        else service.setChecked(false);
     }
 
 
@@ -106,6 +143,7 @@ public class ActivityMicrosoftBand extends Activity {
         }
     };
     */
+
     TableRow createDefaultRow(){
         TableRow row = new TableRow(this);
         TextView tvSensor = new TextView(this);tvSensor.setText("sensor");tvSensor.setTypeface(null, Typeface.BOLD);tvSensor.setTextColor(getResources().getColor(R.color.holo_blue_dark));
@@ -183,39 +221,15 @@ public class ActivityMicrosoftBand extends Activity {
         else textView.setText("Not Running");
     }
 
-    private void setupButtonService() {
-        final Button buttonStopService = (Button) findViewById(R.id.button_stopservice);
-        final Button buttonStartService = (Button) findViewById(R.id.button_startservice);
-        buttonStartService.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (!ServiceMicrosoftBands.isRunning) {
-                    starttimestamp = 0;
-                    Intent intent = new Intent(ActivityMicrosoftBand.this, ServiceMicrosoftBands.class);
-                    startService(intent);
-                    TextView textView = (TextView) findViewById(R.id.service_info);
-                    textView.setText("Running");
-                }
-            }
-        });
-        buttonStopService.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (!ServiceMicrosoftBands.isRunning) {
-                    Intent intent = new Intent(ActivityMicrosoftBand.this, ServiceMicrosoftBands.class);
-                    stopService(intent);
-                    TextView textView = (TextView) findViewById(R.id.service_info);
-                    textView.setText("Not Running");
-                }
-            }
-        });
-    }
 
     long starttimestamp = 0;
     HashMap<String, TextView> hm = new HashMap<>();
     void updateServiceStatus(){
         TextView textView = (TextView) findViewById(R.id.service_info);
         if (starttimestamp == 0) starttimestamp = DateTime.getDateTime();
-        double minutes = ((double) (DateTime.getDateTime() - starttimestamp) / (1000 * 60));
-        textView.setText("Running (" + String.format("%.2f", minutes) + " minutes)");
+        long minutes=(DateTime.getDateTime()-starttimestamp)/(1000*60);
+        long seconds=((DateTime.getDateTime()-starttimestamp)/(1000)%60);
+        textView.setText("Running (" + minutes+" Minutes "+seconds+" Seconds)" );
     }
 
     void updateTable(Intent intent){
@@ -264,12 +278,12 @@ public class ActivityMicrosoftBand extends Activity {
 
     @Override
     public void onResume(){
+        updateServiceSwitch();
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter("microsoftBand"));
         serviceStatus();
         showActiveSensors();
         prepareTable();
-        setupButtonService();
 
         super.onResume();
     }
