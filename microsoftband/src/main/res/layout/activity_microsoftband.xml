@@ -12,81 +12,107 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingBottom="10dp"
-        android:paddingTop="20dp">
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/button_settings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:text="Settings" />
+
+        <Button
+            android:id="@+id/button_startservice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/button_settings"
+            android:layout_toEndOf="@+id/button_settings"
+            android:text="Start Service" />
+
+        <Button
+            android:id="@+id/button_stopservice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/button_startservice"
+            android:layout_toEndOf="@+id/button_startservice"
+            android:text="Stop Service" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="vertical"></LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/service_text"
-            style="@style/textview_heading1_dark"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_column="0"
-            android:text="Service:" />
-
-        <View
-            style="@style/view_divider_dark" />
-
-        <Switch
-            android:id="@+id/switchService"
-            style="@style/switch_dark"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:checked="false"
-            android:showText="false"
-            android:text="Service Status:" />
+            android:text="Service:"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/holo_blue_light" />
 
         <TextView
             android:id="@+id/service_info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_column="0"
-            android:text="0 minutes" />
+            android:text="0 minutes"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:orientation="vertical"></LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingBottom="10dp"
-        android:paddingTop="20dp">
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/configuration_text"
-            style="@style/textview_heading1_dark"
             android:layout_width="wrap_content"
-            android:text="Active Sensors:" />
-
-        <View
-            style="@style/view_divider_dark" />
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:text="Devices:"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/holo_blue_light" />
 
         <TextView
             android:id="@+id/configuration_info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_column="0"
-            android:text="active sensor list" />
+            android:text="active sensor list"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:orientation="vertical"></LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingTop="20dp"
-        android:paddingBottom="10dp">
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/sample_text"
-            style="@style/textview_heading1_dark"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_column="0"
-            android:text="Samples:" />
-
-        <View
-            style="@style/view_divider_dark" />
+            android:text="Samples:"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/holo_blue_light" />
 
 
         <TableLayout

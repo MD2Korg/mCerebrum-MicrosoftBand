@@ -45,6 +45,7 @@ import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.datakitapi.time.DateTime;
 import org.md2k.utilities.Report.Log;
 
+
 /**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
@@ -93,8 +94,8 @@ public class MicrosoftBandDataSource {
         return dataSourceType;
     }
 
-    public String toString() {
-        return "datasourcetype=" + dataSourceType + " frequency=" + frequency + " enabled=" + enabled;
+    public void show() {
+        Log.d(TAG, "datasourcetype=" + dataSourceType + " frequency=" + frequency + " enabled=" + enabled);
     }
 
     public double getFrequency() {
@@ -119,7 +120,7 @@ public class MicrosoftBandDataSource {
         enabled = true;
     }
 
-    public DataSourceBuilder createDataSourceBuilder() {
+    public DataSourceBuilder getDataSourceBuilder() {
         if (enabled == false) return null;
         DataSourceBuilder dataSourceBuilder = new DataSourceBuilder().setId(null).setType(dataSourceType);
         if (dataSourceType.equals(DataSourceType.CALORY_BURN)) {
@@ -306,7 +307,7 @@ public class MicrosoftBandDataSource {
 
     public boolean register(DataKitApi dataKitApi, final Platform platform, final BandClient bandClient, final CallBack newcallBack) {
         mDataKitApi = dataKitApi;
-        DataSourceBuilder dataSourceBuilder = createDataSourceBuilder();
+        DataSourceBuilder dataSourceBuilder = getDataSourceBuilder();
         dataSourceBuilder = dataSourceBuilder.setPlatform(platform);
         DataSource dataSource = dataSourceBuilder.build();
 

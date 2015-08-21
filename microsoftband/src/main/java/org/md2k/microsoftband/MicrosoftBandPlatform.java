@@ -13,7 +13,6 @@ import org.md2k.datakitapi.source.platform.PlatformBuilder;
 import org.md2k.datakitapi.time.DateTime;
 import org.md2k.utilities.Report.Log;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 /**
@@ -42,22 +41,18 @@ import java.util.HashMap;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-public class MicrosoftBandPlatform extends Device implements Serializable{
+public class MicrosoftBandPlatform extends Device {
     private static final String TAG = MicrosoftBandPlatform.class.getSimpleName();
     private String location;
     private DataKitApi mDataKitApi;
 
     private ArrayList<MicrosoftBandDataSource> microsoftBandDataSources;
 
-    public String toString() {
-        String string="";
+    public void show() {
         for (int i = 0; i < microsoftBandDataSources.size(); i++) {
-            string=string+"PlatformID="+platformId+" platformName="+platformName+" Location="+location+" Sensors=[";
-            string+=microsoftBandDataSources.get(i).toString();
-            string+="]";
+            Log.d(TAG, "PlatformId=" + platformId + " platformName=" + platformName + " Location=" + location);
+            microsoftBandDataSources.get(i).show();
         }
-        return string;
     }
 
     private void assignDataSource() {
@@ -125,15 +120,12 @@ public class MicrosoftBandPlatform extends Device implements Serializable{
                 for (int i = 0; i < microsoftBandDataSources.size(); i++) {
                     if (microsoftBandDataSources.get(i).isEnabled()) {
                         final int finalI = i;
-                        final DataSource dataSource = microsoftBandDataSources.get(i).createDataSourceBuilder().build();
-                        if (dataSource == null) continue;
-
                         microsoftBandDataSources.get(i).register(mDataKitApi, getPlatform(), bandClient, new CallBack() {
                             @Override
                             public void onReceivedData(DataType data) {
 
                                 String dataSourceType = microsoftBandDataSources.get(finalI).getDataSourceType();
-                                Intent intent = new Intent("microsoftband");
+                                Intent intent = new Intent("microsoftBand");
                                 intent.putExtra("operation", "data");
                                 if (!hm.containsKey(dataSourceType)) {
                                     hm.put(dataSourceType, 0);
@@ -143,7 +135,8 @@ public class MicrosoftBandPlatform extends Device implements Serializable{
                                 intent.putExtra("timestamp", data.getStartDateTime());
                                 intent.putExtra("starttimestamp", starttimestamp);
                                 intent.putExtra("data", data);
-                                intent.putExtra("datasource",dataSource);
+                                intent.putExtra("datasourcetype", dataSourceType);
+                                intent.putExtra("platformid", platformId);
                                 LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
                             }
                         });

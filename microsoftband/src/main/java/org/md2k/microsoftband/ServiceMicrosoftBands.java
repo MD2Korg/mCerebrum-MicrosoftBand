@@ -8,7 +8,6 @@ import org.md2k.datakitapi.DataKitApi;
 import org.md2k.datakitapi.messagehandler.OnConnectionListener;
 import org.md2k.utilities.Report.Log;
 import org.md2k.utilities.UI.UIShow;
-
 /**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
@@ -52,7 +51,7 @@ public class ServiceMicrosoftBands extends Service {
     }
 
     void initialize() {
-        microsoftBandPlatforms = new MicrosoftBandPlatforms(ServiceMicrosoftBands.this);
+        microsoftBandPlatforms = null;
         isRunning = false;
         dataKitApi = new DataKitApi(getBaseContext());
         myBlueTooth = new MyBlueTooth(ServiceMicrosoftBands.this, new BlueToothCallBack() {
@@ -60,13 +59,17 @@ public class ServiceMicrosoftBands extends Service {
             public void onConnected() {
                 connectDevice();
             }
+
+            @Override
+            public void onDisconnected() {
+
+            }
         });
     }
 
     void connectDataKit() {
         if (!dataKitApi.connect(onConnectionListener)) {
             UIShow.ErrorDialog(ServiceMicrosoftBands.this.getApplicationContext(), "DataKit Service", "DataKit Service is not available");
-            Log.e(TAG, "DataKit Service is not available");
             stopSelf();
         }
     }
@@ -82,6 +85,7 @@ public class ServiceMicrosoftBands extends Service {
         }
     };
     void connectDevice() {
+        microsoftBandPlatforms=MicrosoftBandPlatforms.getInstance(ServiceMicrosoftBands.this);
         microsoftBandPlatforms.register(dataKitApi);
     }
 

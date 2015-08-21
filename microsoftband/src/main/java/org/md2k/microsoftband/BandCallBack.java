@@ -1,8 +1,5 @@
 package org.md2k.microsoftband;
 
-import com.microsoft.band.BandClient;
-import com.microsoft.band.BandInfo;
-
 /**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>

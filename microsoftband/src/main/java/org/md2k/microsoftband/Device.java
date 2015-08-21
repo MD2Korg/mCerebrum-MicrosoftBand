@@ -11,10 +11,10 @@ import com.microsoft.band.BandInfo;
 import com.microsoft.band.BandTheme;
 import com.microsoft.band.ConnectionState;
 
+
 import org.md2k.datakitapi.source.platform.PlatformType;
 import org.md2k.utilities.Report.Log;
 
-import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 /**
@@ -43,8 +43,7 @@ import java.util.concurrent.TimeoutException;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-public abstract class Device implements Serializable{
+public abstract class Device{
     private static final String TAG = Device.class.getSimpleName();
     protected Context context;
     protected String platformId;
@@ -114,13 +113,11 @@ public abstract class Device implements Serializable{
             return ConnectionState.CONNECTED == state;
         } catch (InterruptedException | BandException e) {
             bandClient = null;
-            Log.e(TAG, e.getMessage());
             Log.d(TAG, platformId + " exception1");
             Log.d(TAG, platformId + " ...connectDevice");
             return false;
         } catch (TimeoutException e) {
             bandClient = null;
-            Log.e(TAG, e.getMessage());
             Log.d(TAG, platformId + " exception2");
             Log.d(TAG, platformId + " ...connectDevice");
             return false;
@@ -181,7 +178,6 @@ public abstract class Device implements Serializable{
                 } catch (Exception e) {
                     bandClient = null;
                     Log.d(TAG, "disconnect() .. Exception: e=" + e.getMessage());
-                    Log.e(TAG, e.getMessage());
                 }
                 Log.d(TAG, "...run()");
             }

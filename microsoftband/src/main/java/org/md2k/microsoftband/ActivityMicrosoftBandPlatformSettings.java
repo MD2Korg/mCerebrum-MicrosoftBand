@@ -45,10 +45,9 @@ import org.md2k.utilities.Report.Log;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 @SuppressWarnings("deprecation")
 public class ActivityMicrosoftBandPlatformSettings extends PreferenceActivity {
-    public static final String TAG = ActivityMicrosoftBandPlatformSettings.class.getSimpleName();
+/*    public static final String TAG = ActivityMicrosoftBandPlatformSettings.class.getSimpleName();
     String platformId="";
     MySharedPreference mySharedPreference;
     MicrosoftBandPlatform microsoftBandPlatform;
@@ -241,4 +240,4 @@ public class ActivityMicrosoftBandPlatformSettings extends PreferenceActivity {
                 });
         builderSingle.show();
     }
-}
+*/}

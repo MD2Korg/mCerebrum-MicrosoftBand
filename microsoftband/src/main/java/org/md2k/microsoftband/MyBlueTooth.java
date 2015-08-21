@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 
 import org.md2k.utilities.Report.Log;
 
+
 /**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
@@ -39,16 +40,19 @@ public class MyBlueTooth {
     BlueToothCallBack blueToothCallBack;
     Context context;
 
-    public void enable(Context context, BlueToothCallBack blueToothCallBack) {
-        context.registerReceiver(mReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+    MyBlueTooth(Context context,BlueToothCallBack blueToothCallBack){
+        this.context=context;
         this.blueToothCallBack=blueToothCallBack;
+        context.registerReceiver(mReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+    }
+
+    public void enable() {
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) return;
         if (!mBluetoothAdapter.isEnabled()) {
             mBluetoothAdapter.enable();
         }
     }
-    public void
     public void close(){
         context.unregisterReceiver(mReceiver);
 

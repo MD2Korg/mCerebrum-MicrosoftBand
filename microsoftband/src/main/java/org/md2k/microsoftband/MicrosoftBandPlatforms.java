@@ -16,6 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
+
 /**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
@@ -42,22 +43,28 @@ import java.util.EmptyStackException;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 public class MicrosoftBandPlatforms {
     private static final String TAG = MicrosoftBandPlatforms.class.getSimpleName();
     private ArrayList<MicrosoftBandPlatform> microsoftBandPlatforms=new ArrayList<>();
+    private static MicrosoftBandPlatforms instance=null;
     Context context;
-    public MicrosoftBandPlatforms(Context context) {
+    public static MicrosoftBandPlatforms getInstance(Context context){
+        Log.d(TAG, "instance=" + instance);
+        if(instance==null)
+                instance=new MicrosoftBandPlatforms(context);
+        return instance;
+    }
+    private MicrosoftBandPlatforms(Context context) {
         Log.d(TAG,"Constructor()...");
         this.context=context;
         microsoftBandPlatforms.clear();
         readDataSourceFromFile();
-        addAvailableButNotConfigured();
+        addOthers();
         Log.d(TAG, "Constructor()... size="+microsoftBandPlatforms.size());
         Log.d(TAG, "...Constructor()");
     }
-    void addAvailableButNotConfigured(){
-        Log.d(TAG, "addAvailableButNotConfigured...");
+    void addOthers(){
+        Log.d(TAG, "addOthers...");
         BandInfo[] bandInfos=Device.findBandInfo();
         for (int i = 0; i < bandInfos.length; i++) {
             String platformId = bandInfos[i].getMacAddress();
@@ -96,14 +103,10 @@ public class MicrosoftBandPlatforms {
         }
         Log.d(TAG,"...readDataSourceFromFile()");
     }
-    public String toString(){
-        String string="";
+    public void show(){
         for(int i=0;i<microsoftBandPlatforms.size();i++){
-            string=string+"platform "+String.valueOf(i)+"[";
-            string=string+microsoftBandPlatforms.get(i).toString();
-            string+="]";
+            microsoftBandPlatforms.get(i).show();
         }
-        return string;
     }
 
     public void deleteMicrosoftBandPlatform(String platformId) {
@@ -124,7 +127,7 @@ public class MicrosoftBandPlatforms {
         for (int i = 0; i < microsoftBandPlatforms.size(); i++) {
             Platform platform=microsoftBandPlatforms.get(i).getPlatform();
             for(int j=0;j<microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().size();j++) {
-                DataSourceBuilder dataSourceBuilder=microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().get(j).createDataSourceBuilder();
+                DataSourceBuilder dataSourceBuilder=microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().get(j).getDataSourceBuilder();
                 if(dataSourceBuilder==null) continue;
                 dataSourceBuilder=dataSourceBuilder.setPlatform(platform);
                 DataSource dataSource = dataSourceBuilder.build();
@@ -137,12 +140,15 @@ public class MicrosoftBandPlatforms {
     public void register(DataKitApi dataKitApi) {
         for(int i=0;i<microsoftBandPlatforms.size();i++) {
             microsoftBandPlatforms.get(i).register(dataKitApi);
+
         }
     }
     public void unregister(){
         for(int i=0;i<microsoftBandPlatforms.size();i++) {
+//            microsoftBandPlatforms.get(i).stopConnection();
             microsoftBandPlatforms.get(i).unregister();
         }
         microsoftBandPlatforms.clear();
+        instance=null;
     }
 }

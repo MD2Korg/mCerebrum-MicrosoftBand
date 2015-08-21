@@ -1,5 +1,6 @@
 package org.md2k.microsoftband;
 
+
 import org.md2k.datakitapi.datatype.DataType;
 
 /**

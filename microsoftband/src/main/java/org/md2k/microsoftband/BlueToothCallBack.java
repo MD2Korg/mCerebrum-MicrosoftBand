@@ -1,7 +1,5 @@
 package org.md2k.microsoftband;
 
-import com.microsoft.band.BandClient;
-
 /**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
@@ -30,4 +28,5 @@ import com.microsoft.band.BandClient;
  */
 public interface BlueToothCallBack {
     void onConnected();
+    void onDisconnected();
 }
