@@ -12,14 +12,12 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingBottom="10dp"
-        android:paddingTop="20dp">
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/service_text"
             style="@style/textview_heading1_dark"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_column="0"
             android:text="Service:" />
@@ -55,7 +53,7 @@
         <TextView
             android:id="@+id/configuration_text"
             style="@style/textview_heading1_dark"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:text="Active Sensors:" />
 
         <View
@@ -80,7 +78,7 @@
         <TextView
             android:id="@+id/sample_text"
             style="@style/textview_heading1_dark"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_column="0"
             android:text="Samples:" />

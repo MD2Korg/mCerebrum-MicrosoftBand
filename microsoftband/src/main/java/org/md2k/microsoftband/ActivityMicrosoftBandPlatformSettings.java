@@ -19,82 +19,35 @@ import android.widget.Toast;
 import org.md2k.datakitapi.source.datasource.DataSourceType;
 import org.md2k.utilities.Report.Log;
 
-/**
- * Copyright (c) 2015, The University of Memphis, MD2K Center
- * - Syed Monowar Hossain <monowar.hossain@gmail.com>
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * * Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
- *
- * * Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 @SuppressWarnings("deprecation")
 public class ActivityMicrosoftBandPlatformSettings extends PreferenceActivity {
-/*    public static final String TAG = ActivityMicrosoftBandPlatformSettings.class.getSimpleName();
+    public static final String TAG = ActivityMicrosoftBandPlatformSettings.class.getSimpleName();
     String platformId="";
     MySharedPreference mySharedPreference;
-    MicrosoftBandPlatform microsoftBandPlatform;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         platformId=getIntent().getStringExtra("platformId");
         createMySharedPreference();
-        getMicrosoftBandPlatform();
         setContentView(R.layout.activity_microsoftband_platform_settings);
         addPreferencesFromResource(R.xml.pref_microsoftband_platform);
         addPreferenceScreenSensors();
-        prepareMySharedPreference();
         updatePreferenceScreen();
         setAddButton();
         setCancelButton();
     }
-    private void getMicrosoftBandPlatform() {
-        microsoftBandPlatform = MicrosoftBandPlatforms.getInstance(getBaseContext()).find(platformId);
-    }
-    void prepareMySharedPreference() {
-        mySharedPreference.setSharedPreferencesString("platformId", microsoftBandPlatform.getPlatformId());
-        mySharedPreference.setSharedPreferencesString("platformName", microsoftBandPlatform.getPlatformName());
-        mySharedPreference.setSharedPreferencesString("location", microsoftBandPlatform.getLocation());
-        for (int i = 0; i < microsoftBandPlatform.getMicrosoftBandDataSource().size(); i++) {
-            String dataSourceType = microsoftBandPlatform.getMicrosoftBandDataSource().get(i).getDataSourceType();
-            boolean enabled = microsoftBandPlatform.getMicrosoftBandDataSource().get(i).isEnabled();
-            mySharedPreference.setSharedPreferencesBoolean(dataSourceType, enabled);
-            if (dataSourceType.equals(DataSourceType.ACCELEROMETER) || dataSourceType.equals(DataSourceType.GYROSCOPE)) {
-                double frequency = microsoftBandPlatform.getMicrosoftBandDataSource().get(i).getFrequency();
-                mySharedPreference.setSharedPreferencesString(dataSourceType + "_frequency", String.valueOf(frequency) + " Hz");
-            }
-        }
-    }
+
 
     void updatePreferenceScreen() {
         findPreference("platformName").setSummary(mySharedPreference.getSharedPreferenceString("platformName"));
-        findPreference("platformName").setEnabled(false);
         findPreference("platformId").setSummary(mySharedPreference.getSharedPreferenceString("platformId"));
-        findPreference("platformId").setEnabled(false);
-        findPreference("location").setSummary(mySharedPreference.getSharedPreferenceString("location"));
+        findPreference("location").setSummary(mySharedPreference.getSharedPreferenceString("location").toLowerCase().replace("_"," "));
         ListPreference lpLocation=(ListPreference)findPreference("location");
         lpLocation.setValue(mySharedPreference.getSharedPreferenceString("location"));
 
-        for (int i = 0; i < microsoftBandPlatform.getMicrosoftBandDataSource().size(); i++) {
-            String dataSourceType = microsoftBandPlatform.getMicrosoftBandDataSource().get(i).getDataSourceType();
+        for (int i = 0; i < MicrosoftBandPlatform.DATASOURCETYPE.length; i++) {
+            String dataSourceType = MicrosoftBandPlatform.DATASOURCETYPE[i];
             ((SwitchPreference) findPreference(dataSourceType)).setChecked(mySharedPreference.getSharedPreferenceBoolean(dataSourceType));
             if (dataSourceType.equals(DataSourceType.ACCELEROMETER) || dataSourceType.equals(DataSourceType.GYROSCOPE)) {
                 findPreference(dataSourceType).setSummary(mySharedPreference.getSharedPreferenceString(dataSourceType + "_frequency"));
@@ -112,8 +65,8 @@ public class ActivityMicrosoftBandPlatformSettings extends PreferenceActivity {
         PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference("dataSourceType");
         Log.d(TAG, "Preference category: " + preferenceCategory);
         preferenceCategory.removeAll();
-        for (int i = 0; i < microsoftBandPlatform.getMicrosoftBandDataSource().size(); i++) {
-            final String dataSourceType = microsoftBandPlatform.getMicrosoftBandDataSource().get(i).getDataSourceType();
+        for (int i = 0; i < MicrosoftBandPlatform.DATASOURCETYPE.length; i++) {
+            final String dataSourceType = MicrosoftBandPlatform.DATASOURCETYPE[i];
             SwitchPreference switchPreference = new SwitchPreference(this);
             switchPreference.setKey(dataSourceType);
             String title=dataSourceType;
@@ -143,7 +96,7 @@ public class ActivityMicrosoftBandPlatformSettings extends PreferenceActivity {
     private void setAddButton() {
         final Button button = (Button) findViewById(R.id.button_settings_platform_add);
         final String platformId = mySharedPreference.getSharedPreferenceString("platformId");
-        if (MicrosoftBandPlatforms.getInstance(getBaseContext()).find(platformId).enabled) {
+        if (mySharedPreference.getSharedPreferenceBoolean("enabled")) {
             button.setText("Update");
         } else {
             button.setText("Add");
@@ -159,22 +112,14 @@ public class ActivityMicrosoftBandPlatformSettings extends PreferenceActivity {
                 } else if (location == null || location.equals("")) {
                     Toast.makeText(getBaseContext(), "!!! Location is missing !!!", Toast.LENGTH_LONG).show();
                 } else {
-                    MicrosoftBandPlatform microsoftBandPlatform = MicrosoftBandPlatforms.getInstance(getBaseContext()).find(platformId);
-                    microsoftBandPlatform.setLocation(mySharedPreference.getSharedPreferenceString("location"));
-                    for (int i = 0; i < microsoftBandPlatform.getMicrosoftBandDataSource().size(); i++) {
-                        String dataSourceType = microsoftBandPlatform.getMicrosoftBandDataSource().get(i).getDataSourceType();
-                        enabled=(enabled|(mySharedPreference.getSharedPreferenceBoolean(dataSourceType)));
-                        microsoftBandPlatform.getMicrosoftBandDataSource().get(i).setEnabled(mySharedPreference.getSharedPreferenceBoolean(dataSourceType));
-                        if (dataSourceType.equals(DataSourceType.ACCELEROMETER) || dataSourceType.equals(DataSourceType.GYROSCOPE)) {
-                            String frequencyStr=mySharedPreference.getSharedPreferenceString(dataSourceType+"_frequency");
-                            double frequency=Double.valueOf(frequencyStr.substring(0,frequencyStr.length()-3));
-                                microsoftBandPlatform.getMicrosoftBandDataSource().get(i).setFrequency(frequency);
-                        }
-                    }
+                    enabled=false;
+                    for(int i=0;i<MicrosoftBandPlatform.DATASOURCETYPE.length;i++)
+                        if(mySharedPreference.getSharedPreferenceBoolean(MicrosoftBandPlatform.DATASOURCETYPE[i]))
+                            enabled=true;
+                    mySharedPreference.setSharedPreferencesBoolean("enabled",enabled);
                     if(!enabled){
                         Toast.makeText(getBaseContext(), "!!! No Sensor is enabled !!!", Toast.LENGTH_LONG).show();
                     }else {
-                        microsoftBandPlatform.enabled=true;
                         Intent returnIntent = new Intent();
                         setResult(RESULT_OK, returnIntent);
                         finish();
@@ -199,7 +144,7 @@ public class ActivityMicrosoftBandPlatformSettings extends PreferenceActivity {
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
             switch (key) {
                 case "location":
-                    findPreference("location").setSummary(mySharedPreference.getSharedPreferenceString("location"));
+                    findPreference("location").setSummary(mySharedPreference.getSharedPreferenceString("location").toLowerCase().replace("_"," "));
                     ListPreference lpLocation=(ListPreference)findPreference("location");
                     lpLocation.setValue(mySharedPreference.getSharedPreferenceString("location"));
                     break;
@@ -240,4 +185,4 @@ public class ActivityMicrosoftBandPlatformSettings extends PreferenceActivity {
                 });
         builderSingle.show();
     }
-*/}
+}

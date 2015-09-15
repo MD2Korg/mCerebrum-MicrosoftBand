@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 
-import org.md2k.datakitapi.DataKitApi;
 import org.md2k.datakitapi.datatype.DataType;
 import org.md2k.datakitapi.source.datasource.DataSource;
 import org.md2k.datakitapi.source.datasource.DataSourceType;
@@ -15,21 +14,22 @@ import org.md2k.utilities.Report.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
 /**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * <p/>
  * * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- *
+ * <p/>
  * * Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- *
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -44,9 +44,22 @@ import java.util.HashMap;
 public class MicrosoftBandPlatform extends Device {
     private static final String TAG = MicrosoftBandPlatform.class.getSimpleName();
     private String location;
-    private DataKitApi mDataKitApi;
-
+    boolean isConnected=false;
     private ArrayList<MicrosoftBandDataSource> microsoftBandDataSources;
+    public static final String[] DATASOURCETYPE = {
+            DataSourceType.ACCELEROMETER,
+            DataSourceType.GYROSCOPE,
+            DataSourceType.DISTANCE,
+            DataSourceType.SPEED,
+            DataSourceType.PACE,
+            DataSourceType.MOTION_TYPE,
+            DataSourceType.HEART_RATE,
+            DataSourceType.STEP_COUNT,
+            DataSourceType.SKIN_TEMPERATURE,
+            DataSourceType.ULTRA_VIOLET_RADIATION,
+            DataSourceType.BAND_CONTACT,
+            DataSourceType.CALORY_BURN
+    };
 
     public void show() {
         for (int i = 0; i < microsoftBandDataSources.size(); i++) {
@@ -55,26 +68,17 @@ public class MicrosoftBandPlatform extends Device {
         }
     }
 
-    private void assignDataSource() {
+    public void resetDataSource() {
         microsoftBandDataSources = new ArrayList<>();
-        microsoftBandDataSources.add(new MicrosoftBandDataSource(context, DataSourceType.ACCELEROMETER, false));
-        microsoftBandDataSources.add(new MicrosoftBandDataSource(context, DataSourceType.GYROSCOPE, false));
-        microsoftBandDataSources.add(new MicrosoftBandDataSource(context, DataSourceType.DISTANCE, false));
-        microsoftBandDataSources.add(new MicrosoftBandDataSource(context, DataSourceType.SPEED, false));
-        microsoftBandDataSources.add(new MicrosoftBandDataSource(context, DataSourceType.PACE, false));
-        microsoftBandDataSources.add(new MicrosoftBandDataSource(context, DataSourceType.MOTION_TYPE, false));
-        microsoftBandDataSources.add(new MicrosoftBandDataSource(context, DataSourceType.HEART_RATE, false));
-        microsoftBandDataSources.add(new MicrosoftBandDataSource(context, DataSourceType.STEP_COUNT, false));
-        microsoftBandDataSources.add(new MicrosoftBandDataSource(context, DataSourceType.SKIN_TEMPERATURE, false));
-        microsoftBandDataSources.add(new MicrosoftBandDataSource(context, DataSourceType.ULTRA_VIOLET_RADIATION, false));
-        microsoftBandDataSources.add(new MicrosoftBandDataSource(context, DataSourceType.BAND_CONTACT, false));
-        microsoftBandDataSources.add(new MicrosoftBandDataSource(context, DataSourceType.CALORY_BURN, false));
+        for (String dataSourceType : DATASOURCETYPE)
+            microsoftBandDataSources.add(new MicrosoftBandDataSource(context, dataSourceType, false));
+
     }
 
     MicrosoftBandPlatform(Context context, String platformId, String location) {
         super(context, platformId);
         this.location = location;
-        assignDataSource();
+        resetDataSource();
     }
 
     public ArrayList<MicrosoftBandDataSource> getMicrosoftBandDataSource() {
@@ -109,21 +113,19 @@ public class MicrosoftBandPlatform extends Device {
     HashMap<String, Integer> hm = new HashMap<>();
     long starttimestamp = 0;
 
-    public void register(DataKitApi dataKitApi) {
+    public void register() {
         if (!enabled) return;
         hm.clear();
         starttimestamp = DateTime.getDateTime();
-        mDataKitApi = dataKitApi;
         connect(new BandCallBack() {
             @Override
             public void onBandConnected() {
                 for (int i = 0; i < microsoftBandDataSources.size(); i++) {
                     if (microsoftBandDataSources.get(i).isEnabled()) {
                         final int finalI = i;
-                        microsoftBandDataSources.get(i).register(mDataKitApi, getPlatform(), bandClient, new CallBack() {
+                        microsoftBandDataSources.get(i).register(getPlatform(), bandClient, new CallBack() {
                             @Override
                             public void onReceivedData(DataType data) {
-
                                 String dataSourceType = microsoftBandDataSources.get(finalI).getDataSourceType();
                                 Intent intent = new Intent("microsoftBand");
                                 intent.putExtra("operation", "data");
@@ -148,8 +150,10 @@ public class MicrosoftBandPlatform extends Device {
     }
 
     public void unregister() {
-        for (MicrosoftBandDataSource microsoftBandDataSource : microsoftBandDataSources)
-            microsoftBandDataSource.unregister(bandClient);
-        disconnect();
+        if(bandClient.isConnected()) {
+            for (MicrosoftBandDataSource microsoftBandDataSource : microsoftBandDataSources)
+                microsoftBandDataSource.unregister(bandClient);
+            disconnect();
+        }
     }
 }

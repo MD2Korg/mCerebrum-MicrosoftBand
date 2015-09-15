@@ -1,6 +1,7 @@
 package org.md2k.microsoftband;
 
 import android.app.Activity;
+import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -11,8 +12,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TableLayout;
@@ -69,8 +68,10 @@ public class ActivityMicrosoftBand extends Activity {
                 Intent intent = new Intent(ActivityMicrosoftBand.this, ServiceMicrosoftBands.class);
                 if (isChecked) {
                     starttimestamp = 0;
-                    startService(intent);
+                    if(!Apps.isServiceRunning(ActivityMicrosoftBand.this,Constants.SERVICE_NAME))
+                        startService(intent);
                 } else {
+                    if(Apps.isServiceRunning(ActivityMicrosoftBand.this,Constants.SERVICE_NAME))
                     stopService(intent);
                 }
             }
@@ -106,44 +107,6 @@ public class ActivityMicrosoftBand extends Activity {
         else service.setChecked(false);
     }
 
-
-/*    HashMap<String, TextView> hm = new HashMap<>();
-    long starttimestamp = 0;
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if(intent.getStringExtra("operation").equals("data")) {
-                TextView tv;
-                LinearLayout ll = (LinearLayout) findViewById(R.id.LL_data);
-                int count = intent.getIntExtra("count", 0);
-                String platformId = intent.getStringExtra("platformId");
-                platformId = platformId.substring(0, 2);
-                String dataSourceType = intent.getStringExtra("dataSourceType");
-                long curtimestamp = intent.getLongExtra("timestamp", 0);
-                if (starttimestamp == 0) starttimestamp = curtimestamp;
-                double expected = 31.25 * (curtimestamp - starttimestamp) / 1000;
-                double missing = 100.0 * (expected - count) / expected;
-                String key = platformId + "_" + dataSourceType;
-                if (hm.containsKey(key)) {
-                    tv = hm.get(key);
-                } else {
-                    tv = new TextView(getApplicationContext());
-                    hm.put(key, tv);
-                    ll.addView(tv);
-                }
-                tv.setText(key + " " + String.format("%.1f%% count=%d", missing, count));
-
-                final TextView v = (TextView) findViewById(R.id.textView_all);
-                v.setText("Time: " + String.format("%.1f Minute (%.0f Second)", ((double) curtimestamp - (double) starttimestamp) / (1000.0 * 60.0), ((double) curtimestamp - (double) starttimestamp) / (1000.0)));
-            }
-            else if(intent.getStringExtra("operation").equals("connection")){
-                Log.d(TAG,"Broadcast msg onReceive()...connection...");
-                   setButtons();
-            }
-        }
-    };
-    */
-
     TableRow createDefaultRow(){
         TableRow row = new TableRow(this);
         TextView tvSensor = new TextView(this);tvSensor.setText("sensor");tvSensor.setTypeface(null, Typeface.BOLD);tvSensor.setTextColor(getResources().getColor(R.color.holo_blue_dark));
@@ -157,8 +120,7 @@ public class ActivityMicrosoftBand extends Activity {
         return row;
     }
 
-    void prepareTable() {
-        ArrayList<MicrosoftBandPlatform> microsoftBandPlatforms=MicrosoftBandPlatforms.getInstance(ActivityMicrosoftBand.this).getMicrosoftBandPlatform();
+    void prepareTable(ArrayList<MicrosoftBandPlatform> microsoftBandPlatforms) {
         TableLayout ll = (TableLayout) findViewById(R.id.tableLayout);
         ll.removeAllViews();
         ll.addView(createDefaultRow());
@@ -193,11 +155,10 @@ public class ActivityMicrosoftBand extends Activity {
 
     }
 
-    void showActiveSensors() {
+    void showActiveSensors(ArrayList<MicrosoftBandPlatform> microsoftBandPlatforms) {
         TextView textView = (TextView) findViewById(R.id.configuration_info);
         String str = "";
         int count = 0;
-        ArrayList<MicrosoftBandPlatform> microsoftBandPlatforms=MicrosoftBandPlatforms.getInstance(ActivityMicrosoftBand.this).getMicrosoftBandPlatform();
         for (int i = 0; i < microsoftBandPlatforms.size(); i++) {
             if (!microsoftBandPlatforms.get(i).enabled) continue;
             for(int j=0;j<microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().size();j++){
@@ -217,8 +178,8 @@ public class ActivityMicrosoftBand extends Activity {
 
     void serviceStatus() {
         TextView textView = (TextView) findViewById(R.id.service_info);
-        if (ServiceMicrosoftBands.isRunning) textView.setText("Running");
-        else textView.setText("Not Running");
+//        if (ServiceMicrosoftBands.isMSBandConnected) textView.setText("Running");
+//        else textView.setText("Not Running");
     }
 
 
@@ -278,12 +239,13 @@ public class ActivityMicrosoftBand extends Activity {
 
     @Override
     public void onResume(){
+        ArrayList<MicrosoftBandPlatform> microsoftBandPlatforms=new MicrosoftBandPlatforms(ActivityMicrosoftBand.this).getMicrosoftBandPlatform();
         updateServiceSwitch();
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter("microsoftBand"));
         serviceStatus();
-        showActiveSensors();
-        prepareTable();
+        showActiveSensors(microsoftBandPlatforms);
+        prepareTable(microsoftBandPlatforms);
 
         super.onResume();
     }

@@ -4,25 +4,24 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-import org.md2k.datakitapi.DataKitApi;
 import org.md2k.datakitapi.messagehandler.OnConnectionListener;
-import org.md2k.utilities.Report.Log;
 import org.md2k.utilities.UI.UIShow;
+
 /**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * <p/>
  * * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- *
+ * <p/>
  * * Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- *
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -37,67 +36,72 @@ import org.md2k.utilities.UI.UIShow;
 
 public class ServiceMicrosoftBands extends Service {
     private static final String TAG = ServiceMicrosoftBands.class.getSimpleName();
-    public static boolean isRunning = false;
-
+    MyBlueTooth myBlueTooth=null;
     MicrosoftBandPlatforms microsoftBandPlatforms;
-    DataKitApi dataKitApi;
-    MyBlueTooth myBlueTooth;
+    public boolean isMSBandConnected =false;
+    boolean isDataKitConnected =false;
 
     @Override
     public void onCreate() {
+        isDataKitConnected=false;
         super.onCreate();
-        initialize();
-        connectDataKit();
+        if(!readSettings())
+            UIShow.ErrorDialog(ServiceMicrosoftBands.this, "Configuration File", "Configuration file for MicrosoftBand doesn't exist. Please click Settings");
+        else if(!connectDataKit())
+            UIShow.ErrorDialog(ServiceMicrosoftBands.this, "DataKit", "DataKit is not available. Please Install DataKit");
+    }
+    private boolean readSettings(){
+        microsoftBandPlatforms = new MicrosoftBandPlatforms(ServiceMicrosoftBands.this);
+        return microsoftBandPlatforms.size(true) != 0;
     }
 
-    void initialize() {
-        microsoftBandPlatforms = null;
-        isRunning = false;
-        dataKitApi = new DataKitApi(getBaseContext());
+
+    void initializeBluetoothConnection() {
         myBlueTooth = new MyBlueTooth(ServiceMicrosoftBands.this, new BlueToothCallBack() {
             @Override
             public void onConnected() {
-                connectDevice();
+                isMSBandConnected=true;
+                microsoftBandPlatforms.register();
             }
 
             @Override
             public void onDisconnected() {
+                isMSBandConnected=false;
+                microsoftBandPlatforms.unregister();
+            }
+        });
+        if (myBlueTooth.isEnabled()) {
+            isMSBandConnected=true;
+            microsoftBandPlatforms.register();
+        } else {
+            myBlueTooth.enable();
+        }
+    }
 
+    boolean connectDataKit() {
+        isDataKitConnected =false;
+        DataKitHandler dataKitHandler = DataKitHandler.getInstance(ServiceMicrosoftBands.this);
+        return dataKitHandler.connectDataKit(new OnConnectionListener() {
+            @Override
+            public void onConnected() {
+                isDataKitConnected =true;
+                initializeBluetoothConnection();
             }
         });
     }
 
-    void connectDataKit() {
-        if (!dataKitApi.connect(onConnectionListener)) {
-            UIShow.ErrorDialog(ServiceMicrosoftBands.this.getApplicationContext(), "DataKit Service", "DataKit Service is not available");
-            stopSelf();
-        }
-    }
-
-    OnConnectionListener onConnectionListener = new OnConnectionListener() {
-        @Override
-        public void onConnected() {
-            if (!myBlueTooth.isEnabled())
-                myBlueTooth.enable();
-            else {
-                connectDevice();
-            }
-        }
-    };
-    void connectDevice() {
-        microsoftBandPlatforms=MicrosoftBandPlatforms.getInstance(ServiceMicrosoftBands.this);
-        microsoftBandPlatforms.register(dataKitApi);
-    }
-
     @Override
     public void onDestroy() {
-        Log.d(TAG, "onDestroy().. send broadcast message... isRunning=" + isRunning);
-        myBlueTooth.close();
-        if (microsoftBandPlatforms != null) {
+
+        if (isMSBandConnected) {
             microsoftBandPlatforms.unregister();
         }
-        dataKitApi.disconnect();
-        isRunning = false;
+        if(isDataKitConnected)
+            DataKitHandler.getInstance(ServiceMicrosoftBands.this).disconnect();
+        if(myBlueTooth!=null) {
+            myBlueTooth.close();
+            myBlueTooth=null;
+        }
         super.onDestroy();
     }
 

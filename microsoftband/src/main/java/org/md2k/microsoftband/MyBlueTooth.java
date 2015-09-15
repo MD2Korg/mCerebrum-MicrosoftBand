@@ -53,9 +53,16 @@ public class MyBlueTooth {
             mBluetoothAdapter.enable();
         }
     }
+    public void disable() {
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter == null) return;
+        if (mBluetoothAdapter.isEnabled()) {
+            mBluetoothAdapter.disable();
+        }
+    }
+
     public void close(){
         context.unregisterReceiver(mReceiver);
-
     }
 
     public boolean isEnabled() {
@@ -73,13 +80,11 @@ public class MyBlueTooth {
             if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
                 final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
                         BluetoothAdapter.ERROR);
-                Log.d(TAG, "bluetooth_state=" + state);
                 switch (state) {
                     case BluetoothAdapter.STATE_OFF:
-                        Log.d(TAG, "bluetooth_state=OFF");
+                        blueToothCallBack.onDisconnected();
                         break;
                     case BluetoothAdapter.STATE_ON:
-                        Log.d(TAG, "bluetooth_state=ON");
                         blueToothCallBack.onConnected();
                         break;
                     case BluetoothAdapter.STATE_TURNING_ON:

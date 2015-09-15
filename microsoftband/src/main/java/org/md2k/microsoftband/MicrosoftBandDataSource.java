@@ -45,6 +45,8 @@ import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.datakitapi.time.DateTime;
 import org.md2k.utilities.Report.Log;
 
+import java.io.Serializable;
+
 
 /**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
@@ -72,15 +74,15 @@ import org.md2k.utilities.Report.Log;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class MicrosoftBandDataSource {
+public class MicrosoftBandDataSource{
     private static final String TAG = MicrosoftBandDataSource.class.getSimpleName();
     Context context;
     private String dataSourceType;
     private double frequency;
     private boolean enabled;
     CallBack callBack;
+    DataKitHandler dataKitHandler;
     DataSourceClient dataSourceClient;
-    DataKitApi mDataKitApi;
 
     public MicrosoftBandDataSource(Context context, String dataSourceType, boolean enabled) {
         this.context = context;
@@ -129,7 +131,7 @@ public class MicrosoftBandDataSource {
             dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", "0");
         } else if (dataSourceType.equals(DataSourceType.ACCELEROMETER)) {
             dataSourceBuilder = dataSourceBuilder.setDescription("Float values represent the band's axes acceleration in units of standard gravity");
-            dataSourceBuilder = dataSourceBuilder.setMetadata("unit", "g units");
+            dataSourceBuilder = dataSourceBuilder.setMetadata("unit", "meter/second^2");
             dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", String.valueOf(frequency));
 
         } else if (dataSourceType.equals(DataSourceType.GYROSCOPE)) {
@@ -177,7 +179,8 @@ public class MicrosoftBandDataSource {
     }
 
     private void sendMessage(DataType data) {
-        mDataKitApi.insert(dataSourceClient, data);
+        Log.d(TAG,dataSourceClient.getDataSource().getPlatform().getId()+" "+dataSourceClient.getDataSource().getType());
+        dataKitHandler.insert(dataSourceClient, data);
         callBack.onReceivedData(data);
     }
 
@@ -185,9 +188,10 @@ public class MicrosoftBandDataSource {
         @Override
         public void onBandAccelerometerChanged(final BandAccelerometerEvent event) {
             float[] samples=new float[3];
-            samples[0]=event.getAccelerationX();
-            samples[1]=event.getAccelerationY();
-            samples[2]=event.getAccelerationZ();
+
+            samples[0]=event.getAccelerationX()*(float)9.81;
+            samples[1]=event.getAccelerationY()*(float)9.81;
+            samples[2]=event.getAccelerationZ()*(float)9.81;
             DataTypeFloatArray dataTypeFloatArray=new DataTypeFloatArray(DateTime.getDateTime(),samples);
             sendMessage(dataTypeFloatArray);
         }
@@ -305,13 +309,16 @@ public class MicrosoftBandDataSource {
         }
     };
 
-    public boolean register(DataKitApi dataKitApi, final Platform platform, final BandClient bandClient, final CallBack newcallBack) {
-        mDataKitApi = dataKitApi;
+    public boolean register(final Platform platform, final BandClient bandClient, final CallBack newcallBack) {
+
+        dataKitHandler = DataKitHandler.getInstance(context);
         DataSourceBuilder dataSourceBuilder = getDataSourceBuilder();
         dataSourceBuilder = dataSourceBuilder.setPlatform(platform);
         DataSource dataSource = dataSourceBuilder.build();
 
-        dataSourceClient = dataKitApi.register(dataSource).await();
+        dataSourceClient = dataKitHandler.register(dataSource);
+        Log.e(TAG,dataSource.getPlatform().getId()+" "+dataSource.getType());
+        Log.e(TAG,dataSourceClient.getDataSource().getPlatform().getId()+" "+dataSourceClient.getDataSource().getType()+" "+dataSourceClient.getDs_id());
 
         callBack = newcallBack;
         final Thread background = new Thread(new Runnable() {
@@ -327,7 +334,6 @@ public class MicrosoftBandDataSource {
 
         });
         background.start();
-
         return true;
     }
 

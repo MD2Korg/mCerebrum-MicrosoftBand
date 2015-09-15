@@ -6,10 +6,10 @@
 
     <Preference
         android:key="bluetooth_pair"
-        android:title="Pair with MicrosoftBand" />
+        android:title="Pair Device" />
     <PreferenceCategory
         android:key="microsoftband_configured"
-        android:title="Configured Bands"></PreferenceCategory>
+        android:title="Configured Devices"></PreferenceCategory>
     <PreferenceCategory
         android:key="microsoftband_available"
         android:title="Available Devices" />

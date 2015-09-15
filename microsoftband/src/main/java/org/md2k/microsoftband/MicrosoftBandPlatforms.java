@@ -11,6 +11,7 @@ import org.md2k.datakitapi.source.datasource.DataSourceBuilder;
 import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.utilities.Files;
 import org.md2k.utilities.Report.Log;
+import org.md2k.utilities.UI.UIShow;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -43,40 +44,44 @@ import java.util.EmptyStackException;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class MicrosoftBandPlatforms {
+public class MicrosoftBandPlatforms{
     private static final String TAG = MicrosoftBandPlatforms.class.getSimpleName();
-    private ArrayList<MicrosoftBandPlatform> microsoftBandPlatforms=new ArrayList<>();
-    private static MicrosoftBandPlatforms instance=null;
+    private ArrayList<MicrosoftBandPlatform> microsoftBandPlatforms;
     Context context;
-    public static MicrosoftBandPlatforms getInstance(Context context){
-        Log.d(TAG, "instance=" + instance);
-        if(instance==null)
-                instance=new MicrosoftBandPlatforms(context);
-        return instance;
-    }
-    private MicrosoftBandPlatforms(Context context) {
+    public MicrosoftBandPlatforms(Context context) {
         Log.d(TAG,"Constructor()...");
         this.context=context;
-        microsoftBandPlatforms.clear();
+        microsoftBandPlatforms=new ArrayList<>();
         readDataSourceFromFile();
         addOthers();
         Log.d(TAG, "Constructor()... size="+microsoftBandPlatforms.size());
         Log.d(TAG, "...Constructor()");
     }
+    int size(){
+        return microsoftBandPlatforms.size();
+    }
+    public int size(boolean enabled){
+        int count=0;
+        for(int i=0;i<microsoftBandPlatforms.size();i++)
+            if(microsoftBandPlatforms.get(i).enabled==enabled)
+                count++;
+        return count;
+    }
     void addOthers(){
         Log.d(TAG, "addOthers...");
         BandInfo[] bandInfos=Device.findBandInfo();
-        for (int i = 0; i < bandInfos.length; i++) {
-            String platformId = bandInfos[i].getMacAddress();
-            MicrosoftBandPlatform microsoftBandPlatform = find(platformId);
+        for (BandInfo bandInfo : bandInfos) {
+            String platformId = bandInfo.getMacAddress();
+            MicrosoftBandPlatform microsoftBandPlatform = getMicrosoftBandPlatform(platformId);
             if (microsoftBandPlatform == null) {
+                Log.d(TAG,"addOthers..."+platformId);
                 microsoftBandPlatform = new MicrosoftBandPlatform(context, platformId, null);
                 microsoftBandPlatforms.add(microsoftBandPlatform);
             }
         }
     }
 
-    public MicrosoftBandPlatform find(String platformId){
+    public MicrosoftBandPlatform getMicrosoftBandPlatform(String platformId){
         for (int i = 0; i < microsoftBandPlatforms.size(); i++)
             if (microsoftBandPlatforms.get(i).equals(platformId))
                 return microsoftBandPlatforms.get(i);
@@ -91,7 +96,7 @@ public class MicrosoftBandPlatforms {
             for (int i = 0; i < dataSources.size(); i++) {
                 String platformId = dataSources.get(i).getPlatform().getId();
                 String location = dataSources.get(i).getPlatform().getMetadata().get("location");
-                MicrosoftBandPlatform microsoftBandPlatform = find(platformId);
+                MicrosoftBandPlatform microsoftBandPlatform = getMicrosoftBandPlatform(platformId);
                 if (microsoftBandPlatform == null) {
                     microsoftBandPlatform = new MicrosoftBandPlatform(context, platformId, location);
                     microsoftBandPlatforms.add(microsoftBandPlatform);
@@ -108,12 +113,12 @@ public class MicrosoftBandPlatforms {
             microsoftBandPlatforms.get(i).show();
         }
     }
-
     public void deleteMicrosoftBandPlatform(String platformId) {
         for (int i = 0; i < microsoftBandPlatforms.size(); i++)
             if (microsoftBandPlatforms.get(i).equals(platformId)) {
                 microsoftBandPlatforms.get(i).enabled=false;
-                return;
+                microsoftBandPlatforms.get(i).setLocation(null);
+                microsoftBandPlatforms.get(i).resetDataSource();
             }
     }
     public ArrayList<MicrosoftBandPlatform> getMicrosoftBandPlatform() {
@@ -137,18 +142,21 @@ public class MicrosoftBandPlatforms {
         Files.writeDataSourceToFile(Constants.DIRECTORY, Constants.FILENAME, dataSources);
     }
 
-    public void register(DataKitApi dataKitApi) {
+    public void register() {
         for(int i=0;i<microsoftBandPlatforms.size();i++) {
-            microsoftBandPlatforms.get(i).register(dataKitApi);
-
+            microsoftBandPlatforms.get(i).register();
         }
     }
     public void unregister(){
         for(int i=0;i<microsoftBandPlatforms.size();i++) {
-//            microsoftBandPlatforms.get(i).stopConnection();
             microsoftBandPlatforms.get(i).unregister();
         }
-        microsoftBandPlatforms.clear();
-        instance=null;
+    }
+    public void disconnect(){
+        for(int i=0;i<microsoftBandPlatforms.size();i++) {
+            if (microsoftBandPlatforms.get(i).isConnected)
+                microsoftBandPlatforms.get(i).disconnect();
+        }
+
     }
 }

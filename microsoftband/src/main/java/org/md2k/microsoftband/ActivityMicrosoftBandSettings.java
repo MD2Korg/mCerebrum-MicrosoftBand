@@ -1,19 +1,24 @@
 package org.md2k.microsoftband;
 
 import android.app.AlertDialog;
-import android.content.ComponentName;
+import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Handler;
-import android.os.Message;
+import android.content.IntentFilter;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import org.md2k.datakitapi.source.datasource.DataSourceType;
+import org.md2k.utilities.Apps;
 import org.md2k.utilities.Report.Log;
 
 import java.io.IOException;
@@ -50,16 +55,19 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
     MicrosoftBandPlatforms microsoftBandPlatforms;
     public final int ADD_DEVICE = 1;
     MyBlueTooth myBlueTooth;
-
+    ProgressDialog progressDialog;
     @SuppressWarnings("deprecation")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_microsoftband_settings);
         addPreferencesFromResource(R.xml.pref_microsoftband_general);
+        microsoftBandPlatforms=new MicrosoftBandPlatforms(ActivityMicrosoftBandSettings.this);
+
         myBlueTooth = new MyBlueTooth(ActivityMicrosoftBandSettings.this, new BlueToothCallBack() {
             @Override
             public void onConnected() {
+                microsoftBandPlatforms=new MicrosoftBandPlatforms(ActivityMicrosoftBandSettings.this);
                 enablePage();
             }
 
@@ -68,7 +76,17 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
                 disablePage();
             }
         });
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter("background"));
     }
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            progressDialog.dismiss();
+            finish();
+        }
+    };
+
     @Override
     protected void onResume() {
         if (myBlueTooth.isEnabled())
@@ -80,8 +98,9 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
     @Override
     protected void onDestroy() {
         myBlueTooth.close();
-        if(microsoftBandPlatforms!=null)
-            microsoftBandPlatforms.unregister();
+        if (microsoftBandPlatforms != null)
+            microsoftBandPlatforms.disconnect();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         super.onDestroy();
     }
 
@@ -94,13 +113,14 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
         clearPreferenceScreenMicrosoftBand();
         final ArrayList<MicrosoftBandPlatform> microsoftBandPlatforms = this.microsoftBandPlatforms.getMicrosoftBandPlatform();
         for (int i = 0; i < microsoftBandPlatforms.size(); i++) {
+            Log.d(TAG, "i=" + i + " " + microsoftBandPlatforms.get(i).getPlatformId() + " " + microsoftBandPlatforms.get(i).enabled);
             final int finalI = i;
             Preference preference = new Preference(ActivityMicrosoftBandSettings.this);
             preference.setKey(microsoftBandPlatforms.get(finalI).getPlatformId());
             preference.setOnPreferenceClickListener(microsoftBandListener());
-            preference.setTitle(microsoftBandPlatforms.get(finalI).getPlatformName() + " (ERROR)");
-            preference.setSummary(microsoftBandPlatforms.get(finalI).getPlatformId() + "(" + microsoftBandPlatforms.get(finalI).getLocation() + ")\nERROR: BandOff/PairProblem");
-            PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference("microsoftband_configured");
+            preference.setTitle(microsoftBandPlatforms.get(finalI).getPlatformName());
+            preference.setSummary("ERROR: BandOff/PairProblem");
+            PreferenceCategory preferenceCategory = ((PreferenceCategory) findPreference("microsoftband_configured"));
             if (preferenceCategory.findPreference(preference.getKey()) != null) {
                 preferenceCategory.removePreference(preferenceCategory.findPreference(preference.getKey()));
             }
@@ -108,49 +128,52 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
             if (preferenceCategory.findPreference(preference.getKey()) != null) {
                 preferenceCategory.removePreference(preferenceCategory.findPreference(preference.getKey()));
             }
+            Log.d(TAG, " enabled=" + microsoftBandPlatforms.get(finalI).enabled);
 
             if (microsoftBandPlatforms.get(finalI).enabled) {
                 ((PreferenceCategory) findPreference("microsoftband_configured")).addPreference(preference);
-            } else
+                Log.d(TAG, microsoftBandPlatforms.get(finalI).getPlatformId() + "add to microsoftband_configured");
+            } else {
                 ((PreferenceCategory) findPreference("microsoftband_available")).addPreference(preference);
-
+                Log.d(TAG, microsoftBandPlatforms.get(finalI).getPlatformId() + "add to microsoftband_available");
+            }
             microsoftBandPlatforms.get(i).connect(new BandCallBack() {
                 @Override
                 public void onBandConnected() {
-                    Message msg = new Message();
-                    msg.what = finalI;
-                    handler.sendMessage(msg);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            updatePreference(microsoftBandPlatforms.get(finalI));
+                            microsoftBandPlatforms.get(finalI).disconnect();
+                        }
+                    });
                 }
             });
         }
     }
 
-    final Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            updatePreference(MicrosoftBandPlatforms.getInstance(ActivityMicrosoftBandSettings.this).getMicrosoftBandPlatform().get(msg.what));
-            super.handleMessage(msg);
-        }
-    };
-
     void updatePreference(MicrosoftBandPlatform microsoftBandPlatform) {
         Preference preference = findPreference(microsoftBandPlatform.getPlatformId());
-        Log.d(TAG, "......................Connect=true name=" + microsoftBandPlatform.getPlatformName());
         preference.setTitle(microsoftBandPlatform.getPlatformName());
-        preference.setSummary(microsoftBandPlatform.getPlatformId() + "(" + microsoftBandPlatform.getLocation() + ")");
+        if (microsoftBandPlatform.getLocation() != null)
+            preference.setSummary(microsoftBandPlatform.getLocation().toLowerCase().replace("_", " "));
+        else preference.setSummary("");
     }
 
     private Preference.OnPreferenceClickListener microsoftBandListener() {
         return new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                boolean isNew = false;
+                boolean isNew;
                 final String platformId = preference.getKey();
                 final Intent intent = new Intent(ActivityMicrosoftBandSettings.this, ActivityMicrosoftBandPlatformSettings.class);
-                intent.putExtra("platformId", platformId);
+                MicrosoftBandPlatform microsoftBandPlatform = microsoftBandPlatforms.getMicrosoftBandPlatform(platformId);
+                setSharedPreference(microsoftBandPlatform);
+
                 Log.d(TAG, "platformId=" + platformId);
-                isNew = !MicrosoftBandPlatforms.getInstance(ActivityMicrosoftBandSettings.this).find(platformId).enabled;
-                if (!isNew) {
+                isNew = microsoftBandPlatform.enabled;
+                Log.d(TAG, platformId + " " + microsoftBandPlatform.enabled);
+                if (isNew) {
                     AlertDialog alertDialog = new AlertDialog.Builder(ActivityMicrosoftBandSettings.this).create();
                     alertDialog.setTitle("Edit/Delete Selected Device");
                     alertDialog.setMessage("Edit/Delete Device (" + preference.getTitle() + ")?");
@@ -183,8 +206,44 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
         };
     }
 
+    void setSharedPreference(MicrosoftBandPlatform microsoftBandPlatform) {
+        MySharedPreference mySharedPreference = MySharedPreference.getInstance(getBaseContext());
+        mySharedPreference.setSharedPreferencesString("platformId", microsoftBandPlatform.getPlatformId());
+        mySharedPreference.setSharedPreferencesString("platformName", microsoftBandPlatform.getPlatformName());
+        mySharedPreference.setSharedPreferencesString("location", microsoftBandPlatform.getLocation());
+        mySharedPreference.setSharedPreferencesBoolean("enabled", microsoftBandPlatform.enabled);
+
+        for (int i = 0; i < microsoftBandPlatform.getMicrosoftBandDataSource().size(); i++) {
+            String dataSourceType = microsoftBandPlatform.getMicrosoftBandDataSource().get(i).getDataSourceType();
+            boolean enabled = microsoftBandPlatform.getMicrosoftBandDataSource().get(i).isEnabled();
+            mySharedPreference.setSharedPreferencesBoolean(dataSourceType, enabled);
+            if (dataSourceType.equals(DataSourceType.ACCELEROMETER) || dataSourceType.equals(DataSourceType.GYROSCOPE)) {
+                double frequency = microsoftBandPlatform.getMicrosoftBandDataSource().get(i).getFrequency();
+                mySharedPreference.setSharedPreferencesString(dataSourceType + "_frequency", String.valueOf(frequency) + " Hz");
+            }
+        }
+    }
+
+    void getSharedPreference() {
+        MySharedPreference mySharedPreference = MySharedPreference.getInstance(getBaseContext());
+        String platformId = mySharedPreference.getSharedPreferenceString("platformId");
+        MicrosoftBandPlatform microsoftBandPlatform = microsoftBandPlatforms.getMicrosoftBandPlatform(platformId);
+        microsoftBandPlatform.setLocation(mySharedPreference.getSharedPreferenceString("location"));
+        microsoftBandPlatform.enabled = true;
+
+        for (int i = 0; i < microsoftBandPlatform.getMicrosoftBandDataSource().size(); i++) {
+            String dataSourceType = microsoftBandPlatform.getMicrosoftBandDataSource().get(i).getDataSourceType();
+            microsoftBandPlatform.getMicrosoftBandDataSource().get(i).setEnabled(mySharedPreference.getSharedPreferenceBoolean(dataSourceType));
+            if (dataSourceType.equals(DataSourceType.ACCELEROMETER) || dataSourceType.equals(DataSourceType.GYROSCOPE)) {
+                String frequencyStr = mySharedPreference.getSharedPreferenceString(dataSourceType + "_frequency");
+                double frequency = Double.valueOf(frequencyStr.substring(0, frequencyStr.length() - 3));
+                microsoftBandPlatform.getMicrosoftBandDataSource().get(i).setFrequency(frequency);
+            }
+        }
+    }
+
     void enablePage() {
-        microsoftBandPlatforms = MicrosoftBandPlatforms.getInstance(ActivityMicrosoftBandSettings.this);
+        Log.d(TAG,"enable page");
         setupPreferenceScreenBluetooth(true);
         setupPreferenceScreenMicrosoftBand();
         setSaveButton(true);
@@ -192,7 +251,8 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
     }
 
     void disablePage() {
-        microsoftBandPlatforms = null;
+        if (microsoftBandPlatforms != null) microsoftBandPlatforms.unregister();
+        microsoftBandPlatforms=null;
         setupPreferenceScreenBluetooth(false);
         clearPreferenceScreenMicrosoftBand();
         setSaveButton(false);
@@ -200,23 +260,28 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
     }
 
 
-
     @SuppressWarnings("deprecation")
-    public void setupPreferenceScreenBluetooth(boolean bluetoothEnabled) {
+    public void setupPreferenceScreenBluetooth(final boolean bluetoothEnabled) {
         Preference preference = findPreference("bluetooth_onoff");
         if (bluetoothEnabled) preference.setSummary("ON");
-        else preference.setSummary("OFF");
+        else preference.setSummary("OFF (click to turn on)");
+        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                if (!bluetoothEnabled) {
+                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(enableBtIntent, 1);
+                }
+                return true;
+            }
+        });
         preference = findPreference("bluetooth_pair");
         preference.setEnabled(bluetoothEnabled);
         preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                final Intent intent = new Intent(Intent.ACTION_MAIN, null);
-                intent.addCategory(Intent.CATEGORY_LAUNCHER);
-                ComponentName cn = new ComponentName("com.android.settings",
-                        "com.android.settings.bluetooth.BluetoothSettings");
-                intent.setComponent(cn);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                Intent intent = new Intent(Intent.ACTION_MAIN, null);
+                intent.setAction(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
                 startActivity(intent);
                 return true;
             }
@@ -227,6 +292,7 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == ADD_DEVICE) {
             if (resultCode == RESULT_OK) {
+                getSharedPreference();
                 setupPreferenceScreenMicrosoftBand();
             }
         }
@@ -234,11 +300,75 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
 
 
     private void updateBandBackGround() {
-        for (int i = 0; i < microsoftBandPlatforms.getMicrosoftBandPlatform().size(); i++) {
-            if (!microsoftBandPlatforms.getMicrosoftBandPlatform().get(i).enabled) continue;
-            String location = microsoftBandPlatforms.getMicrosoftBandPlatform().get(i).getLocation();
-            if (location == null) continue;
-            microsoftBandPlatforms.getMicrosoftBandPlatform().get(i).changeBackGround(location);
+        AlertDialog.Builder builder = new AlertDialog.Builder(ActivityMicrosoftBandSettings.this);
+        int count = 0;
+        for (int i = 0; i < microsoftBandPlatforms.getMicrosoftBandPlatform().size(); i++)
+            if (microsoftBandPlatforms.getMicrosoftBandPlatform().get(i).enabled) count++;
+        if (count == 0)
+            finish();
+        else
+            builder.setMessage("Change the background of MicrosoftBand?").setPositiveButton("Yes", dialogChangeBackgroundListener)
+                    .setNegativeButton("No", dialogChangeBackgroundListener).show();
+    }
+
+    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            switch (which) {
+                case DialogInterface.BUTTON_POSITIVE:
+                    Intent intent = new Intent(ActivityMicrosoftBandSettings.this, ServiceMicrosoftBands.class);
+                    stopService(intent);
+                    saveConfigurationFile();
+                    intent = new Intent(ActivityMicrosoftBandSettings.this, ServiceMicrosoftBands.class);
+                    startService(intent);
+                    break;
+
+                case DialogInterface.BUTTON_NEGATIVE:
+                    Toast.makeText(getBaseContext(), "Configuration file is not saved.", Toast.LENGTH_LONG).show();
+                    finish();
+                    break;
+            }
+        }
+    };
+    DialogInterface.OnClickListener dialogChangeBackgroundListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            switch (which) {
+                case DialogInterface.BUTTON_POSITIVE:
+                    for (int i = 0; i < microsoftBandPlatforms.getMicrosoftBandPlatform().size(); i++) {
+                        if (!microsoftBandPlatforms.getMicrosoftBandPlatform().get(i).enabled)
+                            continue;
+                        final String location = microsoftBandPlatforms.getMicrosoftBandPlatform().get(i).getLocation();
+                        if (location == null) continue;
+                        progressDialog = new ProgressDialog(ActivityMicrosoftBandSettings.this);
+                        progressDialog.setMessage("Updating Background theme ... (" + location.toLowerCase().replace("_", " ") + ")");
+                        progressDialog.show();
+                        final int finalI = i;
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                microsoftBandPlatforms.getMicrosoftBandPlatform().get(finalI).changeBackGround(location);
+                            }
+                        });
+                    }
+                    break;
+                case DialogInterface.BUTTON_NEGATIVE:
+                    finish();
+                    break;
+            }
+        }
+    };
+
+    void saveConfigurationFile() {
+        try {
+            microsoftBandPlatforms.writeDataSourceToFile();
+            updateBandBackGround();
+
+            Toast.makeText(getBaseContext(), "Configuration file is saved.", Toast.LENGTH_LONG).show();
+        } catch (IOException e) {
+            Toast.makeText(getBaseContext(), "!!!Error:" + e.getMessage(), Toast.LENGTH_LONG).show();
+            e.printStackTrace();
+            finish();
         }
     }
 
@@ -247,26 +377,27 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
         button.setEnabled(bluetoothEnabled);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                try {
-                    microsoftBandPlatforms.writeDataSourceToFile();
-                    updateBandBackGround();
+                if (Apps.isServiceRunning(ActivityMicrosoftBandSettings.this, Constants.SERVICE_NAME)) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(ActivityMicrosoftBandSettings.this);
+                    builder.setMessage("Save configuration file and restart the MicrosoftBand Service?").setPositiveButton("Yes", dialogClickListener)
+                            .setNegativeButton("No", dialogClickListener).show();
+                } else {
+                    saveConfigurationFile();
+                }
+            }
+        });
+    }
 
-                    Toast.makeText(ActivityMicrosoftBandSettings.this, "Configuration file is saved.", Toast.LENGTH_LONG).show();
-                } catch (IOException e) {
-                    Toast.makeText(ActivityMicrosoftBandSettings.this, "!!!Error:" + e.getMessage(), Toast.LENGTH_LONG).show();
-                    e.printStackTrace();
+    private void setCancelButton() {
+        final Button button = (Button) findViewById(R.id.button_settings_cancel);
+        button.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (microsoftBandPlatforms != null) {
+                    microsoftBandPlatforms.unregister();
+                    microsoftBandPlatforms = null;
                 }
                 finish();
             }
         });
     }
-    private void setCancelButton() {
-        final Button button = (Button) findViewById(R.id.button_settings_cancel);
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                finish();
-            }
-        });
-    }
-
 }
