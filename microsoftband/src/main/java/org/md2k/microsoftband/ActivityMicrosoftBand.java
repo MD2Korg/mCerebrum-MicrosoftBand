@@ -1,19 +1,19 @@
 package org.md2k.microsoftband;
 
 import android.app.Activity;
-import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.CompoundButton;
-import android.widget.Switch;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -27,21 +27,22 @@ import org.md2k.utilities.Apps;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
 /**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * <p/>
  * * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- *
+ * <p/>
  * * Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- *
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -55,64 +56,79 @@ import java.util.HashMap;
  */
 public class ActivityMicrosoftBand extends Activity {
     private static final String TAG = ActivityMicrosoftBand.class.getSimpleName();
+    HashMap<String, TextView> hashMapData = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_microsoftband);
-        Switch service=(Switch) findViewById(R.id.switchService);
-        service.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        final Button buttonService = (Button) findViewById(R.id.buttonServiceStartStop);
+        buttonService.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Log.d(TAG, "isChecked=" + isChecked);
+            public void onClick(View v) {
                 Intent intent = new Intent(ActivityMicrosoftBand.this, ServiceMicrosoftBands.class);
-                if (isChecked) {
-                    starttimestamp = 0;
-                    if(!Apps.isServiceRunning(ActivityMicrosoftBand.this,Constants.SERVICE_NAME))
-                        startService(intent);
+                if (buttonService.getText().equals("Start Service")) {
+                    startService(intent);
                 } else {
-                    if(Apps.isServiceRunning(ActivityMicrosoftBand.this,Constants.SERVICE_NAME))
                     stopService(intent);
                 }
             }
         });
+        getActionBar().setDisplayHomeAsUpEnabled(true);
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_settings, menu);
         return true;
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            Intent intent = new Intent(this, ActivityMicrosoftBandSettings.class);
-            startActivity(intent);
-            return true;
+        Intent intent;
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                finish();
+                break;
+            case R.id.action_settings:
+                intent = new Intent(this, ActivityMicrosoftBandSettings.class);
+                startActivity(intent);
+                break;
+            case R.id.action_about:
+                intent = new Intent(this, ActivityAbout.class);
+                startActivity(intent);
+                break;
+            case R.id.action_copyright:
+                intent = new Intent(this, ActivityCopyright.class);
+                startActivity(intent);
+                break;
         }
-
         return super.onOptionsItemSelected(item);
     }
-    void updateServiceSwitch(){
-        Switch service = (Switch) findViewById(R.id.switchService);
-        if (Apps.isServiceRunning(ActivityMicrosoftBand.this, Constants.SERVICE_NAME)) {
-            service.setChecked(true);
-        }
-        else service.setChecked(false);
-    }
 
-    TableRow createDefaultRow(){
+    TableRow createDefaultRow() {
         TableRow row = new TableRow(this);
-        TextView tvSensor = new TextView(this);tvSensor.setText("sensor");tvSensor.setTypeface(null, Typeface.BOLD);tvSensor.setTextColor(getResources().getColor(R.color.holo_blue_dark));
-        TextView tvCount = new TextView(this);tvCount.setText("count");tvCount.setTypeface(null, Typeface.BOLD);tvCount.setTextColor(getResources().getColor(R.color.holo_blue_dark));
-        TextView tvFreq = new TextView(this);tvFreq.setText("freq.");tvFreq.setTypeface(null, Typeface.BOLD);tvFreq.setTextColor(getResources().getColor(R.color.holo_blue_dark));
-        TextView tvSample = new TextView(this);tvSample.setText("samples");tvSample.setTypeface(null, Typeface.BOLD);tvSample.setTextColor(getResources().getColor(R.color.holo_blue_dark));
+        TextView tvSensor = new TextView(this);
+        tvSensor.setText("sensor");
+        tvSensor.setTypeface(null, Typeface.BOLD);
+        tvSensor.setTextColor(getResources().getColor(R.color.teal_a700));
+        TextView tvCount = new TextView(this);
+        tvCount.setText("count");
+        tvCount.setTypeface(null, Typeface.BOLD);
+        tvCount.setTextColor(getResources().getColor(R.color.teal_a700));
+        TextView tvFreq = new TextView(this);
+        tvFreq.setText("freq.");
+        tvFreq.setTypeface(null, Typeface.BOLD);
+        tvFreq.setTextColor(getResources().getColor(R.color.teal_a700));
+        TextView tvSample = new TextView(this);
+        tvSample.setText("samples");
+        tvSample.setTypeface(null, Typeface.BOLD);
+        tvSample.setTextColor(getResources().getColor(R.color.teal_a700));
         row.addView(tvSensor);
         row.addView(tvCount);
         row.addView(tvFreq);
@@ -126,24 +142,25 @@ public class ActivityMicrosoftBand extends Activity {
         ll.addView(createDefaultRow());
         for (int i = 0; i < microsoftBandPlatforms.size(); i++) {
             if (!microsoftBandPlatforms.get(i).enabled) continue;
-            for(int j=0;j<microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().size();j++){
-                if(!microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().get(j).isEnabled()) continue;
-                String id = microsoftBandPlatforms.get(i).platformId+":"+microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().get(j).getDataSourceType();
-                String sensorname=microsoftBandPlatforms.get(i).platformName.substring(0,4)+":"+microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().get(j).getDataSourceType().toLowerCase();
+            for (int j = 0; j < microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().size(); j++) {
+                if (!microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().get(j).isEnabled())
+                    continue;
+                String id = microsoftBandPlatforms.get(i).platformId + ":" + microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().get(j).getDataSourceType();
                 TableRow row = new TableRow(this);
                 TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
                 row.setLayoutParams(lp);
                 TextView tvSensor = new TextView(this);
-                tvSensor.setText(sensorname);
+                String sname=microsoftBandPlatforms.get(i).getLocation()+"\n"+microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().get(j).getDataSourceType().toLowerCase();
+                tvSensor.setText(sname);
                 TextView tvCount = new TextView(this);
                 tvCount.setText("0");
-                hm.put(id + "_count", tvCount);
+                hashMapData.put(id + "_count", tvCount);
                 TextView tvFreq = new TextView(this);
                 tvFreq.setText("0");
-                hm.put(id + "_freq", tvFreq);
+                hashMapData.put(id + "_freq", tvFreq);
                 TextView tvSample = new TextView(this);
                 tvSample.setText("0");
-                hm.put(id + "_sample", tvSample);
+                hashMapData.put(id + "_sample", tvSample);
                 row.addView(tvSensor);
                 row.addView(tvCount);
                 row.addView(tvFreq);
@@ -152,59 +169,20 @@ public class ActivityMicrosoftBand extends Activity {
                 ll.addView(row);
             }
         }
-
     }
 
-    void showActiveSensors(ArrayList<MicrosoftBandPlatform> microsoftBandPlatforms) {
-        TextView textView = (TextView) findViewById(R.id.configuration_info);
-        String str = "";
-        int count = 0;
-        for (int i = 0; i < microsoftBandPlatforms.size(); i++) {
-            if (!microsoftBandPlatforms.get(i).enabled) continue;
-            for(int j=0;j<microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().size();j++){
-                if(!microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().get(j).isEnabled()) continue;
-                if (count % 3 == 0 && count != 0) str = str + "\n";
-                else if (count != 0) str = str + "   ";
-                String platformName=microsoftBandPlatforms.get(i).platformName;
-                String dataSourceType=microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().get(j).getDataSourceType();
-                double freq=microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().get(j).getFrequency();
-                str=str+platformName.substring(0,2)+":"+dataSourceType.toLowerCase();
-                if(freq!=0) str+="(freq="+String.format("%.1f",freq)+")";
-                count++;
-            }
-        }
-        textView.setText(str);
-    }
-
-    void serviceStatus() {
-        TextView textView = (TextView) findViewById(R.id.service_info);
-//        if (ServiceMicrosoftBands.isMSBandConnected) textView.setText("Running");
-//        else textView.setText("Not Running");
-    }
-
-
-    long starttimestamp = 0;
-    HashMap<String, TextView> hm = new HashMap<>();
-    void updateServiceStatus(){
-        TextView textView = (TextView) findViewById(R.id.service_info);
-        if (starttimestamp == 0) starttimestamp = DateTime.getDateTime();
-        long minutes=(DateTime.getDateTime()-starttimestamp)/(1000*60);
-        long seconds=((DateTime.getDateTime()-starttimestamp)/(1000)%60);
-        textView.setText("Running (" + minutes+" Minutes "+seconds+" Seconds)" );
-    }
-
-    void updateTable(Intent intent){
+    void updateTable(Intent intent) {
         String sampleStr = "";
-        String dataSourceType=intent.getStringExtra("datasourcetype");
-        String platformId=intent.getStringExtra("platformid");
+        String dataSourceType = intent.getStringExtra("datasourcetype");
+        String platformId = intent.getStringExtra("platformid");
 
-        String id=platformId+":"+dataSourceType;
+        String id = platformId + ":" + dataSourceType;
         int count = intent.getIntExtra("count", 0);
-        hm.get(id+"_count").setText(String.valueOf(count));
+        hashMapData.get(id + "_count").setText(String.valueOf(count));
 
         double time = (intent.getLongExtra("timestamp", 0) - intent.getLongExtra("starttimestamp", 0)) / 1000.0;
         double freq = (double) count / time;
-        hm.get(id+"_freq").setText(String.format("%.1f",freq));
+        hashMapData.get(id + "_freq").setText(String.format("%.1f", freq));
 
 
         DataType data = (DataType) intent.getSerializableExtra("data");
@@ -214,52 +192,74 @@ public class ActivityMicrosoftBand extends Activity {
             float[] sample = ((DataTypeFloatArray) data).getSample();
             for (int i = 0; i < sample.length; i++) {
                 if (i != 0) sampleStr += ",";
-                if(i%3==0 && i!=0) sampleStr+="\n";
+                if (i % 3 == 0 && i != 0) sampleStr += "\n";
                 sampleStr = sampleStr + String.format("%.1f", sample[i]);
             }
         } else if (data instanceof DataTypeDoubleArray) {
             double[] sample = ((DataTypeDoubleArray) data).getSample();
             for (int i = 0; i < sample.length; i++) {
                 if (i != 0) sampleStr += ",";
-                if(i%3==0 && i!=0) sampleStr+="\n";
+                if (i % 3 == 0 && i != 0) sampleStr += "\n";
                 sampleStr = sampleStr + String.format("%.1f", sample[i]);
             }
         }
-        hm.get(id+"_sample").setText(sampleStr);
+        hashMapData.get(id + "_sample").setText(sampleStr);
     }
 
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            updateServiceStatus();
             updateTable(intent);
-
         }
     };
 
     @Override
-    public void onResume(){
-        ArrayList<MicrosoftBandPlatform> microsoftBandPlatforms=new MicrosoftBandPlatforms(ActivityMicrosoftBand.this).getMicrosoftBandPlatform();
-        updateServiceSwitch();
+    public void onResume() {
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter("microsoftBand"));
-        serviceStatus();
-        showActiveSensors(microsoftBandPlatforms);
+        ArrayList<MicrosoftBandPlatform> microsoftBandPlatforms = new MicrosoftBandPlatforms(ActivityMicrosoftBand.this).getMicrosoftBandPlatform();
         prepareTable(microsoftBandPlatforms);
-
+        mHandler.post(runnable);
         super.onResume();
     }
+
     @Override
-    public void onPause(){
+    public void onPause() {
+        mHandler.removeCallbacks(runnable);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         super.onPause();
     }
 
     @Override
     public void onDestroy() {
-        Log.d(TAG,"onDestroy()...");
+        Log.d(TAG, "onDestroy()...");
         super.onDestroy();
         Log.d(TAG, "...onDestroy()");
-
     }
+    Handler mHandler = new Handler();
+    Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            {
+                long time = Apps.serviceRunningTime(ActivityMicrosoftBand.this, Constants.SERVICE_NAME);
+                if (time < 0) {
+                    ((TextView) findViewById(R.id.textViewTime)).setText("OFF");
+                    ((Button) findViewById(R.id.buttonServiceStartStop)).setText("Start Service");
+                    findViewById(R.id.buttonServiceStartStop).setBackground(getResources().getDrawable(R.drawable.button_green));
+
+                } else {
+                    long runtime = time / 1000;
+                    int second = (int) (runtime % 60);
+                    runtime /= 60;
+                    int minute = (int) (runtime % 60);
+                    runtime /= 60;
+                    int hour = (int) runtime;
+                    ((TextView) findViewById(R.id.textViewTime)).setText(String.format("%02d:%02d:%02d", hour, minute, second));
+                    ((Button) findViewById(R.id.buttonServiceStartStop)).setText("Stop Service");
+                    findViewById(R.id.buttonServiceStartStop).setBackground(getResources().getDrawable(R.drawable.button_red));
+                }
+                mHandler.postDelayed(this, 1000);
+            }
+        }
+    };
 }
