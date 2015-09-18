@@ -13,6 +13,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -78,7 +79,19 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
         });
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter("background"));
+        getActionBar().setDisplayHomeAsUpEnabled(true);
     }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {

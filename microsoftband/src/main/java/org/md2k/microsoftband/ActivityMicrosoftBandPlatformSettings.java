@@ -11,6 +11,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.SwitchPreference;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -36,6 +37,18 @@ public class ActivityMicrosoftBandPlatformSettings extends PreferenceActivity {
         updatePreferenceScreen();
         setAddButton();
         setCancelButton();
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 
