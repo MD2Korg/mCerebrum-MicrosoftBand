@@ -1,11 +1,16 @@
 package org.md2k.microsoftband;
 
+import android.app.AlertDialog;
 import android.app.Service;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.IBinder;
+import android.view.WindowManager;
+import android.widget.Toast;
 
 import org.md2k.datakitapi.messagehandler.OnConnectionListener;
-import org.md2k.utilities.UI.UIShow;
+import org.md2k.utilities.datakit.DataKitHandler;
 
 /**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
@@ -38,17 +43,12 @@ public class ServiceMicrosoftBands extends Service {
     private static final String TAG = ServiceMicrosoftBands.class.getSimpleName();
     MyBlueTooth myBlueTooth=null;
     MicrosoftBandPlatforms microsoftBandPlatforms;
-    public boolean isMSBandConnected =false;
-    boolean isDataKitConnected =false;
+    DataKitHandler dataKitHandler=null;
 
     @Override
     public void onCreate() {
-        isDataKitConnected=false;
         super.onCreate();
-        if(!readSettings())
-            UIShow.ErrorDialog(ServiceMicrosoftBands.this, "Configuration File", "Configuration file for MicrosoftBand doesn't exist. Please click Settings");
-        else if(!connectDataKit())
-            UIShow.ErrorDialog(ServiceMicrosoftBands.this, "DataKit", "DataKit is not available. Please Install DataKit");
+        setBluetoothSettingsDataKit();
     }
     private boolean readSettings(){
         microsoftBandPlatforms = new MicrosoftBandPlatforms(ServiceMicrosoftBands.this);
@@ -60,48 +60,34 @@ public class ServiceMicrosoftBands extends Service {
         myBlueTooth = new MyBlueTooth(ServiceMicrosoftBands.this, new BlueToothCallBack() {
             @Override
             public void onConnected() {
-                isMSBandConnected=true;
-                microsoftBandPlatforms.register();
+                setSettingsDataKit();
             }
-
             @Override
             public void onDisconnected() {
-                isMSBandConnected=false;
-                microsoftBandPlatforms.unregister();
+                clearDataKitSettingsBluetooth();
             }
         });
-        if (myBlueTooth.isEnabled()) {
-            isMSBandConnected=true;
-            microsoftBandPlatforms.register();
-        } else {
-            myBlueTooth.enable();
-        }
     }
 
     boolean connectDataKit() {
-        isDataKitConnected =false;
-        DataKitHandler dataKitHandler = DataKitHandler.getInstance(ServiceMicrosoftBands.this);
-        return dataKitHandler.connectDataKit(new OnConnectionListener() {
+        dataKitHandler = DataKitHandler.getInstance(ServiceMicrosoftBands.this);
+        return dataKitHandler.connect(new OnConnectionListener() {
             @Override
             public void onConnected() {
-                isDataKitConnected =true;
-                initializeBluetoothConnection();
+                microsoftBandPlatforms.register();
             }
         });
     }
-
+    void disconnectDataKit(){
+        if(microsoftBandPlatforms!=null)
+            microsoftBandPlatforms.unregister();
+        if(dataKitHandler!=null)
+            dataKitHandler.disconnect();
+        dataKitHandler=null;
+    }
     @Override
     public void onDestroy() {
-
-        if (isMSBandConnected) {
-            microsoftBandPlatforms.unregister();
-        }
-        if(isDataKitConnected)
-            DataKitHandler.getInstance(ServiceMicrosoftBands.this).disconnect();
-        if(myBlueTooth!=null) {
-            myBlueTooth.close();
-            myBlueTooth=null;
-        }
+        clearDataKitSettingsBluetooth();
         super.onDestroy();
     }
 
@@ -109,4 +95,111 @@ public class ServiceMicrosoftBands extends Service {
     public IBinder onBind(Intent intent) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
+    private void setBluetoothSettingsDataKit() {
+        initializeBluetoothConnection();
+        if (myBlueTooth.isEnabled())
+            setSettingsDataKit();
+        else {
+            myBlueTooth.enable();
+//            showAlertDialogBluetooth();
+            close();
+        }
+    }
+    private void setSettingsDataKit() {
+        if(readSettings())
+            setDataKit();
+        else {
+            showAlertDialogSettings();
+            close();
+        }
+    }
+    void setDataKit(){
+        if(connectDataKit())
+            Toast.makeText(getApplicationContext(), "MicrosoftBand Service started Successfully", Toast.LENGTH_LONG).show();
+        else {
+            showAlertDialogDataKit();
+            close();
+        }
+    }
+    private void clearDataKitSettingsBluetooth(){
+        disconnectDataKit();
+        clearSettingsBluetooth();
+    }
+    private void clearSettingsBluetooth(){
+        microsoftBandPlatforms=null;
+        clearBlueTooth();
+    }
+    private void clearBlueTooth(){
+        myBlueTooth.close();
+//        if(myBlueTooth.isEnabled()) myBlueTooth.disable();
+//        close();
+    }
+
+    void close() {
+        stopSelf();
+    }
+
+    void showAlertDialogSettings(){
+        AlertDialog alertDialog = new AlertDialog.Builder(this)
+                .setTitle("Error: Settings")
+                .setIcon(R.drawable.ic_error_outline_white_24dp)
+                .setMessage("Microsoft Band is not configured.\n\n Please go to Menu -> Settings (or, click Settings below)")
+                .setPositiveButton("Settings", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(ServiceMicrosoftBands.this, ActivityMicrosoftBandSettings.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        ServiceMicrosoftBands.this.startActivity(intent);
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+//                        close();
+                    }
+                })
+                .create();
+
+        alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+        alertDialog.show();
+    }
+    void showAlertDialogBluetooth(){
+        AlertDialog alertDialog = new AlertDialog.Builder(this)
+                .setTitle("Error: Bluetooth")
+                .setIcon(R.drawable.ic_error_outline_white_24dp)
+                .setMessage("Please turn on Bluetooth")
+                .setPositiveButton("Turn On Bluetooth", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        myBlueTooth.enable();
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+//                        close();
+                    }
+                })
+                .create();
+        alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+        alertDialog.show();
+    }
+
+    void showAlertDialogDataKit(){
+        AlertDialog alertDialog = new AlertDialog.Builder(this)
+                .setTitle("Error: DataKit")
+                .setIcon(R.drawable.ic_error_outline_white_24dp)
+                .setMessage("DataKit is not installed.\n\n Please install DataKit")
+                .setNegativeButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+//                        close();
+                    }
+                })
+                .create();
+
+        alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+        alertDialog.show();
+    }
+
 }

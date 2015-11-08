@@ -37,4 +37,5 @@ public class Constants {
     public static final String LEFT_WRIST="LEFT_WRIST";
     public static final String RIGHT_WRIST="RIGHT_WRIST";
     public static final String SERVICE_NAME="org.md2k.microsoftband.ServiceMicrosoftBands";
+    public static String FILENAME_TILEINFO="tile_info.json";
 }

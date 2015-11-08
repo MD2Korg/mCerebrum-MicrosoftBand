@@ -134,7 +134,7 @@ public class MicrosoftBandPlatform extends Device {
                                 }
                                 hm.put(dataSourceType, hm.get(dataSourceType) + 1);
                                 intent.putExtra("count", hm.get(dataSourceType));
-                                intent.putExtra("timestamp", data.getStartDateTime());
+                                intent.putExtra("timestamp", data.getDateTime());
                                 intent.putExtra("starttimestamp", starttimestamp);
                                 intent.putExtra("data", data);
                                 intent.putExtra("datasourcetype", dataSourceType);

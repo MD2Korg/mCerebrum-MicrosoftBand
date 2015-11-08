@@ -44,6 +44,7 @@ import org.md2k.datakitapi.source.datasource.DataSourceType;
 import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.datakitapi.time.DateTime;
 import org.md2k.utilities.Report.Log;
+import org.md2k.utilities.datakit.DataKitHandler;
 
 import java.io.Serializable;
 
@@ -179,7 +180,7 @@ public class MicrosoftBandDataSource{
     }
 
     private void sendMessage(DataType data) {
-        Log.d(TAG,dataSourceClient.getDataSource().getPlatform().getId()+" "+dataSourceClient.getDataSource().getType());
+//        Log.d(TAG,dataSourceClient.getDataSource().getPlatform().getId()+" "+dataSourceClient.getDataSource().getType());
         dataKitHandler.insert(dataSourceClient, data);
         callBack.onReceivedData(data);
     }
@@ -314,17 +315,13 @@ public class MicrosoftBandDataSource{
         dataKitHandler = DataKitHandler.getInstance(context);
         DataSourceBuilder dataSourceBuilder = getDataSourceBuilder();
         dataSourceBuilder = dataSourceBuilder.setPlatform(platform);
-        DataSource dataSource = dataSourceBuilder.build();
-
-        dataSourceClient = dataKitHandler.register(dataSource);
-        Log.e(TAG,dataSource.getPlatform().getId()+" "+dataSource.getType());
+        dataSourceClient = dataKitHandler.register(dataSourceBuilder);
         Log.e(TAG,dataSourceClient.getDataSource().getPlatform().getId()+" "+dataSourceClient.getDataSource().getType()+" "+dataSourceClient.getDs_id());
 
         callBack = newcallBack;
         final Thread background = new Thread(new Runnable() {
             @Override
             public void run() {
-                Log.d(TAG, "Connect: band=" + bandClient.toString() + " datasourcetype=" + dataSourceType);
                 try {
                     registerSensor(bandClient);
                 } catch (BandException e) {
@@ -338,12 +335,10 @@ public class MicrosoftBandDataSource{
     }
 
     private void registerSensor(BandClient bandClient) throws BandException {
-        Log.d(TAG, "BandClient=" + bandClient);
         if (bandClient == null) return;
         int freq = 0;
         if (frequency != 0) {
             freq = (int) (1000.0 / frequency + 0.01);
-            Log.d(TAG, "frequency=" + freq + " millis=" + freq);
         }
         if (DataSourceType.ACCELEROMETER.equals(dataSourceType)) {
             switch (freq) {

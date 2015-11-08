@@ -13,17 +13,17 @@ import org.md2k.utilities.Report.Log;
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * <p/>
  * * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- *
+ * <p/>
  * * Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- *
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -40,9 +40,9 @@ public class MyBlueTooth {
     BlueToothCallBack blueToothCallBack;
     Context context;
 
-    MyBlueTooth(Context context,BlueToothCallBack blueToothCallBack){
-        this.context=context;
-        this.blueToothCallBack=blueToothCallBack;
+    MyBlueTooth(Context context, BlueToothCallBack blueToothCallBack) {
+        this.context = context;
+        this.blueToothCallBack = blueToothCallBack;
         context.registerReceiver(mReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
     }
 
@@ -50,9 +50,12 @@ public class MyBlueTooth {
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) return;
         if (!mBluetoothAdapter.isEnabled()) {
-            mBluetoothAdapter.enable();
+            Intent btIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            btIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(btIntent);
         }
     }
+
     public void disable() {
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) return;
@@ -61,7 +64,7 @@ public class MyBlueTooth {
         }
     }
 
-    public void close(){
+    public void close() {
         context.unregisterReceiver(mReceiver);
     }
 

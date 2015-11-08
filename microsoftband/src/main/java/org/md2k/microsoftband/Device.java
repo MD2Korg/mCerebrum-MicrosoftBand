@@ -1,5 +1,6 @@
 package org.md2k.microsoftband;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -9,13 +10,24 @@ import android.support.v4.content.LocalBroadcastManager;
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandClientManager;
 import com.microsoft.band.BandException;
+import com.microsoft.band.BandIOException;
 import com.microsoft.band.BandInfo;
 import com.microsoft.band.BandTheme;
 import com.microsoft.band.ConnectionState;
+import com.microsoft.band.tiles.BandTile;
+import com.microsoft.band.tiles.pages.FlowPanelOrientation;
+import com.microsoft.band.tiles.pages.HorizontalAlignment;
+import com.microsoft.band.tiles.pages.PageRect;
+import com.microsoft.band.tiles.pages.ScrollFlowPanel;
+import com.microsoft.band.tiles.pages.VerticalAlignment;
 
 
 import org.md2k.datakitapi.source.platform.PlatformType;
 import org.md2k.utilities.Report.Log;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
@@ -151,21 +163,90 @@ public abstract class Device {
         Log.d(TAG, platformId + "...disconnect");
     }
 
-    public synchronized void changeBackGround(final String wrist) {
-        Log.d(TAG, "change background wrist=" + wrist);
-        final Bitmap image = getBitmap(wrist);
-        final BandTheme bandTheme = getTheme(wrist);
+    void changeBackGround(String wrist) throws BandException, InterruptedException {
+        Log.d(TAG, "change background: band connected");
+        Bitmap image = getBitmap(wrist);
+        BandTheme bandTheme = getTheme(wrist);
         if (image == null || bandTheme == null) {
             Log.d(TAG, "image=" + image + " bandTheme=" + bandTheme);
             return;
         }
+        bandClient.getPersonalizationManager().setMeTileImage(image).await();
+        bandClient.getPersonalizationManager().setTheme(bandTheme).await();
+    }
+
+    private boolean doesTileExist(List<BandTile> tiles, UUID tileId) {
+        for (BandTile tile : tiles) {
+            if (tile.getTileId().equals(tileId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private ScrollFlowPanel createPanel() {
+        ScrollFlowPanel panel = new ScrollFlowPanel(new PageRect(0, 0, 225, 102));
+        panel.setFlowPanelOrientation(FlowPanelOrientation.VERTICAL);
+        panel.setHorizontalAlignment(HorizontalAlignment.LEFT);
+        panel.setVerticalAlignment(VerticalAlignment.TOP);
+        return panel;
+    }
+
+    void addTile(TileInfo tileInfo) throws BandException, InterruptedException {
+        UUID tileId = tileInfo.UUID;
+        if (doesTileExist(bandClient.getTileManager().getTiles().await(), tileId))
+            return;
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inScaled = false;
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        int idLarge = 0;
+        int idSmall = 0;
+        switch (tileInfo.name) {
+            case "EMA":
+                idLarge = R.raw.ic_ema_48;
+                idSmall = R.raw.ic_ema_24;
+
+                break;
+            case "INTERVENTION":
+                idLarge = R.raw.ic_intervention_48;
+                idSmall = R.raw.ic_intervention_24;
+                break;
+            default:
+                idLarge = R.raw.ic_data_quality_48;
+                idSmall = R.raw.ic_data_quality_24;
+                break;
+        }
+        Bitmap tileIcon = BitmapFactory.decodeResource(context.getResources(), idLarge, options);
+        Bitmap tileIconSmall = BitmapFactory.decodeResource(context.getResources(), idSmall, options);
+        ScrollFlowPanel panel = createPanel();
+
+        BandTile tile = new BandTile.Builder(tileId, tileInfo.name, tileIcon)
+                .setTileSmallIcon(tileIconSmall)
+                .build();
+        bandClient.getTileManager().addTile((Activity) context, tile).await();
+
+    }
+
+    void addTiles(String wrist) throws BandException, InterruptedException {
+        ArrayList<TileInfo> tileInfos = TileInfo.readFile(context);
+        for (int i = 0; i < tileInfos.size(); i++) {
+            for (int j = 0; j < tileInfos.get(i).location.size(); j++) {
+                if (!tileInfos.get(i).location.get(j).equals(wrist))
+                    continue;
+                addTile(tileInfos.get(i));
+            }
+        }
+    }
+
+    public synchronized void configureMicrosoftBand(final String wrist) {
+        Log.d(TAG, "change background wrist=" + wrist);
         connect(new BandCallBack() {
             @Override
             public void onBandConnected() {
                 try {
-                    Log.d(TAG, "change background: band connected");
-                    bandClient.getPersonalizationManager().setMeTileImage(image).await();
-                    bandClient.getPersonalizationManager().setTheme(bandTheme).await();
+                    changeBackGround(wrist);
+                    addTiles(wrist);
+
                     disconnect();
 
                     Intent intent = new Intent("background");

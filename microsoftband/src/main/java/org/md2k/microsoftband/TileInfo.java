@@ -2,12 +2,16 @@ package org.md2k.microsoftband;
 
 import android.content.Context;
 
-import org.md2k.datakitapi.DataKitApi;
-import org.md2k.datakitapi.datatype.DataType;
-import org.md2k.datakitapi.messagehandler.OnConnectionListener;
-import org.md2k.datakitapi.source.datasource.DataSource;
-import org.md2k.datakitapi.source.datasource.DataSourceClient;
-import org.md2k.utilities.UI.UIShow;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
@@ -35,31 +39,24 @@ import org.md2k.utilities.UI.UIShow;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class DataKitHandler {
-    DataKitApi dataKitApi;
-    Context context;
-    private static DataKitHandler instance=null;
-    public static DataKitHandler getInstance(Context context){
-        if(instance==null){
-            instance=new DataKitHandler(context);
-        }
-        return instance;
-    }
-    private DataKitHandler(Context context){
-        this.context=context;
-        dataKitApi = new DataKitApi(context);
-    }
-    boolean connectDataKit(OnConnectionListener onConnectionListener) {
-        return dataKitApi.connect(onConnectionListener);
-    }
-    void insert(DataSourceClient dataSourceClient, DataType data){
-        dataKitApi.insert(dataSourceClient, data);
-    }
-    DataSourceClient register(DataSource dataSource){
-        return dataKitApi.register(dataSource).await();
-    }
-    public void disconnect(){
-        dataKitApi.disconnect();
-    }
+public class TileInfo {
+    private static final String TAG = TileInfo.class.getSimpleName();
+    public String name;
+    public java.util.UUID UUID;
+    public ArrayList<String> location;
 
+    public static ArrayList<TileInfo> readFile(Context context) {
+        BufferedReader br;
+        ArrayList<TileInfo> tileInfoList=new ArrayList<>();
+        try {
+            br = new BufferedReader(new InputStreamReader(context.getAssets().open(Constants.FILENAME_TILEINFO)));
+            Gson gson = new Gson();
+            Type collectionType = new TypeToken<List<TileInfo>>() {
+            }.getType();
+            tileInfoList = gson.fromJson(br, collectionType);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return tileInfoList;
+    }
 }

@@ -63,12 +63,23 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_microsoftband_settings);
         addPreferencesFromResource(R.xml.pref_microsoftband_general);
-        microsoftBandPlatforms=new MicrosoftBandPlatforms(ActivityMicrosoftBandSettings.this);
+        initializeBluetoothConnection();
+        if (!myBlueTooth.isEnabled()) {
+            myBlueTooth.enable();
+        } else
+            microsoftBandPlatforms = new MicrosoftBandPlatforms(ActivityMicrosoftBandSettings.this);
 
-        myBlueTooth = new MyBlueTooth(ActivityMicrosoftBandSettings.this, new BlueToothCallBack() {
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter("background"));
+        if(getActionBar()!=null)
+            getActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+    void initializeBluetoothConnection() {
+        myBlueTooth = new MyBlueTooth(this, new BlueToothCallBack() {
             @Override
             public void onConnected() {
-                microsoftBandPlatforms=new MicrosoftBandPlatforms(ActivityMicrosoftBandSettings.this);
+                microsoftBandPlatforms = new MicrosoftBandPlatforms(ActivityMicrosoftBandSettings.this);
                 enablePage();
             }
 
@@ -77,9 +88,6 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
                 disablePage();
             }
         });
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter("background"));
-        getActionBar().setDisplayHomeAsUpEnabled(true);
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -312,7 +320,7 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
     }
 
 
-    private void updateBandBackGround() {
+    private void updateMicrosoftBand() {
         AlertDialog.Builder builder = new AlertDialog.Builder(ActivityMicrosoftBandSettings.this);
         int count = 0;
         for (int i = 0; i < microsoftBandPlatforms.getMicrosoftBandPlatform().size(); i++)
@@ -320,7 +328,7 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
         if (count == 0)
             finish();
         else
-            builder.setMessage("Change the background of MicrosoftBand?").setPositiveButton("Yes", dialogChangeBackgroundListener)
+            builder.setMessage("Configure MicrosoftBand (Change Background & Add Tile)?").setPositiveButton("Yes", dialogChangeBackgroundListener)
                     .setNegativeButton("No", dialogChangeBackgroundListener).show();
     }
 
@@ -360,7 +368,7 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                microsoftBandPlatforms.getMicrosoftBandPlatform().get(finalI).changeBackGround(location);
+                                microsoftBandPlatforms.getMicrosoftBandPlatform().get(finalI).configureMicrosoftBand(location);
                             }
                         });
                     }
@@ -375,7 +383,7 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
     void saveConfigurationFile() {
         try {
             microsoftBandPlatforms.writeDataSourceToFile();
-            updateBandBackGround();
+            updateMicrosoftBand();
 
             Toast.makeText(getBaseContext(), "Configuration file is saved.", Toast.LENGTH_LONG).show();
         } catch (IOException e) {
