@@ -24,4 +24,5 @@ dependencies {
     compile project(':datakitapi')
     compile project(':utilities')
     compile 'com.android.support:support-v4:22.2.1'
+    compile files('libs/microsoft-band-1.3.10929.1.jar')
 }
