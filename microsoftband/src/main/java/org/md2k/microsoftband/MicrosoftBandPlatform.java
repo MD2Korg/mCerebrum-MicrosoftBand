@@ -47,18 +47,25 @@ public class MicrosoftBandPlatform extends Device {
     boolean isConnected=false;
     private ArrayList<MicrosoftBandDataSource> microsoftBandDataSources;
     public static final String[] DATASOURCETYPE = {
-            DataSourceType.ACCELEROMETER,
-            DataSourceType.GYROSCOPE,
-            DataSourceType.DISTANCE,
-            DataSourceType.SPEED,
-            DataSourceType.PACE,
-            DataSourceType.MOTION_TYPE,
-            DataSourceType.HEART_RATE,
-            DataSourceType.STEP_COUNT,
-            DataSourceType.SKIN_TEMPERATURE,
-            DataSourceType.ULTRA_VIOLET_RADIATION,
-            DataSourceType.BAND_CONTACT,
-            DataSourceType.CALORY_BURN
+                DataSourceType.BAND_CONTACT,
+                DataSourceType.ACCELEROMETER,
+                DataSourceType.GYROSCOPE,
+                DataSourceType.GSR,
+                DataSourceType.SKIN_TEMPERATURE,
+                DataSourceType.AMBIENT_TEMPERATURE,
+                DataSourceType.AIR_PRESSURE,
+                DataSourceType.AMBIENT_LIGHT,
+                DataSourceType.ULTRA_VIOLET_RADIATION,
+                DataSourceType.RR_INTERVAL,
+                DataSourceType.HEART_RATE,
+                DataSourceType.DISTANCE,
+                DataSourceType.SPEED,
+                DataSourceType.PACE,
+                DataSourceType.MOTION_TYPE,
+                DataSourceType.STEP_COUNT,
+                DataSourceType.CALORY_BURN,
+            DataSourceType.ALTIMETER,
+
     };
 
     public void show() {
@@ -107,7 +114,11 @@ public class MicrosoftBandPlatform extends Device {
     }
 
     public Platform getPlatform() {
-        return new PlatformBuilder().setId(platformId).setType(platformType).setMetadata("location", location).setMetadata("name", platformName).build();
+        return new PlatformBuilder().setId(platformId).setType(platformType).build();
+    }
+    public Platform getPlatformForWrite() {
+        return new PlatformBuilder().setId(platformId).setType(platformType).setMetadata("location", location).setMetadata("name", platformName).
+                setMetadata("version_hardware", versionHardware).setMetadata("version_firmware", versionFirmware).build();
     }
 
     HashMap<String, Integer> hm = new HashMap<>();
@@ -120,6 +131,10 @@ public class MicrosoftBandPlatform extends Device {
         connect(new BandCallBack() {
             @Override
             public void onBandConnected() {
+                MicrosoftBandInfo microsoftBandInfo=new MicrosoftBandInfo(context);
+                microsoftBandInfo.register(getPlatform());
+                microsoftBandInfo.updateData(versionHardware,versionFirmware,location);
+
                 for (int i = 0; i < microsoftBandDataSources.size(); i++) {
                     if (microsoftBandDataSources.get(i).isEnabled()) {
                         final int finalI = i;

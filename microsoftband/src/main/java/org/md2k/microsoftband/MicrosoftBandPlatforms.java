@@ -129,7 +129,7 @@ public class MicrosoftBandPlatforms{
         if (microsoftBandPlatforms.size() == 0) throw new EmptyStackException();
 
         for (int i = 0; i < microsoftBandPlatforms.size(); i++) {
-            Platform platform=microsoftBandPlatforms.get(i).getPlatform();
+            Platform platform=microsoftBandPlatforms.get(i).getPlatformForWrite();
             for(int j=0;j<microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().size();j++) {
                 DataSourceBuilder dataSourceBuilder=microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().get(j).getDataSourceBuilder();
                 if(dataSourceBuilder==null) continue;

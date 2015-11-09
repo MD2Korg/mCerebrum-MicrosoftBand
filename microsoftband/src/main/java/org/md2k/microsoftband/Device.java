@@ -61,6 +61,8 @@ public abstract class Device {
     protected String platformId;
     protected String platformName;
     protected String platformType;
+    protected String versionFirmware=null;
+    protected String versionHardware=null;
     protected boolean enabled;
     protected BandClient bandClient = null;
     Thread connectThread;
@@ -98,21 +100,21 @@ public abstract class Device {
     }
 
     private boolean connectDevice() {
+        Log.d(TAG,"bandClient="+bandClient);
         if (bandClient.getConnectionState() == ConnectionState.CONNECTED) return true;
         try {
             ConnectionState state = bandClient.connect().await();
+            if(ConnectionState.CONNECTED==state){
+                versionFirmware=bandClient.getFirmwareVersion().await();
+                versionHardware=bandClient.getHardwareVersion().await();
+                Log.d(TAG,"versionFirmware="+versionFirmware+" versionHardware="+versionHardware);
+            }
             return ConnectionState.CONNECTED == state;
         } catch (InterruptedException | BandException e) {
-            bandClient = null;
             Log.d(TAG, platformId + " exception1");
             Log.d(TAG, platformId + " ...connectDataKit");
             return false;
-        } /*catch (TimeoutException e) {
-            bandClient = null;
-            Log.d(TAG, platformId + " exception2");
-            Log.d(TAG, platformId + " ...connectDataKit");
-            return false;
-        }*/
+        }
     }
 
     Runnable connectRunnable = new Runnable() {
@@ -123,6 +125,7 @@ public abstract class Device {
                 boolean res = connectDevice();
                 if (res) {
                     Log.d(TAG, platformId + " connect run() status= CONNECTED");
+
                     bandCallBack.onBandConnected();
                     break;
                 } else {
@@ -141,8 +144,10 @@ public abstract class Device {
 
     public void connect(BandCallBack bandCallBack) {
         this.bandCallBack = bandCallBack;
-        connectThread = new Thread(connectRunnable);
-        connectThread.start();
+        if(bandClient!=null) {
+            connectThread = new Thread(connectRunnable);
+            connectThread.start();
+        }
     }
 
     public void stopConnectThread() {

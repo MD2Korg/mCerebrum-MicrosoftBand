@@ -48,19 +48,6 @@
             android:name=".ActivityMicrosoftBandPlatformSettings"
             android:label="Settings: Microsoft Band" >
         </activity>
-        <activity
-            android:name=".ActivityAbout"
-            android:label="About PhoneSensor"
-            android:icon="@drawable/about"
-            android:theme="@style/AppThemeDark">
-        </activity>
-        <activity
-            android:name=".ActivityCopyright"
-            android:label="Copyright"
-            android:icon="@drawable/copyright"
-            android:theme="@style/AppThemeDark">
-        </activity>
-
     </application>
 
 </manifest>

@@ -110,8 +110,10 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
 
     @Override
     protected void onResume() {
-        if (myBlueTooth.isEnabled())
+        if (myBlueTooth.isEnabled()) {
+            microsoftBandPlatforms.addOthers();
             enablePage();
+        }
         else disablePage();
         super.onResume();
     }
@@ -314,6 +316,7 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
         if (requestCode == ADD_DEVICE) {
             if (resultCode == RESULT_OK) {
                 getSharedPreference();
+                Log.d(TAG,"result add");
                 setupPreferenceScreenMicrosoftBand();
             }
         }

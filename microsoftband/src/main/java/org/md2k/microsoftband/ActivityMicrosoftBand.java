@@ -24,6 +24,8 @@ import org.md2k.datakitapi.datatype.DataTypeFloat;
 import org.md2k.datakitapi.datatype.DataTypeFloatArray;
 import org.md2k.datakitapi.time.DateTime;
 import org.md2k.utilities.Apps;
+import org.md2k.utilities.UI.ActivityAbout;
+import org.md2k.utilities.UI.ActivityCopyright;
 
 import java.util.ArrayList;
 import java.util.HashMap;

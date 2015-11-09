@@ -117,7 +117,7 @@ public class ActivityMicrosoftBandPlatformSettings extends PreferenceActivity {
 
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                boolean enabled=false;
+                boolean enabled;
                 final String location = mySharedPreference.getSharedPreferenceString("location");
                 Log.d(TAG, "platformId=" + platformId + " Location=" + location);
                 if (platformId == null || platformId.equals("")) {
