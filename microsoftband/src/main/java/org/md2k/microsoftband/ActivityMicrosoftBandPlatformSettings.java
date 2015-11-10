@@ -59,8 +59,8 @@ public class ActivityMicrosoftBandPlatformSettings extends PreferenceActivity {
         ListPreference lpLocation=(ListPreference)findPreference("location");
         lpLocation.setValue(mySharedPreference.getSharedPreferenceString("location"));
 
-        for (int i = 0; i < MicrosoftBandPlatform.DATASOURCETYPE.length; i++) {
-            String dataSourceType = MicrosoftBandPlatform.DATASOURCETYPE[i];
+        for (int i = 0; i < MicrosoftBandPlatform.msBandSensors.size(); i++) {
+            String dataSourceType = MicrosoftBandPlatform.msBandSensors.get(i).dataSourceType;
             ((SwitchPreference) findPreference(dataSourceType)).setChecked(mySharedPreference.getSharedPreferenceBoolean(dataSourceType));
             if (dataSourceType.equals(DataSourceType.ACCELEROMETER) || dataSourceType.equals(DataSourceType.GYROSCOPE)) {
                 findPreference(dataSourceType).setSummary(mySharedPreference.getSharedPreferenceString(dataSourceType + "_frequency"));
@@ -78,8 +78,8 @@ public class ActivityMicrosoftBandPlatformSettings extends PreferenceActivity {
         PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference("dataSourceType");
         Log.d(TAG, "Preference category: " + preferenceCategory);
         preferenceCategory.removeAll();
-        for (int i = 0; i < MicrosoftBandPlatform.DATASOURCETYPE.length; i++) {
-            final String dataSourceType = MicrosoftBandPlatform.DATASOURCETYPE[i];
+        for (int i = 0; i < MicrosoftBandPlatform.msBandSensors.size(); i++) {
+            final String dataSourceType = MicrosoftBandPlatform.msBandSensors.get(i).dataSourceType;
             SwitchPreference switchPreference = new SwitchPreference(this);
             switchPreference.setKey(dataSourceType);
             String title=dataSourceType;
@@ -126,8 +126,8 @@ public class ActivityMicrosoftBandPlatformSettings extends PreferenceActivity {
                     Toast.makeText(getBaseContext(), "!!! Location is missing !!!", Toast.LENGTH_LONG).show();
                 } else {
                     enabled=false;
-                    for(int i=0;i<MicrosoftBandPlatform.DATASOURCETYPE.length;i++)
-                        if(mySharedPreference.getSharedPreferenceBoolean(MicrosoftBandPlatform.DATASOURCETYPE[i]))
+                    for(int i=0;i<MicrosoftBandPlatform.msBandSensors.size();i++)
+                        if(mySharedPreference.getSharedPreferenceBoolean(MicrosoftBandPlatform.msBandSensors.get(i).dataSourceType))
                             enabled=true;
                     mySharedPreference.setSharedPreferencesBoolean("enabled",enabled);
                     if(!enabled){

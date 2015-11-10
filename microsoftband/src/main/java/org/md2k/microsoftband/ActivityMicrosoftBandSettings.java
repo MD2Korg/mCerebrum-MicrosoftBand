@@ -241,8 +241,8 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
             boolean enabled = microsoftBandPlatform.getMicrosoftBandDataSource().get(i).isEnabled();
             mySharedPreference.setSharedPreferencesBoolean(dataSourceType, enabled);
             if (dataSourceType.equals(DataSourceType.ACCELEROMETER) || dataSourceType.equals(DataSourceType.GYROSCOPE)) {
-                double frequency = microsoftBandPlatform.getMicrosoftBandDataSource().get(i).getFrequency();
-                mySharedPreference.setSharedPreferencesString(dataSourceType + "_frequency", String.valueOf(frequency) + " Hz");
+                String frequency = microsoftBandPlatform.getMicrosoftBandDataSource().get(i).getFrequency();
+                mySharedPreference.setSharedPreferencesString(dataSourceType + "_frequency", frequency + " Hz");
             }
         }
     }
@@ -259,7 +259,7 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
             microsoftBandPlatform.getMicrosoftBandDataSource().get(i).setEnabled(mySharedPreference.getSharedPreferenceBoolean(dataSourceType));
             if (dataSourceType.equals(DataSourceType.ACCELEROMETER) || dataSourceType.equals(DataSourceType.GYROSCOPE)) {
                 String frequencyStr = mySharedPreference.getSharedPreferenceString(dataSourceType + "_frequency");
-                double frequency = Double.valueOf(frequencyStr.substring(0, frequencyStr.length() - 3));
+                String frequency = frequencyStr.substring(0, frequencyStr.length() - 3);
                 microsoftBandPlatform.getMicrosoftBandDataSource().get(i).setFrequency(frequency);
             }
         }

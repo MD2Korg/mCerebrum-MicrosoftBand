@@ -44,30 +44,32 @@ import java.util.HashMap;
 public class MicrosoftBandPlatform extends Device {
     private static final String TAG = MicrosoftBandPlatform.class.getSimpleName();
     private String location;
-    boolean isConnected=false;
+    boolean isConnected = false;
     private ArrayList<MicrosoftBandDataSource> microsoftBandDataSources;
-    public static final String[] DATASOURCETYPE = {
-                DataSourceType.BAND_CONTACT,
-                DataSourceType.ACCELEROMETER,
-                DataSourceType.GYROSCOPE,
-                DataSourceType.GSR,
-                DataSourceType.SKIN_TEMPERATURE,
-                DataSourceType.AMBIENT_TEMPERATURE,
-                DataSourceType.AIR_PRESSURE,
-                DataSourceType.AMBIENT_LIGHT,
-                DataSourceType.ULTRA_VIOLET_RADIATION,
-                DataSourceType.RR_INTERVAL,
-                DataSourceType.HEART_RATE,
-                DataSourceType.DISTANCE,
-                DataSourceType.SPEED,
-                DataSourceType.PACE,
-                DataSourceType.MOTION_TYPE,
-                DataSourceType.STEP_COUNT,
-                DataSourceType.CALORY_BURN,
-            DataSourceType.ALTIMETER,
+    public static final ArrayList<MSBandSensors.MSBandSensor> msBandSensors = MSBandSensors.getSensors();
 
-    };
+    /*    public static final String[] DATASOURCETYPE = {
+                    DataSourceType.BAND_CONTACT,
+                    DataSourceType.ACCELEROMETER,
+                    DataSourceType.GYROSCOPE,
+                    DataSourceType.GSR,
+                    DataSourceType.SKIN_TEMPERATURE,
+                    DataSourceType.AMBIENT_TEMPERATURE,
+                    DataSourceType.AIR_PRESSURE,
+                    DataSourceType.AMBIENT_LIGHT,
+                    DataSourceType.ULTRA_VIOLET_RADIATION,
+                    DataSourceType.RR_INTERVAL,
+                    DataSourceType.HEART_RATE,
+                    DataSourceType.DISTANCE,
+                    DataSourceType.SPEED,
+                    DataSourceType.PACE,
+                    DataSourceType.MOTION_TYPE,
+                    DataSourceType.STEP_COUNT,
+                    DataSourceType.CALORY_BURN,
+                DataSourceType.ALTIMETER,
 
+        };
+    */
     public void show() {
         for (int i = 0; i < microsoftBandDataSources.size(); i++) {
             Log.d(TAG, "PlatformId=" + platformId + " platformName=" + platformName + " Location=" + location);
@@ -77,9 +79,8 @@ public class MicrosoftBandPlatform extends Device {
 
     public void resetDataSource() {
         microsoftBandDataSources = new ArrayList<>();
-        for (String dataSourceType : DATASOURCETYPE)
-            microsoftBandDataSources.add(new MicrosoftBandDataSource(context, dataSourceType, false));
-
+        for (int i = 0; i < msBandSensors.size(); i++)
+            microsoftBandDataSources.add(new MicrosoftBandDataSource(context, msBandSensors.get(i), false));
     }
 
     MicrosoftBandPlatform(Context context, String platformId, String location) {
@@ -116,6 +117,7 @@ public class MicrosoftBandPlatform extends Device {
     public Platform getPlatform() {
         return new PlatformBuilder().setId(platformId).setType(platformType).build();
     }
+
     public Platform getPlatformForWrite() {
         return new PlatformBuilder().setId(platformId).setType(platformType).setMetadata("location", location).setMetadata("name", platformName).
                 setMetadata("version_hardware", versionHardware).setMetadata("version_firmware", versionFirmware).build();
@@ -131,9 +133,9 @@ public class MicrosoftBandPlatform extends Device {
         connect(new BandCallBack() {
             @Override
             public void onBandConnected() {
-                MicrosoftBandInfo microsoftBandInfo=new MicrosoftBandInfo(context);
+                MicrosoftBandInfo microsoftBandInfo = new MicrosoftBandInfo(context);
                 microsoftBandInfo.register(getPlatform());
-                microsoftBandInfo.updateData(versionHardware,versionFirmware,location);
+                microsoftBandInfo.updateData(versionHardware, versionFirmware, location);
 
                 for (int i = 0; i < microsoftBandDataSources.size(); i++) {
                     if (microsoftBandDataSources.get(i).isEnabled()) {
@@ -165,7 +167,7 @@ public class MicrosoftBandPlatform extends Device {
     }
 
     public void unregister() {
-        if(bandClient.isConnected()) {
+        if (bandClient.isConnected()) {
             for (MicrosoftBandDataSource microsoftBandDataSource : microsoftBandDataSources)
                 microsoftBandDataSource.unregister(bandClient);
             disconnect();

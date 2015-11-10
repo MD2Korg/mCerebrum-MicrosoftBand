@@ -63,6 +63,7 @@ public abstract class Device {
     protected String platformType;
     protected String versionFirmware=null;
     protected String versionHardware=null;
+    protected int version;
     protected boolean enabled;
     protected BandClient bandClient = null;
     Thread connectThread;
@@ -108,6 +109,9 @@ public abstract class Device {
                 versionFirmware=bandClient.getFirmwareVersion().await();
                 versionHardware=bandClient.getHardwareVersion().await();
                 Log.d(TAG,"versionFirmware="+versionFirmware+" versionHardware="+versionHardware);
+                if(Integer.valueOf(versionHardware)<=19)
+                    version=1;
+                else version=2;
             }
             return ConnectionState.CONNECTED == state;
         } catch (InterruptedException | BandException e) {

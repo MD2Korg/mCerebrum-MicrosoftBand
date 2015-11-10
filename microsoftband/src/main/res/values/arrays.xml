@@ -8,8 +8,8 @@
 
     <string-array name="frequency_entries">
         <item>OFF</item>
-        <item>7.8125 Hz</item>
-        <item>31.25 Hz</item>
-        <item>62.5 Hz</item>
+        <item>8 Hz</item>
+        <item>31 Hz</item>
+        <item>62 Hz</item>
     </string-array>
 </resources>

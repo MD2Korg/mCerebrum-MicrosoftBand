@@ -88,35 +88,36 @@ import org.md2k.utilities.datakit.DataKitHandler;
 public class MicrosoftBandDataSource {
     private static final String TAG = MicrosoftBandDataSource.class.getSimpleName();
     Context context;
-    private String dataSourceType;
-    private double frequency;
+//    private String dataSourceType;
+//    private double frequency;
     private boolean enabled;
     CallBack callBack;
     DataKitHandler dataKitHandler;
     DataSourceClient dataSourceClient;
+    MSBandSensors.MSBandSensor msBandSensor;
 
-    public MicrosoftBandDataSource(Context context, String dataSourceType, boolean enabled) {
+    public MicrosoftBandDataSource(Context context, MSBandSensors.MSBandSensor msBandSensor, boolean enabled) {
         this.context = context;
-        this.dataSourceType = dataSourceType;
-        if (dataSourceType.equals(DataSourceType.ACCELEROMETER) || dataSourceType.equals(DataSourceType.GYROSCOPE))
-            frequency = 31.25;
+        this.msBandSensor=msBandSensor;
+        if (msBandSensor.dataSourceType.equals(DataSourceType.ACCELEROMETER) || msBandSensor.dataSourceType.equals(DataSourceType.GYROSCOPE))
+            msBandSensor.frequency = "31";
         this.enabled = enabled;
     }
 
     public String getDataSourceType() {
-        return dataSourceType;
+        return msBandSensor.dataSourceType;
     }
 
     public void show() {
-        Log.d(TAG, "datasourcetype=" + dataSourceType + " frequency=" + frequency + " enabled=" + enabled);
+        Log.d(TAG, "datasourcetype=" + msBandSensor.dataSourceType + " frequency=" + msBandSensor.frequency + " enabled=" + enabled);
     }
 
-    public double getFrequency() {
-        return frequency;
+    public String getFrequency() {
+        return msBandSensor.frequency;
     }
 
-    public void setFrequency(double frequency) {
-        this.frequency = frequency;
+    public void setFrequency(String frequency) {
+        msBandSensor.frequency = frequency;
     }
 
     public void setEnabled(boolean enabled) {
@@ -128,116 +129,17 @@ public class MicrosoftBandDataSource {
     }
 
     public void set(DataSource dataSource) {
-        dataSourceType = dataSource.getType();
-        frequency = Double.parseDouble(dataSource.getMetadata().get("frequency"));
+        msBandSensor.dataSourceType = dataSource.getType();
+        msBandSensor.frequency = dataSource.getMetadata().get("frequency");
         enabled = true;
     }
 
     public DataSourceBuilder getDataSourceBuilder() {
         if (!enabled) return null;
-        DataSourceBuilder dataSourceBuilder = new DataSourceBuilder().setId(null).setType(dataSourceType);
-        switch (dataSourceType) {
-            case DataSourceType.ACCELEROMETER:
-                dataSourceBuilder = dataSourceBuilder.setDescription("represent the band's axes acceleration in units of standard gravity");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("unit", "meter/second^2");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", String.valueOf(frequency));
-                break;
-            case DataSourceType.ALTIMETER:
-                dataSourceBuilder = dataSourceBuilder.setDescription("0: FlightsAscended (Number of floors ascended since the Band was last factory-reset), " +
-                        "1: FlightsDescended (Number of floors ascended since the Band was last factory-reset), " +
-                        "2: Rate (The current rate of ascend/descend in cm/s)" +
-                        "3: SteppingGain (Total elevation gained in centimeters by taking steps since the Band was last factory-reset)" +
-                        "4: SteppingLoss (Total elevation lost in centimeters by taking steps since the Band was last factory-reset)" +
-                        "5: StepsAscended (Total number of steps ascended since the Band was last factory-reset)" +
-                        "6: StepsDescended (Total number of steps descended since the Band was last factory-reset)" +
-                        "7: TotalGain (Total elevation gained in centimeters since the Band was last factory-reset)" +
-                        "8: TotalLoss (Total elevation loss in centimeters since the Band was last factory-reset");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("unit", "");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", "1");
-                break;
-            case DataSourceType.AMBIENT_LIGHT:
-                dataSourceBuilder = dataSourceBuilder.setDescription("Current ambient light in lumens per square meter (lux)");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("unit", "lux");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", "2");
-                break;
-
-            case DataSourceType.GYROSCOPE:
-                dataSourceBuilder = dataSourceBuilder.setDescription("represent the angular velocity around the band's axes in degrees/second");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("unit", "degrees/second");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", String.valueOf(frequency));
-                break;
-            case DataSourceType.BAND_CONTACT:
-                dataSourceBuilder = dataSourceBuilder.setDescription("Current contact state of the band.. Contact state: -1: Unknown, 0: worn, 1: not_worn");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("unit", "-1:unknown,0:worn,1:not_worn");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", "0");
-                break;
-            case DataSourceType.CALORY_BURN:
-                dataSourceBuilder = dataSourceBuilder.setDescription("Get the total number of kilocalories burned since the band was last factory reset");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("unit", "kilocalories");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", "0");
-                break;
-
-            case DataSourceType.STEP_COUNT:
-                dataSourceBuilder = dataSourceBuilder.setDescription("The total number of steps taken since the band was last factory reset");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("unit", "steps");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", "0");
-                break;
-            case DataSourceType.SKIN_TEMPERATURE:
-                dataSourceBuilder = dataSourceBuilder.setDescription("Current temperature in degrees Celsius of the person wearing the Band");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("unit", "degree celsius");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", "1");
-                break;
-            case DataSourceType.ULTRA_VIOLET_RADIATION:
-                dataSourceBuilder = dataSourceBuilder.setDescription("the UV index level as calculated by the band. 0:NONE, 1: LOW, 2: MEDIUM, 3: HIGH, 4: VERY_HIGH");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("unit", "0:NONE, 1: LOW, 2: MEDIUM, 3: HIGH, 4: VERY_HIGH");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", "1");
-                break;
-            case DataSourceType.DISTANCE:
-                dataSourceBuilder = dataSourceBuilder.setDescription("the total distance traveled since the band was last factory reset in cm");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("unit", "centimeter");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", "1");
-                break;
-            case DataSourceType.SPEED:
-                dataSourceBuilder = dataSourceBuilder.setDescription("a float value representing the current speed the band is moving at in cm/s");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("unit", "centimeter/second");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", "1");
-                break;
-            case DataSourceType.PACE:
-                dataSourceBuilder = dataSourceBuilder.setDescription("a float value representing the current pace of the band in ms/m");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("unit", "millisecond/meter");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", "1");
-                break;
-            case DataSourceType.MOTION_TYPE:
-                dataSourceBuilder = dataSourceBuilder.setDescription("the current MotionType of the band. IDLE,JOGGING,RUNNING,UNKNOWN,WALKING");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("unit", "MotionType: IDLE, JOGGING, RUNNING, UNKNOWN, WALKING");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", "1");
-                break;
-            case DataSourceType.HEART_RATE:
-                dataSourceBuilder = dataSourceBuilder.setDescription("the current heart rate as read by the Band in beats per minute. Confidence=0.0 (acquiring), 1.0 (locked)");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("unit", "beats/minute");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", "1");
-                break;
-            case DataSourceType.RR_INTERVAL:
-                dataSourceBuilder = dataSourceBuilder.setDescription("Current RR interval in seconds as read by the Band");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("unit", "second");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", "0");
-                break;
-            case DataSourceType.GSR:
-                dataSourceBuilder = dataSourceBuilder.setDescription("Current skin resistance in kohms of the person wearing the Band");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("unit", "kohms");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", "0.2");
-                break;
-            case DataSourceType.AIR_PRESSURE:
-                dataSourceBuilder = dataSourceBuilder.setDescription("Current air pressure in hectopascals");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("unit", "hectopascals");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", "1");
-                break;
-            case DataSourceType.AMBIENT_TEMPERATURE:
-                dataSourceBuilder = dataSourceBuilder.setDescription("Current temperature in degrees Celsius");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("unit", "degree celcius");
-                dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", "1");
-                break;
-        }
+        DataSourceBuilder dataSourceBuilder = new DataSourceBuilder().setId(null).setType(msBandSensor.dataSourceType);
+        dataSourceBuilder = dataSourceBuilder.setDescription(msBandSensor.description);
+        dataSourceBuilder = dataSourceBuilder.setMetadata("unit", msBandSensor.unit);
+        dataSourceBuilder = dataSourceBuilder.setMetadata("frequency", msBandSensor.frequency);
         return dataSourceBuilder;
     }
 
@@ -449,34 +351,30 @@ public class MicrosoftBandDataSource {
 
     private void registerSensor(BandClient bandClient) throws BandException {
         if (bandClient == null) return;
-        int freq = 0;
-        if (frequency != 0) {
-            freq = (int) (1000.0 / frequency + 0.01);
-        }
-        switch (dataSourceType) {
+        switch (msBandSensor.dataSourceType) {
             case DataSourceType.ACCELEROMETER:
-                switch (freq) {
-                    case 16:
-                        bandClient.getSensorManager().registerAccelerometerEventListener(mAccelerometerEventListener, SampleRate.MS16);
+                switch (msBandSensor.frequency) {
+                    case "8":
+                        bandClient.getSensorManager().registerAccelerometerEventListener(mAccelerometerEventListener, SampleRate.MS128);
                         break;
-                    case 32:
+                    case "31":
                         bandClient.getSensorManager().registerAccelerometerEventListener(mAccelerometerEventListener, SampleRate.MS32);
                         break;
-                    case 128:
-                        bandClient.getSensorManager().registerAccelerometerEventListener(mAccelerometerEventListener, SampleRate.MS128);
+                    case "62":
+                        bandClient.getSensorManager().registerAccelerometerEventListener(mAccelerometerEventListener, SampleRate.MS16);
                         break;
                 }
                 break;
             case DataSourceType.GYROSCOPE:
-                switch (freq) {
-                    case 16:
-                        bandClient.getSensorManager().registerGyroscopeEventListener(mGyroscopeEventListener, SampleRate.MS16);
+                switch (msBandSensor.frequency) {
+                    case "8":
+                        bandClient.getSensorManager().registerGyroscopeEventListener(mGyroscopeEventListener, SampleRate.MS128);
                         break;
-                    case 32:
+                    case "31":
                         bandClient.getSensorManager().registerGyroscopeEventListener(mGyroscopeEventListener, SampleRate.MS32);
                         break;
-                    case 128:
-                        bandClient.getSensorManager().registerGyroscopeEventListener(mGyroscopeEventListener, SampleRate.MS128);
+                    case "62":
+                        bandClient.getSensorManager().registerGyroscopeEventListener(mGyroscopeEventListener, SampleRate.MS16);
                         break;
                 }
                 break;
@@ -552,7 +450,7 @@ public class MicrosoftBandDataSource {
 
     private void unregisterSensor(BandClient bandClient) {
         try {
-            switch (dataSourceType) {
+            switch (msBandSensor.dataSourceType) {
                 case DataSourceType.ACCELEROMETER:
                     bandClient.getSensorManager().unregisterAccelerometerEventListeners();
                     break;
@@ -614,7 +512,7 @@ public class MicrosoftBandDataSource {
     }
 
     public void unregister(final BandClient bandClient) {
-        Log.d(TAG, "Unregister: " + dataSourceType);
+        Log.d(TAG, "Unregister: " + msBandSensor.dataSourceType);
         if (!enabled) return;
         if (bandClient == null) return;
         final Thread background = new Thread(new Runnable() {
