@@ -58,7 +58,7 @@ public class MSBandSensors {
                 "6: StepsDescended (Total number of steps descended since the Band was last factory-reset), " +
                 "7: TotalGain (Total elevation gained in centimeters since the Band was last factory-reset), " +
                 "8: TotalLoss (Total elevation loss in centimeters since the Band was last factory-reset", "","1"));
-        msBandSensors.add(new MSBandSensor(1,DataSourceType.AMBIENT_LIGHT,"Current ambient light in lumens per square meter (lux)", "lux","2"));
+        msBandSensors.add(new MSBandSensor(2,DataSourceType.AMBIENT_LIGHT,"Current ambient light in lumens per square meter (lux)", "lux","2"));
         msBandSensors.add(new MSBandSensor(1,DataSourceType.GYROSCOPE,"represent the angular velocity around the band's axes in degrees/second", "degress/second",""));
         msBandSensors.add(new MSBandSensor(1,DataSourceType.BAND_CONTACT,"Current contact state of the band.. Contact state: -1: Unknown, 0: worn, 1: not_worn", "-1:unknown,0:worn,1:not_worn","0"));
         msBandSensors.add(new MSBandSensor(1,DataSourceType.CALORY_BURN,"Get the total number of kilocalories burned since the band was last factory rese", "kilocalories","0"));
@@ -70,10 +70,10 @@ public class MSBandSensors {
         msBandSensors.add(new MSBandSensor(1,DataSourceType.PACE,"a float value representing the current pace of the band in ms/m", "millisecond/meter","1"));
         msBandSensors.add(new MSBandSensor(1,DataSourceType.MOTION_TYPE,"the current MotionType of the band. IDLE,JOGGING,RUNNING,UNKNOWN,WALKING", "MotionType: IDLE, JOGGING, RUNNING, UNKNOWN, WALKING","1"));
         msBandSensors.add(new MSBandSensor(1,DataSourceType.HEART_RATE,"the current heart rate as read by the Band in beats per minute. Confidence=0.0 (acquiring), 1.0 (locked)", "beats/minute","1"));
-        msBandSensors.add(new MSBandSensor(1,DataSourceType.RR_INTERVAL,"Current RR interval in seconds as read by the Band", "second","0"));
-        msBandSensors.add(new MSBandSensor(1,DataSourceType.GSR,"Current skin resistance in kohms of the person wearing the Band", "kohms","0.2"));
-        msBandSensors.add(new MSBandSensor(1,DataSourceType.AIR_PRESSURE,"Current air pressure in hectopascals", "hectopascals","1"));
-        msBandSensors.add(new MSBandSensor(1,DataSourceType.AMBIENT_TEMPERATURE,"Current temperature in degrees Celsius", "degree celcius","1"));
+        msBandSensors.add(new MSBandSensor(2,DataSourceType.RR_INTERVAL,"Current RR interval in seconds as read by the Band", "second","0"));
+        msBandSensors.add(new MSBandSensor(2,DataSourceType.GALVANIC_SKIN_RESPONSE,"Current skin resistance in kohms of the person wearing the Band", "kohms","0.2"));
+        msBandSensors.add(new MSBandSensor(2,DataSourceType.AIR_PRESSURE,"Current air pressure in hectopascals", "hectopascals","1"));
+        msBandSensors.add(new MSBandSensor(2,DataSourceType.AMBIENT_TEMPERATURE,"Current temperature in degrees Celsius", "degree celcius","1"));
         return msBandSensors;
 
     }

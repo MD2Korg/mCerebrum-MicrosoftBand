@@ -417,7 +417,7 @@ public class MicrosoftBandDataSource {
             case DataSourceType.SKIN_TEMPERATURE:
                 bandClient.getSensorManager().registerSkinTemperatureEventListener(mSkinTemperatureEventListener);
                 break;
-            case DataSourceType.GSR:
+            case DataSourceType.GALVANIC_SKIN_RESPONSE:
                 bandClient.getSensorManager().registerGsrEventListener(mGSREventListener);
                 break;
             case DataSourceType.AMBIENT_TEMPERATURE:
@@ -488,7 +488,7 @@ public class MicrosoftBandDataSource {
                 case DataSourceType.SKIN_TEMPERATURE:
                     bandClient.getSensorManager().unregisterSkinTemperatureEventListeners();
                     break;
-                case DataSourceType.GSR:
+                case DataSourceType.GALVANIC_SKIN_RESPONSE:
                     bandClient.getSensorManager().unregisterGsrEventListeners();
                     break;
                 case DataSourceType.AMBIENT_TEMPERATURE:

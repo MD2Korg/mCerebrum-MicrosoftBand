@@ -37,6 +37,7 @@ public class ActivityMicrosoftBandPlatformSettings extends PreferenceActivity {
         updatePreferenceScreen();
         setAddButton();
         setCancelButton();
+        if(getActionBar()!=null)
         getActionBar().setDisplayHomeAsUpEnabled(true);
 
     }
@@ -50,9 +51,21 @@ public class ActivityMicrosoftBandPlatformSettings extends PreferenceActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+    int getBandVersion(){
+        String version=mySharedPreference.getSharedPreferenceString("version");
+        int versionInt=1;
+        if(version==null)
+            return 0;
+        else {
+            versionInt = Integer.valueOf(version);
+            if (versionInt <= 19) return 1;
+            else return 2;
+        }
+    }
 
 
     void updatePreferenceScreen() {
+        int versionFirmwareInt=getBandVersion();
         findPreference("platformName").setSummary(mySharedPreference.getSharedPreferenceString("platformName"));
         findPreference("platformId").setSummary(mySharedPreference.getSharedPreferenceString("platformId"));
         findPreference("location").setSummary(mySharedPreference.getSharedPreferenceString("location").toLowerCase().replace("_"," "));
@@ -62,6 +75,10 @@ public class ActivityMicrosoftBandPlatformSettings extends PreferenceActivity {
         for (int i = 0; i < MicrosoftBandPlatform.msBandSensors.size(); i++) {
             String dataSourceType = MicrosoftBandPlatform.msBandSensors.get(i).dataSourceType;
             ((SwitchPreference) findPreference(dataSourceType)).setChecked(mySharedPreference.getSharedPreferenceBoolean(dataSourceType));
+            if(MicrosoftBandPlatform.msBandSensors.get(i).version>versionFirmwareInt)
+                findPreference(dataSourceType).setEnabled(false);
+            else
+                findPreference(dataSourceType).setEnabled(true);
             if (dataSourceType.equals(DataSourceType.ACCELEROMETER) || dataSourceType.equals(DataSourceType.GYROSCOPE)) {
                 findPreference(dataSourceType).setSummary(mySharedPreference.getSharedPreferenceString(dataSourceType + "_frequency"));
                 findPreference(dataSourceType).setDefaultValue(mySharedPreference.getSharedPreferenceString(dataSourceType + "_frequency"));
@@ -78,6 +95,7 @@ public class ActivityMicrosoftBandPlatformSettings extends PreferenceActivity {
         PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference("dataSourceType");
         Log.d(TAG, "Preference category: " + preferenceCategory);
         preferenceCategory.removeAll();
+        int versionHardwareInt=getBandVersion();
         for (int i = 0; i < MicrosoftBandPlatform.msBandSensors.size(); i++) {
             final String dataSourceType = MicrosoftBandPlatform.msBandSensors.get(i).dataSourceType;
             SwitchPreference switchPreference = new SwitchPreference(this);
@@ -102,6 +120,10 @@ public class ActivityMicrosoftBandPlatformSettings extends PreferenceActivity {
                     }
                 });
             }
+            if(MicrosoftBandPlatform.msBandSensors.get(i).version>versionHardwareInt)
+                switchPreference.setEnabled(false);
+            else
+                switchPreference.setEnabled(true);
             preferenceCategory.addPreference(switchPreference);
         }
     }

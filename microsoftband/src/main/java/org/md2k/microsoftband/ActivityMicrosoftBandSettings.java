@@ -235,6 +235,7 @@ public class ActivityMicrosoftBandSettings extends PreferenceActivity {
         mySharedPreference.setSharedPreferencesString("platformName", microsoftBandPlatform.getPlatformName());
         mySharedPreference.setSharedPreferencesString("location", microsoftBandPlatform.getLocation());
         mySharedPreference.setSharedPreferencesBoolean("enabled", microsoftBandPlatform.enabled);
+        mySharedPreference.setSharedPreferencesString("version",microsoftBandPlatform.versionHardware);
 
         for (int i = 0; i < microsoftBandPlatform.getMicrosoftBandDataSource().size(); i++) {
             String dataSourceType = microsoftBandPlatform.getMicrosoftBandDataSource().get(i).getDataSourceType();
