@@ -144,7 +144,7 @@ public class MicrosoftBandDataSource {
     }
 
     private void sendMessage(DataType data) {
-//        Log.d(TAG,dataSourceClient.getDataSource().getPlatform().getId()+" "+dataSourceClient.getDataSource().getType());
+        Log.d(TAG,dataSourceClient.getDataSource().getPlatform().getId()+" "+dataSourceClient.getDataSource().getType());
         dataKitHandler.insert(dataSourceClient, data);
         callBack.onReceivedData(data);
     }
@@ -331,7 +331,7 @@ public class MicrosoftBandDataSource {
         DataSourceBuilder dataSourceBuilder = getDataSourceBuilder();
         dataSourceBuilder = dataSourceBuilder.setPlatform(platform);
         dataSourceClient = dataKitHandler.register(dataSourceBuilder);
-        Log.e(TAG, dataSourceClient.getDataSource().getPlatform().getId() + " " + dataSourceClient.getDataSource().getType() + " " + dataSourceClient.getDs_id());
+        Log.d(TAG, dataSourceClient.getDataSource().getPlatform().getId() + " " + dataSourceClient.getDataSource().getType() + " " + dataSourceClient.getDs_id());
 
         callBack = newcallBack;
         final Thread background = new Thread(new Runnable() {
@@ -350,6 +350,7 @@ public class MicrosoftBandDataSource {
     }
 
     private void registerSensor(BandClient bandClient) throws BandException {
+        Log.d(TAG,"registerSensor: bandClient="+bandClient+" msBandSensor="+ msBandSensor.dataSourceType+" frequency="+msBandSensor.frequency);
         if (bandClient == null) return;
         switch (msBandSensor.dataSourceType) {
             case DataSourceType.ACCELEROMETER:

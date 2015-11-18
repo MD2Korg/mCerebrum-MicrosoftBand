@@ -10,6 +10,7 @@ import org.md2k.datakitapi.source.datasource.DataSourceClient;
 import org.md2k.datakitapi.source.datasource.DataSourceType;
 import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.datakitapi.time.DateTime;
+import org.md2k.utilities.Report.Log;
 import org.md2k.utilities.datakit.DataKitHandler;
 
 /**
@@ -39,6 +40,7 @@ import org.md2k.utilities.datakit.DataKitHandler;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class MicrosoftBandInfo {
+    private static final String TAG = MicrosoftBandInfo.class.getSimpleName();
     Context context;
     DataSourceClient dataSourceClient;
     class Info{
@@ -58,10 +60,12 @@ public class MicrosoftBandInfo {
     void register(Platform platform){
         DataSourceBuilder dataSourceBuilder=new DataSourceBuilder().setType(DataSourceType.INFO).setPlatform(platform);
         dataSourceClient=DataKitHandler.getInstance(context).register(dataSourceBuilder);
+        Log.d(TAG,"ds_id="+dataSourceClient.getDs_id());
     }
     void updateData(String versionHardware, String versionFirmware,String location){
         Info info = new Info(versionHardware,versionFirmware,location);
         Gson gson=new Gson();
+        Log.d(TAG, "info=" + gson.toJson(info));
         DataTypeString data=new DataTypeString(DateTime.getDateTime(),gson.toJson(info));
         DataKitHandler.getInstance(context).insert(dataSourceClient,data);
     }

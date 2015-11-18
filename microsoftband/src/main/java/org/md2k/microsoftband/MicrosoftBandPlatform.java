@@ -138,11 +138,13 @@ public class MicrosoftBandPlatform extends Device {
                 microsoftBandInfo.updateData(versionHardware, versionFirmware, location);
 
                 for (int i = 0; i < microsoftBandDataSources.size(); i++) {
+                    Log.d(TAG,"register("+microsoftBandDataSources.get(i).getDataSourceType()+") enabled="+microsoftBandDataSources.get(i).isEnabled());
                     if (microsoftBandDataSources.get(i).isEnabled()) {
                         final int finalI = i;
                         microsoftBandDataSources.get(i).register(getPlatform(), bandClient, new CallBack() {
                             @Override
                             public void onReceivedData(DataType data) {
+                                Log.d(TAG,"onreceiveddata()...");
                                 String dataSourceType = microsoftBandDataSources.get(finalI).getDataSourceType();
                                 Intent intent = new Intent("microsoftBand");
                                 intent.putExtra("operation", "data");

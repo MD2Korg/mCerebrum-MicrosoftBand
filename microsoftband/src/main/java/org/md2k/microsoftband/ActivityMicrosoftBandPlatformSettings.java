@@ -110,7 +110,7 @@ public class ActivityMicrosoftBandPlatformSettings extends PreferenceActivity {
                     public boolean onPreferenceClick(Preference preference) {
                         SwitchPreference switchPreference = (SwitchPreference) preference;
                         switchPreference.setChecked(!switchPreference.isChecked());
-                        String[] string = {"7.125 Hz", "31.25 Hz", "62.5 Hz"};
+                        String[] string = getResources().getStringArray(R.array.frequency_entries);//{"8 Hz", "31 Hz", "62 Hz"};
                         String curFreq=mySharedPreference.getSharedPreferenceString(dataSourceType+"_frequency");
                         int curIndex=1;
                         for(int ii=0;ii<string.length;ii++)
