@@ -144,7 +144,6 @@ public class MicrosoftBandDataSource {
     }
 
     private void sendMessage(DataType data) {
-        Log.d(TAG,dataSourceClient.getDataSource().getPlatform().getId()+" "+dataSourceClient.getDataSource().getType());
         dataKitHandler.insert(dataSourceClient, data);
         callBack.onReceivedData(data);
     }

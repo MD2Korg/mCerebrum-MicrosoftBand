@@ -58,7 +58,7 @@ public class MicrosoftBandInfo {
         this.context=context;
     }
     void register(Platform platform){
-        DataSourceBuilder dataSourceBuilder=new DataSourceBuilder().setType(DataSourceType.INFO).setPlatform(platform);
+        DataSourceBuilder dataSourceBuilder=new DataSourceBuilder().setType(DataSourceType.STATUS).setPlatform(platform);
         dataSourceClient=DataKitHandler.getInstance(context).register(dataSourceBuilder);
         Log.d(TAG,"ds_id="+dataSourceClient.getDs_id());
     }

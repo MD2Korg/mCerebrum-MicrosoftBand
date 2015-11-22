@@ -76,6 +76,7 @@ public class ActivityMicrosoftBand extends Activity {
                 }
             }
         });
+        if(getActionBar()!=null)
         getActionBar().setDisplayHomeAsUpEnabled(true);
     }
 

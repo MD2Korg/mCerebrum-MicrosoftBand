@@ -56,7 +56,7 @@ public class MicrosoftBandPlatforms{
         Log.d(TAG, "Constructor()... size="+microsoftBandPlatforms.size());
         Log.d(TAG, "...Constructor()");
     }
-    int size(){
+    public int size(){
         return microsoftBandPlatforms.size();
     }
     public int size(boolean enabled){

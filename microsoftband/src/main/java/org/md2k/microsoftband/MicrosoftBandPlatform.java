@@ -161,7 +161,6 @@ public class MicrosoftBandPlatform extends Device {
                         });
                     }
                 }
-
             }
         });
     }

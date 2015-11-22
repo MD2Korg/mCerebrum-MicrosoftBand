@@ -10,6 +10,7 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import org.md2k.datakitapi.messagehandler.OnConnectionListener;
+import org.md2k.microsoftband.notification.NotificationManager;
 import org.md2k.utilities.datakit.DataKitHandler;
 
 /**
@@ -44,6 +45,7 @@ public class ServiceMicrosoftBands extends Service {
     MyBlueTooth myBlueTooth=null;
     MicrosoftBandPlatforms microsoftBandPlatforms;
     DataKitHandler dataKitHandler=null;
+    NotificationManager notificationManager;
 
     @Override
     public void onCreate() {
@@ -75,6 +77,7 @@ public class ServiceMicrosoftBands extends Service {
             @Override
             public void onConnected() {
                 microsoftBandPlatforms.register();
+                notificationManager=new NotificationManager(ServiceMicrosoftBands.this,microsoftBandPlatforms.getMicrosoftBandPlatform());
             }
         });
     }
@@ -87,6 +90,8 @@ public class ServiceMicrosoftBands extends Service {
     }
     @Override
     public void onDestroy() {
+        if(notificationManager!=null)
+            notificationManager.clear();
         clearDataKitSettingsBluetooth();
         super.onDestroy();
     }
