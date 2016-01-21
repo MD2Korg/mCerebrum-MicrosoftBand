@@ -2,10 +2,12 @@
     <PreferenceCategory android:title="Bluetooth"></PreferenceCategory>
     <Preference
         android:key="bluetooth_onoff"
+        android:icon="@drawable/ic_bluetooth_teal_48dp"
         android:title="Bluetooth Status" />
 
     <Preference
         android:key="bluetooth_pair"
+        android:icon="@drawable/ic_pair_teal_50dp"
         android:title="Pair Device" />
     <PreferenceCategory
         android:key="microsoftband_configured"

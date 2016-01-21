@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Handler;
 
 import com.google.gson.Gson;
-import com.microsoft.band.notifications.VibrationType;
 
 import org.md2k.datakitapi.datatype.DataType;
 import org.md2k.datakitapi.datatype.DataTypeString;
@@ -13,8 +12,7 @@ import org.md2k.datakitapi.source.datasource.DataSourceBuilder;
 import org.md2k.datakitapi.source.datasource.DataSourceClient;
 import org.md2k.datakitapi.source.datasource.DataSourceType;
 import org.md2k.datakitapi.source.platform.PlatformType;
-import org.md2k.microsoftband.MicrosoftBandPlatform;
-import org.md2k.microsoftband.MicrosoftBandPlatforms;
+import org.md2k.microsoftband.MicrosoftBand;
 import org.md2k.utilities.Report.Log;
 import org.md2k.utilities.datakit.DataKitHandler;
 
@@ -50,14 +48,14 @@ public class NotificationManager {
     private static final String TAG = NotificationManager.class.getSimpleName();
     DataKitHandler dataKitHandler;
     Context context;
-    ArrayList<MicrosoftBandPlatform> microsoftBandPlatforms;
+    ArrayList<MicrosoftBand> microsoftBands;
     ArrayList<DataSourceClient> dataSourceClientArrayList;
     Handler handler;
 
-    public NotificationManager(Context context, ArrayList<MicrosoftBandPlatform> microsoftBandPlatforms) {
+    public NotificationManager(Context context, ArrayList<MicrosoftBand> microsoftBands) {
         handler=new Handler();
         this.context = context;
-        this.microsoftBandPlatforms = microsoftBandPlatforms;
+        this.microsoftBands = microsoftBands;
         dataSourceClientArrayList = null;
         subscribe();
     }
@@ -98,10 +96,10 @@ public class NotificationManager {
         Notification notification = gson.fromJson(dataTypeString.getSample(), Notification.class);
         if (!notification.getSource().getPlatform_type().equals(PlatformType.MICROSOFT_BAND))
             return;
-        for (int i = 0; i < microsoftBandPlatforms.size(); i++) {
-            if (microsoftBandPlatforms.get(i).getLocation().equals(notification.getSource().getLocation())) {
-                microsoftBandPlatforms.get(i).setNotification(notification);
-                microsoftBandPlatforms.get(i).alarm();
+        for (int i = 0; i < microsoftBands.size(); i++) {
+            if (microsoftBands.get(i).getPlatformId().equals(notification.getSource().getLocation())) {
+                microsoftBands.get(i).setNotification(notification);
+                microsoftBands.get(i).alarm();
             }
         }
     }

@@ -65,6 +65,7 @@ import java.util.concurrent.TimeoutException;
 public abstract class Device {
     private static final String TAG = Device.class.getSimpleName();
     protected Context context;
+    protected String deviceId;
     protected String platformId;
     protected String platformName;
     protected String platformType;
@@ -77,12 +78,13 @@ public abstract class Device {
     protected Notification notification;
     Handler handler;
 
-    Device(Context context, String platformId) {
+    Device(Context context, String platformId, String deviceId) {
         this.context = context;
-        this.platformId = platformId;
+        this.deviceId = deviceId;
+        this.platformId=platformId;
         platformType = PlatformType.MICROSOFT_BAND;
         this.enabled = false;
-        BandInfo bandInfo = findBandInfo(platformId);
+        BandInfo bandInfo = findBandInfo(deviceId);
         if (bandInfo != null) {
             platformName = bandInfo.getName();
             bandClient = BandClientManager.getInstance().create(context, bandInfo);
@@ -98,18 +100,18 @@ public abstract class Device {
         return BandClientManager.getInstance().getPairedBands();
     }
 
-    public String getPlatformId() {
-        return platformId;
+    public String getDeviceId() {
+        return deviceId;
     }
 
     public String getPlatformName() {
         return platformName;
     }
 
-    BandInfo findBandInfo(String platformId) {
+    BandInfo findBandInfo(String deviceId) {
         BandInfo[] mPairBands = BandClientManager.getInstance().getPairedBands();
         for (BandInfo bandInfo : mPairBands) {
-            if (bandInfo.getMacAddress().equals(platformId)) return bandInfo;
+            if (bandInfo.getMacAddress().equals(deviceId)) return bandInfo;
         }
         return null;
     }
@@ -129,25 +131,37 @@ public abstract class Device {
             }
             return ConnectionState.CONNECTED == state;
         } catch (InterruptedException | BandException e) {
-            Log.d(TAG, platformId + " exception1");
-            Log.d(TAG, platformId + " ...connectDataKit");
+            Log.d(TAG, deviceId + " exception1");
+            Log.d(TAG, deviceId + " ...connectDataKit");
             return false;
         }
+    }
+
+    public String getPlatformId() {
+        return platformId;
+    }
+
+    public String getPlatformType() {
+        return platformType;
     }
 
     Runnable connectRunnable = new Runnable() {
         @Override
         public void run() {
-            Log.d(TAG, platformId + " connect run()...");
+            Log.d(TAG, deviceId + " connect run()...");
             while (true) {
                 boolean res = connectDevice();
                 if (res) {
-                    Log.d(TAG, platformId + " connect run() status= CONNECTED");
+                    Log.d(TAG, deviceId + " connect run() status= CONNECTED");
 
-                    bandCallBack.onBandConnected();
+                    try {
+                        bandCallBack.onBandConnected();
+                    } catch (BandIOException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 } else {
-                    Log.d(TAG, platformId + " connect run() status=NOTCONNECTED post delayed()");
+                    Log.d(TAG, deviceId + " connect run() status=NOTCONNECTED post delayed()");
                     try {
                         Thread.sleep(2000);
                     } catch (InterruptedException e) {
@@ -155,7 +169,7 @@ public abstract class Device {
                     }
                 }
             }
-            Log.d(TAG, platformId + "...connect run()");
+            Log.d(TAG, deviceId + "...connect run()");
         }
     };
     BandCallBack bandCallBack;
@@ -175,7 +189,7 @@ public abstract class Device {
 
 
     public void disconnect() {
-        Log.d(TAG, platformId + "disconnect...");
+        Log.d(TAG, deviceId + "disconnect...");
         stopConnectThread();
         if (bandClient.isConnected())
             try {
@@ -183,7 +197,7 @@ public abstract class Device {
             } catch (InterruptedException | BandException e) {
                 e.printStackTrace();
             }
-        Log.d(TAG, platformId + "...disconnect");
+        Log.d(TAG, deviceId + "...disconnect");
     }
 
     void changeBackGround(String wrist) throws BandException, InterruptedException {
@@ -241,7 +255,7 @@ public abstract class Device {
     }
 
     public void alarm() {
-        Log.d(TAG, "vibrate=" + platformId + " ");
+        Log.d(TAG, "vibrate=" + deviceId + " ");
         curVibrateCount = 0;
         handler.post(runAlarm);
     }
@@ -310,7 +324,7 @@ public abstract class Device {
             public void onBandConnected() {
                 try {
                     changeBackGround(wrist);
-                    addTiles(wrist);
+//                    addTiles(wrist);
 
                     disconnect();
 

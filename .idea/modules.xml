@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/../mCerebrum-DataKitAPI/datakitapi/datakitapi.iml" filepath="$PROJECT_DIR$/../mCerebrum-DataKitAPI/datakitapi/datakitapi.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../mCerebrum-DataKitAPI/datakitapi/datakitapi.iml" filepath="$PROJECT_DIR$/../mCerebrum-DataKitAPI/datakitapi/datakitapi.iml" />
       <module fileurl="file://$PROJECT_DIR$/mCerebrum-MicrosoftBand.iml" filepath="$PROJECT_DIR$/mCerebrum-MicrosoftBand.iml" />
       <module fileurl="file://$PROJECT_DIR$/microsoftband/microsoftband.iml" filepath="$PROJECT_DIR$/microsoftband/microsoftband.iml" />
       <module fileurl="file://$PROJECT_DIR$/../mCerebrum-Utilities/utilities/utilities.iml" filepath="$PROJECT_DIR$/../mCerebrum-Utilities/utilities/utilities.iml" />

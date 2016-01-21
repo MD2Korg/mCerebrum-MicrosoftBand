@@ -5,16 +5,18 @@
             android:key="platformName"
             android:title="Name"
             android:summary=""
+            android:enabled="false"
             />
         <Preference
-            android:key="platformId"
+            android:key="deviceId"
             android:title="MAC Address"
             android:summary=""
+            android:enabled="false"
             />
     </PreferenceCategory>
     <ListPreference
         android:title="Location"
-        android:key="location"
+        android:key="platformId"
         android:entries="@array/wrist_entries"
         android:entryValues="@array/wrist_entries" />
     <PreferenceCategory android:title="Sensors"

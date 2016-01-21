@@ -3,7 +3,6 @@
     <string-array name="wrist_entries">
         <item>LEFT_WRIST</item>
         <item>RIGHT_WRIST</item>
-        <item>OTHER</item>
     </string-array>
 
     <string-array name="frequency_entries">

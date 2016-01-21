@@ -2,7 +2,6 @@ package org.md2k.microsoftband;
 
 import android.app.AlertDialog;
 import android.app.Service;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.IBinder;
@@ -43,7 +42,7 @@ import org.md2k.utilities.datakit.DataKitHandler;
 public class ServiceMicrosoftBands extends Service {
     private static final String TAG = ServiceMicrosoftBands.class.getSimpleName();
     MyBlueTooth myBlueTooth=null;
-    MicrosoftBandPlatforms microsoftBandPlatforms;
+    MicrosoftBands microsoftBands;
     DataKitHandler dataKitHandler=null;
     NotificationManager notificationManager;
 
@@ -53,8 +52,8 @@ public class ServiceMicrosoftBands extends Service {
         setBluetoothSettingsDataKit();
     }
     private boolean readSettings(){
-        microsoftBandPlatforms = new MicrosoftBandPlatforms(ServiceMicrosoftBands.this);
-        return microsoftBandPlatforms.size(true) != 0;
+        microsoftBands = new MicrosoftBands(ServiceMicrosoftBands.this);
+        return microsoftBands.size(true) != 0;
     }
 
 
@@ -76,17 +75,18 @@ public class ServiceMicrosoftBands extends Service {
         return dataKitHandler.connect(new OnConnectionListener() {
             @Override
             public void onConnected() {
-                microsoftBandPlatforms.register();
-                notificationManager=new NotificationManager(ServiceMicrosoftBands.this,microsoftBandPlatforms.getMicrosoftBandPlatform());
+                microsoftBands.register();
+                notificationManager=new NotificationManager(ServiceMicrosoftBands.this, microsoftBands.find());
             }
         });
     }
     void disconnectDataKit(){
-        if(microsoftBandPlatforms!=null)
-            microsoftBandPlatforms.unregister();
-        if(dataKitHandler!=null)
+        if(microsoftBands !=null)
+            microsoftBands.unregister();
+        if(dataKitHandler!=null) {
             dataKitHandler.disconnect();
-        dataKitHandler=null;
+            dataKitHandler.close();
+        }
     }
     @Override
     public void onDestroy() {
@@ -131,7 +131,7 @@ public class ServiceMicrosoftBands extends Service {
         clearSettingsBluetooth();
     }
     private void clearSettingsBluetooth(){
-        microsoftBandPlatforms=null;
+        microsoftBands =null;
         clearBlueTooth();
     }
     private void clearBlueTooth(){
@@ -147,7 +147,7 @@ public class ServiceMicrosoftBands extends Service {
     void showAlertDialogSettings(){
         AlertDialog alertDialog = new AlertDialog.Builder(this)
                 .setTitle("Error: Settings")
-                .setIcon(R.drawable.ic_error_outline_white_24dp)
+                .setIcon(R.drawable.ic_error_red_50dp)
                 .setMessage("Microsoft Band is not configured.\n\n Please go to Menu -> Settings (or, click Settings below)")
                 .setPositiveButton("Settings", new DialogInterface.OnClickListener() {
                     @Override
@@ -171,7 +171,7 @@ public class ServiceMicrosoftBands extends Service {
     void showAlertDialogBluetooth(){
         AlertDialog alertDialog = new AlertDialog.Builder(this)
                 .setTitle("Error: Bluetooth")
-                .setIcon(R.drawable.ic_error_outline_white_24dp)
+                .setIcon(R.drawable.ic_error_red_50dp)
                 .setMessage("Please turn on Bluetooth")
                 .setPositiveButton("Turn On Bluetooth", new DialogInterface.OnClickListener() {
                     @Override
@@ -193,7 +193,7 @@ public class ServiceMicrosoftBands extends Service {
     void showAlertDialogDataKit(){
         AlertDialog alertDialog = new AlertDialog.Builder(this)
                 .setTitle("Error: DataKit")
-                .setIcon(R.drawable.ic_error_outline_white_24dp)
+                .setIcon(R.drawable.ic_error_red_50dp)
                 .setMessage("DataKit is not installed.\n\n Please install DataKit")
                 .setNegativeButton("Ok", new DialogInterface.OnClickListener() {
                     @Override

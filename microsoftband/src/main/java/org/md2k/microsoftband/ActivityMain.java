@@ -1,14 +1,16 @@
 package org.md2k.microsoftband;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,9 +21,12 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import org.md2k.datakitapi.datatype.DataType;
+import org.md2k.datakitapi.datatype.DataTypeDouble;
 import org.md2k.datakitapi.datatype.DataTypeDoubleArray;
 import org.md2k.datakitapi.datatype.DataTypeFloat;
 import org.md2k.datakitapi.datatype.DataTypeFloatArray;
+import org.md2k.datakitapi.datatype.DataTypeInt;
+import org.md2k.datakitapi.datatype.DataTypeIntArray;
 import org.md2k.datakitapi.time.DateTime;
 import org.md2k.utilities.Apps;
 import org.md2k.utilities.UI.ActivityAbout;
@@ -56,28 +61,28 @@ import java.util.HashMap;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class ActivityMicrosoftBand extends Activity {
-    private static final String TAG = ActivityMicrosoftBand.class.getSimpleName();
+public class ActivityMain extends AppCompatActivity {
+    private static final String TAG = ActivityMain.class.getSimpleName();
     HashMap<String, TextView> hashMapData = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_microsoftband);
-        final Button buttonService = (Button) findViewById(R.id.buttonServiceStartStop);
+        setContentView(R.layout.activity_main);
+        final Button buttonService = (Button) findViewById(R.id.button_app_status);
         buttonService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(ActivityMicrosoftBand.this, ServiceMicrosoftBands.class);
-                if (buttonService.getText().equals("Start Service")) {
-                    startService(intent);
-                } else {
+                Intent intent = new Intent(ActivityMain.this, ServiceMicrosoftBands.class);
+                if (Apps.isServiceRunning(getBaseContext(), Constants.SERVICE_NAME)) {
                     stopService(intent);
+                } else {
+                    startService(intent);
                 }
             }
         });
-        if(getActionBar()!=null)
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar() != null)
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     @Override
@@ -104,6 +109,12 @@ public class ActivityMicrosoftBand extends Activity {
                 break;
             case R.id.action_about:
                 intent = new Intent(this, ActivityAbout.class);
+                try {
+                    intent.putExtra(org.md2k.utilities.Constants.VERSION_CODE, String.valueOf(this.getPackageManager().getPackageInfo(getPackageName(), 0).versionCode));
+                    intent.putExtra(org.md2k.utilities.Constants.VERSION_NAME, this.getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
+                } catch (PackageManager.NameNotFoundException e) {
+                    e.printStackTrace();
+                }
                 startActivity(intent);
                 break;
             case R.id.action_copyright:
@@ -139,21 +150,21 @@ public class ActivityMicrosoftBand extends Activity {
         return row;
     }
 
-    void prepareTable(ArrayList<MicrosoftBandPlatform> microsoftBandPlatforms) {
+    void prepareTable(ArrayList<MicrosoftBand> microsoftBands) {
         TableLayout ll = (TableLayout) findViewById(R.id.tableLayout);
         ll.removeAllViews();
         ll.addView(createDefaultRow());
-        for (int i = 0; i < microsoftBandPlatforms.size(); i++) {
-            if (!microsoftBandPlatforms.get(i).enabled) continue;
-            for (int j = 0; j < microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().size(); j++) {
-                if (!microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().get(j).isEnabled())
+        for (int i = 0; i < microsoftBands.size(); i++) {
+            if (!microsoftBands.get(i).enabled) continue;
+            for (int j = 0; j < microsoftBands.get(i).getSensors().size(); j++) {
+                if (!microsoftBands.get(i).getSensors().get(j).isEnabled())
                     continue;
-                String id = microsoftBandPlatforms.get(i).platformId + ":" + microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().get(j).getDataSourceType();
+                String id = microsoftBands.get(i).platformId + ":" + microsoftBands.get(i).getSensors().get(j).getDataSourceType();
                 TableRow row = new TableRow(this);
                 TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
                 row.setLayoutParams(lp);
                 TextView tvSensor = new TextView(this);
-                String sname=microsoftBandPlatforms.get(i).getLocation()+"\n"+microsoftBandPlatforms.get(i).getMicrosoftBandDataSource().get(j).getDataSourceType().toLowerCase();
+                String sname = microsoftBands.get(i).getPlatform().getType() + "\n" + microsoftBands.get(i).getSensors().get(j).getDataSourceType().toLowerCase();
                 tvSensor.setText(sname);
                 TextView tvCount = new TextView(this);
                 tvCount.setText("0");
@@ -198,6 +209,8 @@ public class ActivityMicrosoftBand extends Activity {
                 if (i % 3 == 0 && i != 0) sampleStr += "\n";
                 sampleStr = sampleStr + String.format("%.1f", sample[i]);
             }
+        }else if (data instanceof DataTypeDouble) {
+            sampleStr = String.format("%.1f", ((DataTypeDouble) data).getSample());
         } else if (data instanceof DataTypeDoubleArray) {
             double[] sample = ((DataTypeDoubleArray) data).getSample();
             for (int i = 0; i < sample.length; i++) {
@@ -205,7 +218,17 @@ public class ActivityMicrosoftBand extends Activity {
                 if (i % 3 == 0 && i != 0) sampleStr += "\n";
                 sampleStr = sampleStr + String.format("%.1f", sample[i]);
             }
+        } else if (data instanceof DataTypeInt) {
+            sampleStr = String.format("%d", ((DataTypeInt) data).getSample());
+        } else if (data instanceof DataTypeIntArray) {
+            int[] sample = ((DataTypeIntArray) data).getSample();
+            for (int i = 0; i < sample.length; i++) {
+                if (i != 0) sampleStr += ",";
+                if (i % 3 == 0 && i != 0) sampleStr += "\n";
+                sampleStr = sampleStr + String.format("%d", sample[i]);
+            }
         }
+
         hashMapData.get(id + "_sample").setText(sampleStr);
     }
 
@@ -220,8 +243,8 @@ public class ActivityMicrosoftBand extends Activity {
     public void onResume() {
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter("microsoftBand"));
-        ArrayList<MicrosoftBandPlatform> microsoftBandPlatforms = new MicrosoftBandPlatforms(ActivityMicrosoftBand.this).getMicrosoftBandPlatform();
-        prepareTable(microsoftBandPlatforms);
+        ArrayList<MicrosoftBand> microsoftBands = new MicrosoftBands(ActivityMain.this).find();
+        prepareTable(microsoftBands);
         mHandler.post(runnable);
         super.onResume();
     }
@@ -239,27 +262,21 @@ public class ActivityMicrosoftBand extends Activity {
         super.onDestroy();
         Log.d(TAG, "...onDestroy()");
     }
+
     Handler mHandler = new Handler();
     Runnable runnable = new Runnable() {
         @Override
         public void run() {
             {
-                long time = Apps.serviceRunningTime(ActivityMicrosoftBand.this, Constants.SERVICE_NAME);
+                long time = Apps.serviceRunningTime(ActivityMain.this, Constants.SERVICE_NAME);
                 if (time < 0) {
-                    ((TextView) findViewById(R.id.textViewTime)).setText("OFF");
-                    ((Button) findViewById(R.id.buttonServiceStartStop)).setText("Start Service");
-                    findViewById(R.id.buttonServiceStartStop).setBackground(getResources().getDrawable(R.drawable.button_green));
+                    ((Button) findViewById(R.id.button_app_status)).setText("START");
+                    findViewById(R.id.button_app_status).setBackground(ContextCompat.getDrawable(ActivityMain.this, R.drawable.button_status_off));
 
                 } else {
-                    long runtime = time / 1000;
-                    int second = (int) (runtime % 60);
-                    runtime /= 60;
-                    int minute = (int) (runtime % 60);
-                    runtime /= 60;
-                    int hour = (int) runtime;
-                    ((TextView) findViewById(R.id.textViewTime)).setText(String.format("%02d:%02d:%02d", hour, minute, second));
-                    ((Button) findViewById(R.id.buttonServiceStartStop)).setText("Stop Service");
-                    findViewById(R.id.buttonServiceStartStop).setBackground(getResources().getDrawable(R.drawable.button_red));
+                    findViewById(R.id.button_app_status).setBackground(ContextCompat.getDrawable(ActivityMain.this, R.drawable.button_status_on));
+                    ((Button) findViewById(R.id.button_app_status)).setText(DateTime.convertTimestampToTimeStr(time));
+
                 }
                 mHandler.postDelayed(this, 1000);
             }
