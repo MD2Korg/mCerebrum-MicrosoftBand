@@ -13,6 +13,7 @@ import org.md2k.datakitapi.source.METADATA;
 import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.datakitapi.time.DateTime;
 import org.md2k.microsoftband.CallBack;
+import org.md2k.utilities.Report.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,6 +45,7 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class Sensors {
+    private static final String TAG =Sensors.class.getSimpleName() ;
     Context context;
     ArrayList<Sensor> sensors;
     HashMap<String, Integer> hm = new HashMap<>();
@@ -90,6 +92,7 @@ public class Sensors {
         for (int i = 0; i < sensors.size(); i++) {
             if (sensors.get(i).isEnabled()) {
                 final int finalI = i;
+                Log.d(TAG, "sensor=" + sensors.get(i).dataSourceType+" freq="+sensors.get(i).frequency);
                 sensors.get(i).register(context,bandClient, platform, new CallBack() {
                     @Override
                     public void onReceivedData(DataType data) {

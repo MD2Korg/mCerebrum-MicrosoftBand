@@ -11,6 +11,7 @@ import org.md2k.datakitapi.source.datasource.DataSourceBuilder;
 import org.md2k.datakitapi.source.datasource.DataSourceClient;
 import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.microsoftband.CallBack;
+import org.md2k.utilities.Report.Log;
 
 import java.util.HashMap;
 
@@ -41,6 +42,7 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public abstract class Sensor {
+    private static final String TAG =Sensor.class.getSimpleName() ;
     Context context;
     String dataSourceType;
     String frequency;
@@ -99,6 +101,7 @@ public abstract class Sensor {
         this.frequency=frequency;
     }
     public void registerDataSource(Context context, Platform platform){
+        Log.d(TAG, "context=" + context+" connected="+DataKitAPI.getInstance(context).isConnected());
         this.context=context;
         dataSourceClient= DataKitAPI.getInstance(context).register(createDataSourceBuilder(platform));
     }

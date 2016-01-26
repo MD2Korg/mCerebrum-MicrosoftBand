@@ -17,6 +17,7 @@ import org.md2k.datakitapi.source.datasource.DataSourceType;
 import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.datakitapi.time.DateTime;
 import org.md2k.microsoftband.CallBack;
+import org.md2k.utilities.Report.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,11 +49,14 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class Accelerometer extends Sensor {
+    private static final String TAG = Accelerometer.class.getSimpleName();
+
     Accelerometer() {
         super(DataSourceType.ACCELEROMETER, "31 Hz", 1);
     }
 
     public DataSourceBuilder createDataSourceBuilder(Platform platform) {
+        Log.d(TAG,"platform="+platform);
         DataSourceBuilder dataSourceBuilder = new DataSourceBuilder();
         dataSourceBuilder = dataSourceBuilder.setType(dataSourceType);
         dataSourceBuilder = dataSourceBuilder.setDataDescriptors(createDataDescriptors());
@@ -76,6 +80,7 @@ public class Accelerometer extends Sensor {
     public void register(Context context, final BandClient bandClient, Platform platform, CallBack callBack) {
         registerDataSource(context, platform);
         this.callBack = callBack;
+        Log.d(TAG, "register: ACCELEROMETER freq=" + frequency);
 
         final Thread background = new Thread(new Runnable() {
             @Override
@@ -93,6 +98,7 @@ public class Accelerometer extends Sensor {
                             break;
                     }
                 } catch (BandException e) {
+                    Log.d(TAG," exception...............");
                     e.printStackTrace();
                 }
             }

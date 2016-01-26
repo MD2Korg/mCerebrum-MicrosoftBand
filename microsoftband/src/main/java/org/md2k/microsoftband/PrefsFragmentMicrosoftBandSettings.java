@@ -258,8 +258,7 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
             String dataSourceType = microsoftBand.getSensors().get(i).getDataSourceType();
             microsoftBand.getSensors().get(i).setEnabled(mySharedPreference.getSharedPreferenceBoolean(dataSourceType));
             if (dataSourceType.equals(DataSourceType.ACCELEROMETER) || dataSourceType.equals(DataSourceType.GYROSCOPE)) {
-                String frequencyStr = mySharedPreference.getSharedPreferenceString(dataSourceType + "_frequency");
-                String frequency = frequencyStr.substring(0, frequencyStr.length() - 3);
+                String frequency = mySharedPreference.getSharedPreferenceString(dataSourceType + "_frequency");
                 microsoftBand.getSensors().get(i).setFrequency(frequency);
             }
         }
@@ -282,8 +281,6 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
         setCancelButton();
     }
 
-
-    @SuppressWarnings("deprecation")
     public void setupPreferenceScreenBluetooth(final boolean bluetoothEnabled) {
         Preference preference = findPreference("bluetooth_onoff");
         if (bluetoothEnabled) preference.setSummary("ON");
@@ -331,7 +328,7 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
         if (count == 0)
             getActivity().finish();
         else
-            builder.setMessage("Configure MicrosoftBand (Change Background & Add Tile)?").setPositiveButton("Yes", dialogChangeBackgroundListener)
+            builder.setMessage("Configure MicrosoftBand (Change Background)?").setPositiveButton("Yes", dialogChangeBackgroundListener)
                     .setNegativeButton("No", dialogChangeBackgroundListener).show();
     }
 

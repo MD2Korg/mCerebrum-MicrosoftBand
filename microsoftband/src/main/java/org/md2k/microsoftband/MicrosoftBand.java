@@ -10,6 +10,7 @@ import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.datakitapi.source.platform.PlatformBuilder;
 import org.md2k.microsoftband.sensors.Sensor;
 import org.md2k.microsoftband.sensors.Sensors;
+import org.md2k.utilities.Report.Log;
 
 import java.util.ArrayList;
 
@@ -80,10 +81,12 @@ public class MicrosoftBand extends Device {
 
 
     public void register() {
+        Log.d(TAG, "MicrosoftBand...register()...enabled=" + enabled+" bandCLient="+bandClient);
         if (!enabled) return;
         connect(new BandCallBack() {
             @Override
             public void onBandConnected() throws BandIOException {
+                Log.d(TAG,"band connected...");
                 sensors.register(bandClient, getPlatform());
             }
         });

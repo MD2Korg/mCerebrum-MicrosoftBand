@@ -157,7 +157,7 @@ public abstract class Device {
                     try {
                         bandCallBack.onBandConnected();
                     } catch (BandIOException e) {
-                        e.printStackTrace();
+//                        e.printStackTrace();
                     }
                     break;
                 } else {

@@ -68,18 +68,23 @@ public class ServiceMicrosoftBands extends Service {
             }
             @Override
             public void onDisconnected() {
+                Log.d(TAG,"bluetooth disconnected...");
                 clearDataKitSettingsBluetooth();
             }
         });
     }
 
     void connectDataKit() {
-        dataKitAPI = DataKitAPI.getInstance(ServiceMicrosoftBands.this);
+        dataKitAPI = DataKitAPI.getInstance(getApplicationContext());
+        Log.d(TAG,"datakitapi connected="+dataKitAPI.isConnected());
         dataKitAPI.connect(new OnConnectionListener() {
             @Override
             public void onConnected() {
+                Log.d(TAG," datakit connected.................");
+                Log.d(TAG,"datakitapi connected="+dataKitAPI.isConnected());
                 microsoftBands.register();
-                notificationManager=new NotificationManager(ServiceMicrosoftBands.this, microsoftBands.find());
+                //TODO: Notitification manager turn on to vibrate MSBand
+//                notificationManager=new NotificationManager(ServiceMicrosoftBands.this, microsoftBands.find());
                 Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand Started successfully", Toast.LENGTH_SHORT).show();
             }
         }, new OnExceptionListener() {
@@ -92,6 +97,7 @@ public class ServiceMicrosoftBands extends Service {
         });
     }
     void disconnectDataKit(){
+        Log.d(TAG,"disconnectDataKit()...");
         if(microsoftBands !=null)
             microsoftBands.unregister();
         if(dataKitAPI!=null) {
@@ -101,8 +107,9 @@ public class ServiceMicrosoftBands extends Service {
     }
     @Override
     public void onDestroy() {
-        if(notificationManager!=null)
-            notificationManager.clear();
+//        if(notificationManager!=null)
+//            notificationManager.clear();
+        Log.d(TAG, "onDestroy()...");
         clearDataKitSettingsBluetooth();
         super.onDestroy();
     }
@@ -117,6 +124,7 @@ public class ServiceMicrosoftBands extends Service {
             setSettingsDataKit();
         else {
             myBlueTooth.enable();
+            Log.d(TAG,"bluetooth not enabled..");
 //            showAlertDialogBluetooth();
             close();
         }
@@ -126,17 +134,15 @@ public class ServiceMicrosoftBands extends Service {
             setDataKit();
         else {
             showAlertDialogSettings();
+            Log.d(TAG,"setSettingsDataKit()...");
             close();
         }
     }
     void setDataKit(){
         connectDataKit();
-        if(!dataKitAPI.isConnected()){
-            showAlertDialogDataKit();
-            close();
-        }
     }
     private void clearDataKitSettingsBluetooth(){
+        Log.d(TAG,"clearDataKitSettingsBluetooth...");
         disconnectDataKit();
         clearSettingsBluetooth();
     }
@@ -151,6 +157,7 @@ public class ServiceMicrosoftBands extends Service {
     }
 
     void close() {
+        Log.d(TAG,"close()..");
         stopSelf();
     }
 
