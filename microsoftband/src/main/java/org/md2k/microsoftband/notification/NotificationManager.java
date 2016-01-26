@@ -5,6 +5,7 @@ import android.os.Handler;
 
 import com.google.gson.Gson;
 
+import org.md2k.datakitapi.DataKitAPI;
 import org.md2k.datakitapi.datatype.DataType;
 import org.md2k.datakitapi.datatype.DataTypeString;
 import org.md2k.datakitapi.messagehandler.OnReceiveListener;
@@ -14,7 +15,6 @@ import org.md2k.datakitapi.source.datasource.DataSourceType;
 import org.md2k.datakitapi.source.platform.PlatformType;
 import org.md2k.microsoftband.MicrosoftBand;
 import org.md2k.utilities.Report.Log;
-import org.md2k.utilities.datakit.DataKitHandler;
 
 import java.util.ArrayList;
 
@@ -46,7 +46,7 @@ import java.util.ArrayList;
  */
 public class NotificationManager {
     private static final String TAG = NotificationManager.class.getSimpleName();
-    DataKitHandler dataKitHandler;
+    DataKitAPI dataKitAPI;
     Context context;
     ArrayList<MicrosoftBand> microsoftBands;
     ArrayList<DataSourceClient> dataSourceClientArrayList;
@@ -67,19 +67,19 @@ public class NotificationManager {
     void unsubscribe() {
         if (dataSourceClientArrayList != null)
             for (int i = 0; i < dataSourceClientArrayList.size(); i++)
-                dataKitHandler.unsubscribe(dataSourceClientArrayList.get(i));
+                dataKitAPI.unsubscribe(dataSourceClientArrayList.get(i));
     }
 
     void subscribe() {
         Log.d(TAG, "NotificationManager : subscribe()");
-        dataKitHandler = DataKitHandler.getInstance(context);
+        dataKitAPI = DataKitAPI.getInstance(context);
         DataSourceBuilder dataSourceBuilder = new DataSourceBuilder().setType(DataSourceType.NOTIFICATION);
-        dataSourceClientArrayList = dataKitHandler.find(dataSourceBuilder);
+        dataSourceClientArrayList = dataKitAPI.find(dataSourceBuilder);
         Log.d(TAG, "datasourceclient=" + dataSourceClientArrayList.size());
         if (dataSourceClientArrayList.size() > 0) {
             for (int i = 0; i < dataSourceClientArrayList.size(); i++) {
                 Log.d(TAG, "ds_id=" + dataSourceClientArrayList.get(i).getDs_id());
-                dataKitHandler.subscribe(dataSourceClientArrayList.get(i), new OnReceiveListener() {
+                dataKitAPI.subscribe(dataSourceClientArrayList.get(i), new OnReceiveListener() {
                     @Override
                     public void onReceived(final DataType dataType) {
                         processMessage(dataType);

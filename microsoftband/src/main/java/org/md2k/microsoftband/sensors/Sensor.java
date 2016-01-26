@@ -3,19 +3,14 @@ package org.md2k.microsoftband.sensors;
 import android.content.Context;
 
 import com.microsoft.band.BandClient;
-import com.microsoft.band.BandException;
-import com.microsoft.band.BandIOException;
-import com.microsoft.band.sensors.SampleRate;
 
+import org.md2k.datakitapi.DataKitAPI;
 import org.md2k.datakitapi.datatype.DataType;
 import org.md2k.datakitapi.source.METADATA;
-import org.md2k.datakitapi.source.application.Application;
-import org.md2k.datakitapi.source.application.ApplicationBuilder;
 import org.md2k.datakitapi.source.datasource.DataSourceBuilder;
 import org.md2k.datakitapi.source.datasource.DataSourceClient;
 import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.microsoftband.CallBack;
-import org.md2k.utilities.datakit.DataKitHandler;
 
 import java.util.HashMap;
 
@@ -105,12 +100,12 @@ public abstract class Sensor {
     }
     public void registerDataSource(Context context, Platform platform){
         this.context=context;
-        dataSourceClient= DataKitHandler.getInstance(context).register(createDataSourceBuilder(platform));
+        dataSourceClient= DataKitAPI.getInstance(context).register(createDataSourceBuilder(platform));
     }
     public void unregisterDataSource(Context context){
-        DataKitHandler.getInstance(context).unregister(dataSourceClient);
+        DataKitAPI.getInstance(context).unregister(dataSourceClient);
     }
     public void sendData(DataType dataType){
-        DataKitHandler.getInstance(context).insert(dataSourceClient,dataType);
+        DataKitAPI.getInstance(context).insert(dataSourceClient,dataType);
     }
 }

@@ -5,12 +5,15 @@ import android.app.Service;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import org.md2k.datakitapi.DataKitAPI;
 import org.md2k.datakitapi.messagehandler.OnConnectionListener;
+import org.md2k.datakitapi.messagehandler.OnExceptionListener;
+import org.md2k.datakitapi.status.Status;
 import org.md2k.microsoftband.notification.NotificationManager;
-import org.md2k.utilities.datakit.DataKitHandler;
 
 /**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
@@ -43,7 +46,7 @@ public class ServiceMicrosoftBands extends Service {
     private static final String TAG = ServiceMicrosoftBands.class.getSimpleName();
     MyBlueTooth myBlueTooth=null;
     MicrosoftBands microsoftBands;
-    DataKitHandler dataKitHandler=null;
+    DataKitAPI dataKitAPI=null;
     NotificationManager notificationManager;
 
     @Override
@@ -70,22 +73,30 @@ public class ServiceMicrosoftBands extends Service {
         });
     }
 
-    boolean connectDataKit() {
-        dataKitHandler = DataKitHandler.getInstance(ServiceMicrosoftBands.this);
-        return dataKitHandler.connect(new OnConnectionListener() {
+    void connectDataKit() {
+        dataKitAPI = DataKitAPI.getInstance(ServiceMicrosoftBands.this);
+        dataKitAPI.connect(new OnConnectionListener() {
             @Override
             public void onConnected() {
                 microsoftBands.register();
                 notificationManager=new NotificationManager(ServiceMicrosoftBands.this, microsoftBands.find());
+                Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand Started successfully", Toast.LENGTH_SHORT).show();
+            }
+        }, new OnExceptionListener() {
+            @Override
+            public void onException(Status status) {
+                Log.d(TAG, "onException...");
+                Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand Stopped. Error: " + status.getStatusMessage(), Toast.LENGTH_SHORT).show();
+                stopSelf();
             }
         });
     }
     void disconnectDataKit(){
         if(microsoftBands !=null)
             microsoftBands.unregister();
-        if(dataKitHandler!=null) {
-            dataKitHandler.disconnect();
-            dataKitHandler.close();
+        if(dataKitAPI!=null) {
+            dataKitAPI.disconnect();
+            dataKitAPI.close();
         }
     }
     @Override
@@ -119,9 +130,8 @@ public class ServiceMicrosoftBands extends Service {
         }
     }
     void setDataKit(){
-        if(connectDataKit())
-            Toast.makeText(getApplicationContext(), "MicrosoftBand Service started Successfully", Toast.LENGTH_LONG).show();
-        else {
+        connectDataKit();
+        if(!dataKitAPI.isConnected()){
             showAlertDialogDataKit();
             close();
         }
