@@ -70,7 +70,7 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
         if (!myBlueTooth.isEnabled()) {
             myBlueTooth.enable();
         } else
-            microsoftBands = new MicrosoftBands(getActivity());
+            microsoftBands = new MicrosoftBands(getActivity().getApplicationContext());
 
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver,
                 new IntentFilter("background"));
@@ -80,7 +80,7 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
         myBlueTooth = new MyBlueTooth(getActivity(), new BlueToothCallBack() {
             @Override
             public void onConnected() {
-                microsoftBands = new MicrosoftBands(getActivity());
+                microsoftBands = new MicrosoftBands(getActivity().getApplicationContext());
                 enablePage();
             }
 

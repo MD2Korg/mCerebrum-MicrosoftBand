@@ -243,7 +243,7 @@ public class ActivityMain extends AppCompatActivity {
     public void onResume() {
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter("microsoftBand"));
-        ArrayList<MicrosoftBand> microsoftBands = new MicrosoftBands(ActivityMain.this).find();
+        ArrayList<MicrosoftBand> microsoftBands = new MicrosoftBands(getApplicationContext()).find();
         prepareTable(microsoftBands);
         mHandler.post(runnable);
         super.onResume();

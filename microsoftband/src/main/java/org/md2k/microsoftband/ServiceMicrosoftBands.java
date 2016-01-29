@@ -55,7 +55,7 @@ public class ServiceMicrosoftBands extends Service {
         setBluetoothSettingsDataKit();
     }
     private boolean readSettings(){
-        microsoftBands = new MicrosoftBands(ServiceMicrosoftBands.this);
+        microsoftBands = new MicrosoftBands(getApplicationContext());
         return microsoftBands.size(true) != 0;
     }
 
