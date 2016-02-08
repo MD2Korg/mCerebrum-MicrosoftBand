@@ -84,7 +84,7 @@ public class ServiceMicrosoftBands extends Service {
                 Log.d(TAG,"datakitapi connected="+dataKitAPI.isConnected());
                 microsoftBands.register();
                 //TODO: Notitification manager turn on to vibrate MSBand
-//                notificationManager=new NotificationManager(ServiceMicrosoftBands.this, microsoftBands.find());
+                notificationManager=new NotificationManager(ServiceMicrosoftBands.this, microsoftBands.find());
                 Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand Started successfully", Toast.LENGTH_SHORT).show();
             }
         }, new OnExceptionListener() {
@@ -107,8 +107,8 @@ public class ServiceMicrosoftBands extends Service {
     }
     @Override
     public void onDestroy() {
-//        if(notificationManager!=null)
-//            notificationManager.clear();
+        if(notificationManager!=null)
+            notificationManager.clear();
         Log.d(TAG, "onDestroy()...");
         clearDataKitSettingsBluetooth();
         super.onDestroy();
@@ -185,43 +185,4 @@ public class ServiceMicrosoftBands extends Service {
         alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
         alertDialog.show();
     }
-    void showAlertDialogBluetooth(){
-        AlertDialog alertDialog = new AlertDialog.Builder(this)
-                .setTitle("Error: Bluetooth")
-                .setIcon(R.drawable.ic_error_red_50dp)
-                .setMessage("Please turn on Bluetooth")
-                .setPositiveButton("Turn On Bluetooth", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        myBlueTooth.enable();
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-//                        close();
-                    }
-                })
-                .create();
-        alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
-        alertDialog.show();
-    }
-
-    void showAlertDialogDataKit(){
-        AlertDialog alertDialog = new AlertDialog.Builder(this)
-                .setTitle("Error: DataKit")
-                .setIcon(R.drawable.ic_error_red_50dp)
-                .setMessage("DataKit is not installed.\n\n Please install DataKit")
-                .setNegativeButton("Ok", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-//                        close();
-                    }
-                })
-                .create();
-
-        alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
-        alertDialog.show();
-    }
-
 }

@@ -324,7 +324,7 @@ public abstract class Device {
             public void onBandConnected() {
                 try {
                     changeBackGround(wrist);
-//                    addTiles(wrist);
+                    addTiles(wrist);
 
                     disconnect();
 
@@ -344,9 +344,15 @@ public abstract class Device {
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         switch (wrist) {
             case "LEFT_WRIST":
-                return BitmapFactory.decodeResource(context.getResources(), R.raw.left, options);
+                if(Integer.parseInt(versionHardware)<=19)
+                    return BitmapFactory.decodeResource(context.getResources(), R.raw.left_v1, options);
+                else
+                    return BitmapFactory.decodeResource(context.getResources(), R.raw.left_v2, options);
             case "RIGHT_WRIST":
-                return BitmapFactory.decodeResource(context.getResources(), R.raw.right, options);
+            if(Integer.parseInt(versionHardware)<=19)
+                return BitmapFactory.decodeResource(context.getResources(), R.raw.right_v1, options);
+            else
+                return BitmapFactory.decodeResource(context.getResources(), R.raw.right_v2, options);
             default:
                 return null;
         }

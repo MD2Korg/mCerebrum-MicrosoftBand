@@ -1,6 +1,10 @@
 package org.md2k.microsoftband;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.microsoft.band.BandIOException;
 
@@ -50,8 +54,9 @@ public class MicrosoftBand extends Device {
     }
 
     MicrosoftBand(Context context, String platformId, String deviceId) {
-        super(context, platformId,deviceId);
+        super(context, platformId, deviceId);
         resetDataSource();
+
     }
 
     public ArrayList<Sensor> getSensors() {
@@ -87,6 +92,8 @@ public class MicrosoftBand extends Device {
             @Override
             public void onBandConnected() throws BandIOException {
                 Log.d(TAG,"band connected...");
+                LocalBroadcastManager.getInstance(context).registerReceiver(mMessageReceiver,
+                        new IntentFilter("microsoftband_restart"));
                 sensors.register(bandClient, getPlatform());
             }
         });
@@ -95,6 +102,7 @@ public class MicrosoftBand extends Device {
     public void unregister(){
         if (bandClient.isConnected()) {
             try {
+                LocalBroadcastManager.getInstance(context).unregisterReceiver(mMessageReceiver);
                 sensors.unregister(bandClient);
             } catch (BandIOException e) {
                 e.printStackTrace();
@@ -102,4 +110,15 @@ public class MicrosoftBand extends Device {
             disconnect();
         }
     }
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getStringExtra("platformid").equals(platformId)) {
+                Log.d(TAG,"Restart msband ... id="+platformId);
+                unregister();
+                register();
+            }
+        }
+    };
+
 }

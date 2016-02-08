@@ -40,6 +40,7 @@
             android:name=".ActivityMicrosoftBandSettings"
             android:enabled="true"
             android:exported="true"
+            android:screenOrientation="portrait"
             android:label="Settings: Microsoft Band" >
             <intent-filter>
                 <action android:name="org.md2k.microsoftband.ActivityMicrosoftBandSettings" />

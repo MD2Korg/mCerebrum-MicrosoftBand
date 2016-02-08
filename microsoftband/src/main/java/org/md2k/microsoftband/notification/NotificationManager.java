@@ -103,10 +103,4 @@ public class NotificationManager {
             }
         }
     }
-    Runnable vibrate=new Runnable() {
-        @Override
-        public void run() {
-
-        }
-    };
 }

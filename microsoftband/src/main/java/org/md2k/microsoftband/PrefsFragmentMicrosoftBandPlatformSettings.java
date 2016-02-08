@@ -75,7 +75,7 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
         findPreference("platformId").setSummary(getLocationSummary(mySharedPreference.getSharedPreferenceString("platformId")));
         ListPreference lpLocation=(ListPreference)findPreference("platformId");
         lpLocation.setValue(mySharedPreference.getSharedPreferenceString("platformId"));
-        MicrosoftBand microsoftBand=new MicrosoftBand(getActivity().getApplicationContext(),null,null);
+        MicrosoftBand microsoftBand=new MicrosoftBand(getActivity(),null,null);
 
         for (int i = 0; i < microsoftBand.getSensors().size(); i++) {
             String dataSourceType = microsoftBand.getSensors().get(i).getDataSourceType();
@@ -101,7 +101,7 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
         Log.d(TAG, "Preference category: " + preferenceCategory);
         preferenceCategory.removeAll();
         int versionHardwareInt=getBandVersion();
-        MicrosoftBand microsoftBand=new MicrosoftBand(getActivity().getApplicationContext(),null,null);
+        MicrosoftBand microsoftBand=new MicrosoftBand(getActivity(),null,null);
         for (int i = 0; i <microsoftBand.getSensors().size(); i++) {
             final String dataSourceType = microsoftBand.getSensors().get(i).getDataSourceType();
             SwitchPreference switchPreference = new SwitchPreference(getActivity());
@@ -158,7 +158,7 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 boolean enabled;
-                MicrosoftBand microsoftBand=new MicrosoftBand(getActivity().getApplicationContext(),null,null);
+                MicrosoftBand microsoftBand=new MicrosoftBand(getActivity(),null,null);
                 final String location = mySharedPreference.getSharedPreferenceString("platformId");
                 if (deviceId == null || deviceId.equals("")) {
                     Toast.makeText(getActivity(), "!!! Device ID is missing !!!", Toast.LENGTH_LONG).show();

@@ -185,7 +185,7 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
     private Preference.OnPreferenceClickListener microsoftBandListener() {
         return new Preference.OnPreferenceClickListener() {
             @Override
-            public boolean onPreferenceClick(Preference preference) {
+            public boolean onPreferenceClick(final Preference preference) {
                 boolean isNew;
                 final String deviceId = preference.getKey();
                 final Intent intent = new Intent(getActivity(), ActivityMicrosoftBandPlatformSettings.class);
@@ -215,13 +215,19 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
                     alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Edit",
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
-                                    startActivityForResult(intent, ADD_DEVICE);
+                                    if(preference.getSummary().equals("ERROR: BandOff/PairProblem"))
+                                        Toast.makeText(getActivity(),"ERROR: BandOff/PairProblem",Toast.LENGTH_SHORT).show();
+                                    else
+                                        startActivityForResult(intent, ADD_DEVICE);
                                 }
                             });
 
                     alertDialog.show();
                 } else {
-                    startActivityForResult(intent, ADD_DEVICE);
+                    if(preference.getSummary().equals("ERROR: BandOff/PairProblem"))
+                        Toast.makeText(getActivity(),"ERROR: BandOff/PairProblem",Toast.LENGTH_SHORT).show();
+                    else
+                        startActivityForResult(intent, ADD_DEVICE);
                 }
                 return false;
             }

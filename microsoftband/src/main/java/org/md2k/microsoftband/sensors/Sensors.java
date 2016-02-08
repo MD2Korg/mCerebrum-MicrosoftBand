@@ -5,15 +5,18 @@ import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.microsoft.band.BandClient;
-import com.microsoft.band.BandException;
 import com.microsoft.band.BandIOException;
 
 import org.md2k.datakitapi.datatype.DataType;
+import org.md2k.datakitapi.datatype.DataTypeInt;
+import org.md2k.datakitapi.datatype.DataTypeIntArray;
 import org.md2k.datakitapi.source.METADATA;
+import org.md2k.datakitapi.source.datasource.DataSourceType;
 import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.datakitapi.time.DateTime;
 import org.md2k.microsoftband.CallBack;
 import org.md2k.utilities.Report.Log;
+import org.md2k.utilities.data_format.DATA_QUALITY;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,11 +53,14 @@ public class Sensors {
     ArrayList<Sensor> sensors;
     HashMap<String, Integer> hm = new HashMap<>();
     long starttimestamp = 0;
+    int countOff=0;
     Platform platform;
+    BandClient bandClient;
     public Sensors(Context context, Platform platform){
         this.context=context;
         this.platform=platform;
         sensors=new ArrayList<>();
+        sensors.add(new Status());
         sensors.add(new Accelerometer());
         sensors.add(new Gyroscope());
         sensors.add(new AirPressure());
@@ -85,7 +91,9 @@ public class Sensors {
             }
         }
     }
-    public void register(BandClient bandClient, Platform platform) {
+    public void register(final BandClient bandClient, final Platform platform) {
+        this.bandClient=bandClient;
+        this.platform=platform;
         hm.clear();
         starttimestamp = DateTime.getDateTime();
 
@@ -111,6 +119,18 @@ public class Sensors {
                         intent.putExtra("deviceid", Sensors.this.platform.getMetadata().get(METADATA.DEVICE_ID));
                         intent.putExtra("platformid", Sensors.this.platform.getId());
                         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+                        if(dataSourceType.equals(DataSourceType.STATUS)){
+                            int status[]=((DataTypeIntArray) data).getSample();
+                            if(status[0]== DATA_QUALITY.BAND_OFF){
+                                countOff+=Status.PERIOD;
+                            }
+                            else countOff=0;
+                            if(countOff>Status.RESTART){
+                                Intent intentRestart = new Intent("microsoftband_restart");
+                                intent.putExtra("platformid",platform.getId());
+                                LocalBroadcastManager.getInstance(context).sendBroadcast(intentRestart);
+                            }
+                        }
                     }
                 });
             }
