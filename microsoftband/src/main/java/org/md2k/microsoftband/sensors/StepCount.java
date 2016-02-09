@@ -89,8 +89,9 @@ public class StepCount extends Sensor{
     private BandPedometerEventListener mPedometerEventListener = new BandPedometerEventListener() {
         @Override
         public void onBandPedometerChanged(final BandPedometerEvent event) {
-            DataTypeLong dataTypeLong = new DataTypeLong(DateTime.getDateTime(), event.getTotalSteps());
-            callBack.onReceivedData(dataTypeLong);
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) event.getTotalSteps());
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
         }
     };
     public void unregister(Context context, final BandClient bandClient) {

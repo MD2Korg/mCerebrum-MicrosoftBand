@@ -70,8 +70,8 @@ public class HeartRate extends Sensor {
 
     ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
-        dataDescriptors.add(createDataDescriptor("Heart Rate", "Current heart rate as read by the Band in beats/min", "beats/minute", frequency, int.class.getName(), "0", "200"));
-        dataDescriptors.add(createDataDescriptor("Quality", "Quality of the current heart rate reading", "enum [0: locked, 1: acquiring]", frequency, int.class.getName(), "0", "1"));
+        dataDescriptors.add(createDataDescriptor("Heart Rate", "Current heart rate as read by the Band in beats/min", "beats/minute", frequency, double.class.getName(), "0", "200"));
+        dataDescriptors.add(createDataDescriptor("Quality", "Quality of the current heart rate reading", "enum [0: locked, 1: acquiring]", frequency, double.class.getName(), "0", "1"));
         return dataDescriptors;
     }
     public void register(final Context context, final BandClient bandClient, Platform platform, CallBack callBack){
@@ -103,15 +103,15 @@ public class HeartRate extends Sensor {
     private BandHeartRateEventListener mHeartRateEventListener = new BandHeartRateEventListener() {
         @Override
         public void onBandHeartRateChanged(final BandHeartRateEvent event) {
-            int samples[] = new int[2];
+            double samples[] = new double[2];
             samples[0] = event.getHeartRate();
             if (event.getQuality() == HeartRateQuality.ACQUIRING)
                 samples[1] = 1;
             else if (event.getQuality() == HeartRateQuality.LOCKED)
                 samples[1] = 0;
-            DataTypeIntArray dataTypeIntArray = new DataTypeIntArray(DateTime.getDateTime(), samples);
-            sendData(dataTypeIntArray);
-            callBack.onReceivedData(dataTypeIntArray);
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), samples);
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
         }
     };
 

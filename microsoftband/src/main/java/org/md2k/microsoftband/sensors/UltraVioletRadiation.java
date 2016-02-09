@@ -68,7 +68,7 @@ public class UltraVioletRadiation extends Sensor{
 
     ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
-        dataDescriptors.add(createDataDescriptor("Index Level", "Current UVIndexLevel value as calculated by the Band", "NONE,LOW,MEDIUM,HIGH", frequency, String.class.getName(), null, null));
+        dataDescriptors.add(createDataDescriptor("Index Level", "Current UVIndexLevel value as calculated by the Band", "NONE (0),LOW (1),MEDIUM (2),HIGH (3), VERY HIGH (4)", frequency, double.class.getName(), null, null));
         return dataDescriptors;
     }
     public void register(Context context, final BandClient bandClient, Platform platform, CallBack callBack){
@@ -91,15 +91,15 @@ public class UltraVioletRadiation extends Sensor{
     private BandUVEventListener mUltravioletEventListener = new BandUVEventListener() {
         @Override
         public void onBandUVChanged(final BandUVEvent event) {
-            String uv="";
-            if (event.getUVIndexLevel() == UVIndexLevel.NONE) uv = "NONE";
-            else if (event.getUVIndexLevel() == UVIndexLevel.LOW) uv="LOW";
-            else if (event.getUVIndexLevel() == UVIndexLevel.MEDIUM) uv = "MEDIUM";
-            else if (event.getUVIndexLevel() == UVIndexLevel.HIGH) uv = "HIGH";
-            else if (event.getUVIndexLevel() == UVIndexLevel.VERY_HIGH) uv = "VERY_HIGH";
-            DataTypeString dataTypeString = new DataTypeString(DateTime.getDateTime(), uv);
-            sendData(dataTypeString);
-            callBack.onReceivedData(dataTypeString);
+            double uv = 0;
+            if (event.getUVIndexLevel() == UVIndexLevel.NONE) uv = 0;
+            else if (event.getUVIndexLevel() == UVIndexLevel.LOW) uv=1;
+            else if (event.getUVIndexLevel() == UVIndexLevel.MEDIUM) uv = 2;
+            else if (event.getUVIndexLevel() == UVIndexLevel.HIGH) uv = 3;
+            else if (event.getUVIndexLevel() == UVIndexLevel.VERY_HIGH) uv = 4;
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), uv);
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
         }
     };
     public void unregister(Context context, final BandClient bandClient) {

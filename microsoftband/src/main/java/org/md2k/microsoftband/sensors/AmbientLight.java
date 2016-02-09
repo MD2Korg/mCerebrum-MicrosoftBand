@@ -66,7 +66,7 @@ public class AmbientLight extends Sensor{
 
     ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
-        dataDescriptors.add(createDataDescriptor("Ambient Light", "Current ambient light in lumens per square meter (lux)", "lux", frequency, int.class.getName(), "-20", "20"));
+        dataDescriptors.add(createDataDescriptor("Ambient Light", "Current ambient light in lumens per square meter (lux)", "lux", frequency, double.class.getName(), "-20", "20"));
         return dataDescriptors;
     }
     public void register(Context context, final BandClient bandClient, Platform platform, CallBack callBack){
@@ -89,9 +89,9 @@ public class AmbientLight extends Sensor{
     private BandAmbientLightEventListener mAmbientLightEventListener=new BandAmbientLightEventListener() {
         @Override
         public void onBandAmbientLightChanged(BandAmbientLightEvent bandAmbientLightEvent) {
-            DataTypeInt dataTypeInt=new DataTypeInt(DateTime.getDateTime(),bandAmbientLightEvent.getBrightness());
-            sendData(dataTypeInt);
-            callBack.onReceivedData(dataTypeInt);
+            DataTypeDoubleArray dataTypeDoubleArray=new DataTypeDoubleArray(DateTime.getDateTime(),(double) bandAmbientLightEvent.getBrightness());
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
         }
     };
     public void unregister(Context context, final BandClient bandClient) {

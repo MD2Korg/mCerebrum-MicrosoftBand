@@ -90,9 +90,9 @@ public class AirPressure  extends Sensor{
     private BandBarometerEventListener mAirPressureEventListener=new BandBarometerEventListener() {
         @Override
         public void onBandBarometerChanged(BandBarometerEvent bandBarometerEvent) {
-            DataTypeDouble dataTypeDouble=new DataTypeDouble(DateTime.getDateTime(),bandBarometerEvent.getAirPressure());
-            sendData(dataTypeDouble);
-            callBack.onReceivedData(dataTypeDouble);
+            DataTypeDoubleArray dataTypeDoubleArray=new DataTypeDoubleArray(DateTime.getDateTime(),bandBarometerEvent.getAirPressure());
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
         }
     };
     public void unregister(Context context, final BandClient bandClient) {

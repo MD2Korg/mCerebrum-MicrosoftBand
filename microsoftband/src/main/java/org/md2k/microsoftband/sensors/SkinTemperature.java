@@ -88,9 +88,9 @@ public class SkinTemperature extends Sensor{
     private BandSkinTemperatureEventListener mSkinTemperatureEventListener = new BandSkinTemperatureEventListener() {
         @Override
         public void onBandSkinTemperatureChanged(final BandSkinTemperatureEvent event) {
-            DataTypeFloat dataTypeFloat = new DataTypeFloat(DateTime.getDateTime(), event.getTemperature());
-            sendData(dataTypeFloat);
-            callBack.onReceivedData(dataTypeFloat);
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) event.getTemperature());
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
         }
     };
     public void unregister(Context context, final BandClient bandClient) {

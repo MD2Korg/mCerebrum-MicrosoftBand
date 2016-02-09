@@ -66,7 +66,7 @@ public class Pace extends Sensor{
 
     ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
-        dataDescriptors.add(createDataDescriptor("Pace", "Current pace of the Band in ms/m", "ms/m", frequency, float.class.getName(), null,null));
+        dataDescriptors.add(createDataDescriptor("Pace", "Current pace of the Band in ms/m", "ms/m", frequency, double.class.getName(), null,null));
         return dataDescriptors;
     }
 
@@ -89,9 +89,9 @@ public class Pace extends Sensor{
     private BandDistanceEventListener mPaceEventListener = new BandDistanceEventListener() {
         @Override
         public void onBandDistanceChanged(final BandDistanceEvent event) {
-            DataTypeFloat dataTypeFloat = new DataTypeFloat(DateTime.getDateTime(), event.getPace());
-            sendData(dataTypeFloat);
-            callBack.onReceivedData(dataTypeFloat);
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) event.getPace());
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
         }
     };
     public void unregister(Context context, final BandClient bandClient) {

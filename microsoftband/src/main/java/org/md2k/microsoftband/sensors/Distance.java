@@ -66,7 +66,7 @@ public class Distance  extends Sensor{
 
     ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
-        dataDescriptors.add(createDataDescriptor("Distance", "Distance traveled in cm since the Band was last factory-reset", "cm", frequency, long.class.getName(), "-20", "20"));
+        dataDescriptors.add(createDataDescriptor("Distance", "Distance traveled in cm since the Band was last factory-reset", "cm", frequency, double.class.getName(), "-20", "20"));
         return dataDescriptors;
     }
 
@@ -89,9 +89,9 @@ public class Distance  extends Sensor{
     private BandDistanceEventListener mDistanceEventListener = new BandDistanceEventListener() {
         @Override
         public void onBandDistanceChanged(final BandDistanceEvent event) {
-            DataTypeLong dataTypeLong = new DataTypeLong(DateTime.getDateTime(), event.getTotalDistance());
-            sendData(dataTypeLong);
-            callBack.onReceivedData(dataTypeLong);
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) event.getTotalDistance());
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
         }
     };
     public void unregister(Context context, final BandClient bandClient) {
