@@ -66,7 +66,7 @@ public class CaloryBurn  extends Sensor{
 
     ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
-        dataDescriptors.add(createDataDescriptor("Calory Burn", "Number of kilocalories (kcals) burned since the Band was last factory-reset", "kilo calories", frequency, long.class.getName(), null,null));
+        dataDescriptors.add(createDataDescriptor("Calory Burn", "Number of kilocalories (kcals) burned since the Band was last factory-reset", "kilo calories", frequency, double.class.getName(), null,null));
         return dataDescriptors;
     }
 
@@ -89,9 +89,9 @@ public class CaloryBurn  extends Sensor{
     private BandCaloriesEventListener mCaloriesEventListener = new BandCaloriesEventListener() {
         @Override
         public void onBandCaloriesChanged(final BandCaloriesEvent event) {
-            DataTypeLong dataTypeLong = new DataTypeLong(DateTime.getDateTime(), event.getCalories());
-            sendData(dataTypeLong);
-            callBack.onReceivedData(dataTypeLong);
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) event.getCalories());
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
         }
     };
     public void unregister(Context context, final BandClient bandClient) {

@@ -103,10 +103,10 @@ public class RRInterval extends Sensor {
     private BandRRIntervalEventListener mRRIntervalEventListener = new BandRRIntervalEventListener() {
         @Override
         public void onBandRRIntervalChanged(BandRRIntervalEvent bandRRIntervalEvent) {
-            DataTypeDouble dataTypeDouble = new DataTypeDouble(DateTime.getDateTime(), bandRRIntervalEvent.getInterval());
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) bandRRIntervalEvent.getInterval());
             Log.d("MD2K", "rr=" + bandRRIntervalEvent.getInterval());
-            sendData(dataTypeDouble);
-            callBack.onReceivedData(dataTypeDouble);
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
         }
     };
 

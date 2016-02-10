@@ -89,9 +89,9 @@ public class AmbientTemperature extends Sensor {
     private BandBarometerEventListener mAmbientTemperatureEventListener = new BandBarometerEventListener() {
         @Override
         public void onBandBarometerChanged(BandBarometerEvent bandBarometerEvent) {
-            DataTypeDouble dataTypeDouble = new DataTypeDouble(DateTime.getDateTime(), bandBarometerEvent.getTemperature());
-            sendData(dataTypeDouble);
-            callBack.onReceivedData(dataTypeDouble);
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) bandBarometerEvent.getTemperature());
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
         }
     };
 

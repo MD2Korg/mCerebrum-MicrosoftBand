@@ -8,6 +8,8 @@ import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.microsoft.band.BandClient;
+
+import org.md2k.datakitapi.datatype.DataTypeDoubleArray;
 import org.md2k.datakitapi.datatype.DataTypeInt;
 import org.md2k.datakitapi.datatype.DataTypeIntArray;
 import org.md2k.datakitapi.source.METADATA;
@@ -80,7 +82,7 @@ public class Status extends Sensor {
 
     ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
-        dataDescriptors.add(createDataDescriptor("Connection Status", "measures the connection status of microsoft band", "meter/second^2)", frequency, String.class.getName(), "0", "4"));
+        dataDescriptors.add(createDataDescriptor("Connection Status", "measures the connection status of microsoft band", "meter/second^2)", frequency, double.class.getName(), "0", "4"));
         return dataDescriptors;
     }
 
@@ -95,16 +97,18 @@ public class Status extends Sensor {
     Runnable getStatus = new Runnable() {
         @Override
         public void run() {
-            int status[] = new int[1];
+            double status[] = new double[1];
             if (DateTime.getDateTime() - lastReceivedTimestamp > PERIOD)
                 status[0] = DATA_QUALITY.BAND_OFF;
             else if (lastBandContact != 0)
                 status[0] = DATA_QUALITY.NOT_WORN;
-            else status[0] = DATA_QUALITY.GOOD;
-            DataTypeIntArray dataTypeIntArray = new DataTypeIntArray(DateTime.getDateTime(), status);
-            sendData(dataTypeIntArray);
+            else
+                status[0] = DATA_QUALITY.GOOD;
 
-            callBack.onReceivedData(dataTypeIntArray);
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), status);
+            sendData(dataTypeDoubleArray);
+
+            callBack.onReceivedData(dataTypeDoubleArray);
             handler.postDelayed(getStatus, PERIOD);
         }
     };

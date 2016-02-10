@@ -6,6 +6,7 @@ import com.microsoft.band.BandClient;
 
 import org.md2k.datakitapi.DataKitAPI;
 import org.md2k.datakitapi.datatype.DataType;
+import org.md2k.datakitapi.datatype.DataTypeDoubleArray;
 import org.md2k.datakitapi.source.METADATA;
 import org.md2k.datakitapi.source.datasource.DataSourceBuilder;
 import org.md2k.datakitapi.source.datasource.DataSourceClient;
@@ -108,7 +109,7 @@ public abstract class Sensor {
     public void unregisterDataSource(Context context){
         DataKitAPI.getInstance(context).unregister(dataSourceClient);
     }
-    public void sendData(DataType dataType){
-        DataKitAPI.getInstance(context).insert(dataSourceClient,dataType);
+    public void sendData(DataTypeDoubleArray dataType){
+        DataKitAPI.getInstance(context).insertHighFrequency(dataSourceClient, dataType);
     }
 }

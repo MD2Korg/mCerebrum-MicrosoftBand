@@ -67,7 +67,7 @@ public class BandContact  extends Sensor{
 
     ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
-        dataDescriptors.add(createDataDescriptor("Band Contact", "Current contact state of the Band", "enum [-2: unknown, -1: not worn, 0: worn]", frequency, int.class.getName(), "-1", "1"));
+        dataDescriptors.add(createDataDescriptor("Band Contact", "Current contact state of the Band", "enum [-2: unknown, -1: not worn, 0: worn]", frequency, double.class.getName(), "-1", "1"));
         return dataDescriptors;
     }
     public void register(Context context, final BandClient bandClient, Platform platform, CallBack callBack){
@@ -90,16 +90,16 @@ public class BandContact  extends Sensor{
     private BandContactEventListener mBandContactEventListener = new BandContactEventListener() {
         @Override
         public void onBandContactChanged(final BandContactEvent event) {
-            int state = -1;
+            double state = -1;
             if (event.getContactState() == BandContactState.UNKNOWN)
                 state = -2;
             else if (event.getContactState() == BandContactState.NOT_WORN)
                 state = -1;
             else if (event.getContactState() == BandContactState.WORN)
                 state = 0;
-            DataTypeInt dataTypeInt = new DataTypeInt(DateTime.getDateTime(), state);
-            sendData(dataTypeInt);
-            callBack.onReceivedData(dataTypeInt);
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), state);
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
         }
     };
     public void unregister(Context context, final BandClient bandClient) {

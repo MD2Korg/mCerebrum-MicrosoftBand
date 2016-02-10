@@ -66,7 +66,7 @@ public class MotionType extends Sensor{
 
     ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
-        dataDescriptors.add(createDataDescriptor("Motion Type", "The current MotionType of the Band", "type", frequency, String.class.getName(), null,null));
+        dataDescriptors.add(createDataDescriptor("Motion Type", "The current MotionType of the Band: IDLE (0), UNKNOWN (1), JOGGING (2), WALKING (3), RUNNING (4)", "type", frequency, double.class.getName(), null,null));
         return dataDescriptors;
     }
     public void register(Context context, final BandClient bandClient, Platform platform, CallBack callBack){
@@ -89,15 +89,15 @@ public class MotionType extends Sensor{
     private BandDistanceEventListener mMotionTypeEventListener = new BandDistanceEventListener() {
         @Override
         public void onBandDistanceChanged(final BandDistanceEvent event) {
-            String motionType = "";
-            if (event.getMotionType().equals(com.microsoft.band.sensors.MotionType.IDLE)) motionType = "IDLE";
-            else if (event.getMotionType().equals(com.microsoft.band.sensors.MotionType.UNKNOWN)) motionType = "UNKNOWN";
-            else if (event.getMotionType().equals(com.microsoft.band.sensors.MotionType.JOGGING)) motionType = "JOGGING";
-            else if (event.getMotionType().equals(com.microsoft.band.sensors.MotionType.WALKING)) motionType = "WALKING";
-            else if (event.getMotionType().equals(com.microsoft.band.sensors.MotionType.RUNNING)) motionType = "RUNNING";
-            DataTypeString dataTypeString = new DataTypeString(DateTime.getDateTime(), motionType);
-            sendData(dataTypeString);
-            callBack.onReceivedData(dataTypeString);
+            double motionType = 0;
+            if (event.getMotionType().equals(com.microsoft.band.sensors.MotionType.IDLE)) motionType = 0;
+            else if (event.getMotionType().equals(com.microsoft.band.sensors.MotionType.UNKNOWN)) motionType = 1;
+            else if (event.getMotionType().equals(com.microsoft.band.sensors.MotionType.JOGGING)) motionType = 2;
+            else if (event.getMotionType().equals(com.microsoft.band.sensors.MotionType.WALKING)) motionType = 3;
+            else if (event.getMotionType().equals(com.microsoft.band.sensors.MotionType.RUNNING)) motionType = 4;
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), motionType);
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
         }
     };
     public void unregister(Context context, final BandClient bandClient) {

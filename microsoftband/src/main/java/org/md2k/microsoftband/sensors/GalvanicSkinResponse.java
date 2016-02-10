@@ -90,9 +90,9 @@ public class GalvanicSkinResponse  extends Sensor{
     private BandGsrEventListener mGSREventListener=new BandGsrEventListener() {
         @Override
         public void onBandGsrChanged(BandGsrEvent bandGsrEvent) {
-            DataTypeInt dataTypeInt=new DataTypeInt(DateTime.getDateTime(),bandGsrEvent.getResistance());
-            sendData(dataTypeInt);
-            callBack.onReceivedData(dataTypeInt);
+            DataTypeDoubleArray dataTypeDoubleArray= new DataTypeDoubleArray(DateTime.getDateTime(), (double) bandGsrEvent.getResistance());
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
         }
     };
     public void unregister(Context context, final BandClient bandClient) {
