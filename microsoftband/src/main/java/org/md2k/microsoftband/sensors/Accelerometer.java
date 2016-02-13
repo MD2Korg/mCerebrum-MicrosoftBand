@@ -71,9 +71,9 @@ public class Accelerometer extends Sensor {
 
     ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
-        dataDescriptors.add(createDataDescriptor("Accelerometer X", "The x-axis acceleration of the Band in 9.81 m/s^2", "meter/second^2)", frequency, double.class.getName(), "-20", "20"));
-        dataDescriptors.add(createDataDescriptor("Accelerometer Y", "The y-axis acceleration of the Band in 9.81 m/s^2", "meter/second^2)", frequency, double.class.getName(), "-20", "20"));
-        dataDescriptors.add(createDataDescriptor("Accelerometer Z", "The z-axis acceleration of the Band in 9.81 m/s^2", "meter/second^2)", frequency, double.class.getName(), "-20", "20"));
+        dataDescriptors.add(createDataDescriptor("Accelerometer X", "The x-axis acceleration of the Band in 9.81 m/s^2", "meter/second^2)", frequency, double.class.getName(), "-50", "50"));
+        dataDescriptors.add(createDataDescriptor("Accelerometer Y", "The y-axis acceleration of the Band in 9.81 m/s^2", "meter/second^2)", frequency, double.class.getName(), "-50", "50"));
+        dataDescriptors.add(createDataDescriptor("Accelerometer Z", "The z-axis acceleration of the Band in 9.81 m/s^2", "meter/second^2)", frequency, double.class.getName(), "-50", "50"));
         return dataDescriptors;
     }
 

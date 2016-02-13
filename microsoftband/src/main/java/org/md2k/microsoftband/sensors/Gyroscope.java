@@ -66,9 +66,9 @@ public class Gyroscope extends Sensor{
 
     ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
-        dataDescriptors.add(createDataDescriptor("Gyroscope X", "Angular velocity around the x-axis of the Band in degrees/sec","degrees/second",frequency,double.class.getName(),"-20","20"));
-        dataDescriptors.add(createDataDescriptor("Gyroscope Y", "Angular velocity around the y-axis of the Band in degrees/sec","degrees/second",frequency,double.class.getName(),"-20","20"));
-        dataDescriptors.add(createDataDescriptor("Gyroscope Z", "Angular velocity around the z-axis of the Band in degrees/sec","degrees/second",frequency,double.class.getName(),"-20","20"));
+        dataDescriptors.add(createDataDescriptor("Gyroscope X", "Angular velocity around the x-axis of the Band in degrees/sec","degrees/second",frequency,double.class.getName(),"-800","800"));
+        dataDescriptors.add(createDataDescriptor("Gyroscope Y", "Angular velocity around the y-axis of the Band in degrees/sec","degrees/second",frequency,double.class.getName(),"-800","800"));
+        dataDescriptors.add(createDataDescriptor("Gyroscope Z", "Angular velocity around the z-axis of the Band in degrees/sec","degrees/second",frequency,double.class.getName(),"-800","800"));
         return dataDescriptors;
     }
     public void register(Context context, final BandClient bandClient, Platform platform, CallBack callBack){

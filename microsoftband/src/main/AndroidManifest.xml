@@ -33,7 +33,6 @@
 
         <activity
             android:name=".HRConsentActivity"
-            android:screenOrientation="portrait"
             android:label="Heart rate consent" >
         </activity>
         <activity

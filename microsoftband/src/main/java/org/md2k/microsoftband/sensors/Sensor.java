@@ -112,4 +112,8 @@ public abstract class Sensor {
     public void sendData(DataTypeDoubleArray dataType){
         DataKitAPI.getInstance(context).insertHighFrequency(dataSourceClient, dataType);
     }
+    public void sendDataStatus(DataType dataType){
+        DataKitAPI.getInstance(context).insert(dataSourceClient, dataType);
+    }
+
 }

@@ -54,7 +54,7 @@ public class Status extends Sensor {
     private static final String TAG = Status.class.getSimpleName();
     Handler handler;
     long lastReceivedTimestamp;
-    int lastBandContact;
+    double lastBandContact;
     public static final long PERIOD=1000;
     public static final long RESTART=30000;
 
@@ -97,7 +97,7 @@ public class Status extends Sensor {
     Runnable getStatus = new Runnable() {
         @Override
         public void run() {
-            double status[] = new double[1];
+            int status[] = new int[1];
             if (DateTime.getDateTime() - lastReceivedTimestamp > PERIOD)
                 status[0] = DATA_QUALITY.BAND_OFF;
             else if (lastBandContact != 0)
@@ -105,10 +105,10 @@ public class Status extends Sensor {
             else
                 status[0] = DATA_QUALITY.GOOD;
 
-            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), status);
-            sendData(dataTypeDoubleArray);
+            DataTypeIntArray dataTypeIntArray = new DataTypeIntArray(DateTime.getDateTime(), status);
+            sendDataStatus(dataTypeIntArray);
 
-            callBack.onReceivedData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeIntArray);
             handler.postDelayed(getStatus, PERIOD);
         }
     };
@@ -125,7 +125,7 @@ public class Status extends Sensor {
         public void onReceive(Context context, Intent intent) {
             lastReceivedTimestamp = intent.getLongExtra("timestamp", 0);
             if (DataSourceType.BAND_CONTACT.equals(intent.getStringExtra("datasourcetype")))
-                lastBandContact = ((DataTypeInt) intent.getSerializableExtra("data")).getSample();
+                lastBandContact = ((DataTypeDoubleArray) intent.getSerializableExtra("data")).getSample()[0];
         }
     };
 
