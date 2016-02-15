@@ -25,9 +25,10 @@ import com.microsoft.band.tiles.pages.ScrollFlowPanel;
 import com.microsoft.band.tiles.pages.VerticalAlignment;
 
 
+import org.md2k.datakitapi.DataKitAPI;
 import org.md2k.datakitapi.source.platform.PlatformType;
-import org.md2k.microsoftband.notification.Notification;
 import org.md2k.utilities.Report.Log;
+import org.md2k.utilities.data_format.Notification;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -81,7 +82,7 @@ public abstract class Device {
     Device(Context context, String platformId, String deviceId) {
         this.context = context;
         this.deviceId = deviceId;
-        this.platformId=platformId;
+        this.platformId = platformId;
         platformType = PlatformType.MICROSOFT_BAND;
         this.enabled = false;
         BandInfo bandInfo = findBandInfo(deviceId);
@@ -229,24 +230,17 @@ public abstract class Device {
         return panel;
     }
 
-    int curVibrateCount;
     Runnable runAlarm = new Runnable() {
         @Override
         public void run() {
-            if (curVibrateCount < notification.getVibrate_count()) {
-                if (curVibrateCount == 0) {
-                    vibrate();
-                    sendMessage();
-                } else vibrate();
-                curVibrateCount++;
-                handler.postDelayed(this, notification.getVibrate_interval());
-            }
+            vibrate();
+            sendMessage();
         }
     };
 
     public void vibrate() {
         try {
-            bandClient.getNotificationManager().vibrate(getVibrationType(notification.getVibrate_type())).await();
+            bandClient.getNotificationManager().vibrate(getVibrationType(notification.getVibration_type())).await();
         } catch (InterruptedException | BandException e) {
             Log.e(TAG, "ERROR=" + e.toString());
             //    handle InterruptedException
@@ -255,18 +249,16 @@ public abstract class Device {
     }
 
     public void alarm() {
-        Log.d(TAG, "vibrate=" + deviceId + " ");
-        curVibrateCount = 0;
         handler.post(runAlarm);
     }
 
     public void sendMessage() {
-        if(notification.getType()==null) return;
+        if (notification.getNotification_type() == null) return;
         ArrayList<TileInfo> tileInfos = TileInfo.readFile(context);
         for (int i = 0; i < tileInfos.size(); i++)
-            if (tileInfos.get(i).name.equals(notification.getType()))
+            if (tileInfos.get(i).name.equals(notification.getNotification_type()))
                 try {
-                    bandClient.getNotificationManager().sendMessage(tileInfos.get(i).UUID, notification.getTitle(), notification.getMessage(), new Date(), MessageFlags.SHOW_DIALOG);
+                    bandClient.getNotificationManager().sendMessage(tileInfos.get(i).UUID, notification.getText().get(0), notification.getText().get(1), new Date(), MessageFlags.SHOW_DIALOG);
                 } catch (BandIOException e) {
                     e.printStackTrace();
                 }
@@ -344,15 +336,15 @@ public abstract class Device {
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         switch (wrist) {
             case "LEFT_WRIST":
-                if(Integer.parseInt(versionHardware)<=19)
+                if (Integer.parseInt(versionHardware) <= 19)
                     return BitmapFactory.decodeResource(context.getResources(), R.raw.left_v1, options);
                 else
                     return BitmapFactory.decodeResource(context.getResources(), R.raw.left_v2, options);
             case "RIGHT_WRIST":
-            if(Integer.parseInt(versionHardware)<=19)
-                return BitmapFactory.decodeResource(context.getResources(), R.raw.right_v1, options);
-            else
-                return BitmapFactory.decodeResource(context.getResources(), R.raw.right_v2, options);
+                if (Integer.parseInt(versionHardware) <= 19)
+                    return BitmapFactory.decodeResource(context.getResources(), R.raw.right_v1, options);
+                else
+                    return BitmapFactory.decodeResource(context.getResources(), R.raw.right_v2, options);
             default:
                 return null;
         }
@@ -366,34 +358,34 @@ public abstract class Device {
         else return null;
     }
 
-    VibrationType getVibrationType(String vibrationType) {
+    VibrationType getVibrationType(int vibrationType) {
         VibrationType vType = VibrationType.NOTIFICATION_TWO_TONE;
         switch (vibrationType) {
-            case "notification_one_tone":
+            case Notification.VIBRATION.NOTIFICATION_ONE_TONE:
                 vType = VibrationType.NOTIFICATION_ONE_TONE;
                 break;
-            case "notification_two_tone":
+            case Notification.VIBRATION.NOTIFICATION_TWO_TONE:
                 vType = VibrationType.NOTIFICATION_TWO_TONE;
                 break;
-            case "notification_alarm":
+            case Notification.VIBRATION.NOTIFICATION_ALARM:
                 vType = VibrationType.NOTIFICATION_ALARM;
                 break;
-            case "notification_timer":
+            case Notification.VIBRATION.NOTIFICATION_TIMER:
                 vType = VibrationType.NOTIFICATION_TIMER;
                 break;
-            case "one_tone_high":
+            case Notification.VIBRATION.ONE_TONE_HIGH:
                 vType = VibrationType.ONE_TONE_HIGH;
                 break;
-            case "two_tone_high":
+            case Notification.VIBRATION.TWO_TONE_HIGH:
                 vType = VibrationType.TWO_TONE_HIGH;
                 break;
-            case "three_tone_high":
+            case Notification.VIBRATION.THREE_TONE_HIGH:
                 vType = VibrationType.THREE_TONE_HIGH;
                 break;
-            case "ramp_up":
+            case Notification.VIBRATION.RAMP_UP:
                 vType = VibrationType.RAMP_UP;
                 break;
-            case "ramp_down":
+            case Notification.VIBRATION.RAMP_DOWN:
                 vType = VibrationType.RAMP_DOWN;
                 break;
         }

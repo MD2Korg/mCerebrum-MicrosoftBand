@@ -13,8 +13,10 @@ import org.md2k.datakitapi.source.datasource.DataSourceBuilder;
 import org.md2k.datakitapi.source.datasource.DataSourceClient;
 import org.md2k.datakitapi.source.datasource.DataSourceType;
 import org.md2k.datakitapi.source.platform.PlatformType;
+import org.md2k.datakitapi.time.DateTime;
 import org.md2k.microsoftband.MicrosoftBand;
 import org.md2k.utilities.Report.Log;
+import org.md2k.utilities.data_format.Notification;
 
 import java.util.ArrayList;
 
@@ -53,7 +55,7 @@ public class NotificationManager {
     Handler handler;
 
     public NotificationManager(Context context, ArrayList<MicrosoftBand> microsoftBands) {
-        handler=new Handler();
+        handler = new Handler();
         this.context = context;
         this.microsoftBands = microsoftBands;
         dataSourceClientArrayList = null;
@@ -79,28 +81,43 @@ public class NotificationManager {
         if (dataSourceClientArrayList.size() > 0) {
             for (int i = 0; i < dataSourceClientArrayList.size(); i++) {
                 Log.d(TAG, "ds_id=" + dataSourceClientArrayList.get(i).getDs_id());
+                final int finalI = i;
                 dataKitAPI.subscribe(dataSourceClientArrayList.get(i), new OnReceiveListener() {
                     @Override
                     public void onReceived(final DataType dataType) {
-                        processMessage(dataType);
+                        processMessage(dataSourceClientArrayList.get(finalI),dataType);
                     }
                 });
             }
         }
     }
 
-    void processMessage(DataType dataType) {
+    void processMessage(DataSourceClient dataSourceClient,DataType dataType) {
         DataTypeString dataTypeString = (DataTypeString) dataType;
         Log.d(TAG, "onReceived=" + dataTypeString.getSample());
         Gson gson = new Gson();
         Notification notification = gson.fromJson(dataTypeString.getSample(), Notification.class);
-        if (!notification.getSource().getPlatform_type().equals(PlatformType.MICROSOFT_BAND))
+        if (notification.getOperation() != Notification.OPERATION.SEND) return;
+        if (notification.getDataSource().getPlatform() == null) return;
+        if (notification.getDataSource().getPlatform().getType() == null) return;
+        if (!notification.getDataSource().getPlatform().getType().equals(PlatformType.MICROSOFT_BAND))
             return;
-        for (int i = 0; i < microsoftBands.size(); i++) {
-            if (microsoftBands.get(i).getPlatformId().equals(notification.getSource().getLocation())) {
+
+        if (notification.getDataSource().getPlatform().getId() != null) {
+            for (int i = 0; i < microsoftBands.size(); i++) {
+                if (microsoftBands.get(i).getPlatformId().equals(notification.getDataSource().getPlatform().getId())) {
+                    microsoftBands.get(i).setNotification(notification);
+                    microsoftBands.get(i).alarm();
+                }
+            }
+        } else {
+            for (int i = 0; i < microsoftBands.size(); i++) {
                 microsoftBands.get(i).setNotification(notification);
                 microsoftBands.get(i).alarm();
             }
         }
+        notification.setOperation(Notification.OPERATION.DELIVER_SUCCESS);
+        DataTypeString dataTypeString1=new DataTypeString(DateTime.getDateTime(),gson.toJson(notification));
+        DataKitAPI.getInstance(context).insert(dataSourceClient,dataTypeString1);
     }
 }

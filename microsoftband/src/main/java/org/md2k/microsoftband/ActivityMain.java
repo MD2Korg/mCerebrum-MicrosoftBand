@@ -199,7 +199,7 @@ public class ActivityMain extends AppCompatActivity {
         hashMapData.get(id + "_freq").setText(String.format("%.1f", freq));
 
 
-        DataType data = (DataType) intent.getSerializableExtra("data");
+        DataType data = (DataType) intent.getParcelableExtra("data");
         if (data instanceof DataTypeFloat) {
             sampleStr = String.format("%.1f", ((DataTypeFloat) data).getSample());
         } else if (data instanceof DataTypeFloatArray) {

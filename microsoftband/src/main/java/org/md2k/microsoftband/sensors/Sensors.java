@@ -2,6 +2,7 @@ package org.md2k.microsoftband.sensors;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Parcelable;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.microsoft.band.BandClient;
@@ -114,7 +115,7 @@ public class Sensors {
                         intent.putExtra("count", hm.get(dataSourceType));
                         intent.putExtra("timestamp", data.getDateTime());
                         intent.putExtra("starttimestamp", starttimestamp);
-                        intent.putExtra("data", data);
+                        intent.putExtra("data",(Parcelable) data);
                         intent.putExtra("datasourcetype", dataSourceType);
                         intent.putExtra("deviceid", Sensors.this.platform.getMetadata().get(METADATA.DEVICE_ID));
                         intent.putExtra("platformid", Sensors.this.platform.getId());

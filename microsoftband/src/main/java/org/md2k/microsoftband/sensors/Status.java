@@ -55,12 +55,12 @@ public class Status extends Sensor {
     Handler handler;
     long lastReceivedTimestamp;
     double lastBandContact;
-    public static final long PERIOD=1000;
+    public static final long PERIOD=5000;
     public static final long RESTART=30000;
 
 
     Status() {
-        super(DataSourceType.STATUS, "1 Hz", 1);
+        super(DataSourceType.STATUS, String.valueOf(1.0/(PERIOD/1000))+" Hz", 1);
         lastReceivedTimestamp = 0;
         lastBandContact = -2;
         handler = new Handler();
@@ -125,7 +125,7 @@ public class Status extends Sensor {
         public void onReceive(Context context, Intent intent) {
             lastReceivedTimestamp = intent.getLongExtra("timestamp", 0);
             if (DataSourceType.BAND_CONTACT.equals(intent.getStringExtra("datasourcetype")))
-                lastBandContact = ((DataTypeDoubleArray) intent.getSerializableExtra("data")).getSample()[0];
+                lastBandContact = ((DataTypeDoubleArray) intent.getParcelableExtra("data")).getSample()[0];
         }
     };
 

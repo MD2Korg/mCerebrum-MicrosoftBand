@@ -438,7 +438,7 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
 
     private void setCancelButton() {
         final Button button = (Button) getActivity().findViewById(R.id.button_2);
-        button.setText("Cancel");
+        button.setText("Close");
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (microsoftBands != null) {
