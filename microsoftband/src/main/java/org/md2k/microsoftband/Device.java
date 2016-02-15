@@ -258,7 +258,7 @@ public abstract class Device {
         for (int i = 0; i < tileInfos.size(); i++)
             if (tileInfos.get(i).name.equals(notification.getNotification_type()))
                 try {
-                    bandClient.getNotificationManager().sendMessage(tileInfos.get(i).UUID, notification.getText().get(0), notification.getText().get(1), new Date(), MessageFlags.SHOW_DIALOG);
+                    bandClient.getNotificationManager().sendMessage(tileInfos.get(i).UUID, notification.getMessage()[0], notification.getMessage()[1], new Date(), MessageFlags.SHOW_DIALOG);
                 } catch (BandIOException e) {
                     e.printStackTrace();
                 }
