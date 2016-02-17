@@ -264,7 +264,7 @@ public abstract class Device {
                 }
     }
 
-    void addTile(TileInfo tileInfo) throws BandException, InterruptedException {
+    void addTile(Activity activity, TileInfo tileInfo) throws BandException, InterruptedException {
         UUID tileId = tileInfo.UUID;
         if (doesTileExist(bandClient.getTileManager().getTiles().await(), tileId))
             return;
@@ -295,28 +295,28 @@ public abstract class Device {
         BandTile tile = new BandTile.Builder(tileId, tileInfo.name, tileIcon)
                 .setTileSmallIcon(tileIconSmall)
                 .build();
-        bandClient.getTileManager().addTile((Activity) context, tile).await();
+        bandClient.getTileManager().addTile(activity, tile).await();
     }
 
-    void addTiles(String wrist) throws BandException, InterruptedException {
+    void addTiles(Activity activity, String wrist) throws BandException, InterruptedException {
         ArrayList<TileInfo> tileInfos = TileInfo.readFile(context);
         for (int i = 0; i < tileInfos.size(); i++) {
             for (int j = 0; j < tileInfos.get(i).location.size(); j++) {
                 if (!tileInfos.get(i).location.get(j).equals(wrist))
                     continue;
-                addTile(tileInfos.get(i));
+                addTile(activity, tileInfos.get(i));
             }
         }
     }
 
-    public synchronized void configureMicrosoftBand(final String wrist) {
+    public synchronized void configureMicrosoftBand(final Activity activity, final String wrist) {
         Log.d(TAG, "change background wrist=" + wrist);
         connect(new BandCallBack() {
             @Override
             public void onBandConnected() {
                 try {
                     changeBackGround(wrist);
-                    addTiles(wrist);
+                    addTiles(activity, wrist);
 
                     disconnect();
 

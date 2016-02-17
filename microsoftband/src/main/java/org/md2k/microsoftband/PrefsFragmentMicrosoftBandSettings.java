@@ -374,7 +374,7 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                microsoftBands.find().get(finalI).configureMicrosoftBand(location);
+                                microsoftBands.find().get(finalI).configureMicrosoftBand(getActivity(),location);
                             }
                         });
                     }
