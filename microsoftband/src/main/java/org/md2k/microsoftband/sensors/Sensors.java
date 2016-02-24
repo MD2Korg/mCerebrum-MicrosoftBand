@@ -127,9 +127,11 @@ public class Sensors {
                             }
                             else countOff=0;
                             if(countOff>Status.RESTART){
+                                Log.d(TAG,"localbroadcast...platformId="+platform.getId());
                                 Intent intentRestart = new Intent("microsoftband_restart");
-                                intent.putExtra("platformid",platform.getId());
+                                intentRestart.putExtra("platformid",platform.getId());
                                 LocalBroadcastManager.getInstance(context).sendBroadcast(intentRestart);
+                                countOff=0;
                             }
                         }
                     }

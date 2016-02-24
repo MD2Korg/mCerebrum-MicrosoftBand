@@ -113,10 +113,12 @@ public class MicrosoftBand extends Device {
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.d(TAG,"onreceive:"+platformId);
+
             if(intent.getStringExtra("platformid").equals(platformId)) {
                 Log.d(TAG,"Restart msband ... id="+platformId);
-                unregister();
-                register();
+//                unregister();
+//                register();
             }
         }
     };
