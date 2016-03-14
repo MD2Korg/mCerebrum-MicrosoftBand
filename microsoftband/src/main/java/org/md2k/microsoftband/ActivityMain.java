@@ -216,50 +216,56 @@ public class ActivityMain extends AppCompatActivity {
     }
 
     void updateTable(Intent intent) {
-        String sampleStr = "";
-        String dataSourceType = intent.getStringExtra("datasourcetype");
-        String platformId = intent.getStringExtra("platformid");
+        try {
+            String sampleStr = "";
+            String dataSourceType = intent.getStringExtra("datasourcetype");
+            String platformId = intent.getStringExtra("platformid");
 
-        String id = platformId + ":" + dataSourceType;
-        int count = intent.getIntExtra("count", 0);
-        hashMapData.get(id + "_count").setText(String.valueOf(count));
+            String id = platformId + ":" + dataSourceType;
+            int count = intent.getIntExtra("count", 0);
+            hashMapData.get(id + "_count").setText(String.valueOf(count));
 
-        double time = (intent.getLongExtra("timestamp", 0) - intent.getLongExtra("starttimestamp", 0)) / 1000.0;
-        double freq = (double) count / time;
-        hashMapData.get(id + "_freq").setText(String.format("%.1f", freq));
+            double time = (intent.getLongExtra("timestamp", 0) - intent.getLongExtra("starttimestamp", 0)) / 1000.0;
+            double freq = (double) count / time;
+            hashMapData.get(id + "_freq").setText(String.format("%.1f", freq));
 
 
-        DataType data = (DataType) intent.getParcelableExtra("data");
-        if (data instanceof DataTypeFloat) {
-            sampleStr = String.format("%.1f", ((DataTypeFloat) data).getSample());
-        } else if (data instanceof DataTypeFloatArray) {
-            float[] sample = ((DataTypeFloatArray) data).getSample();
-            for (int i = 0; i < sample.length; i++) {
-                if (i != 0) sampleStr += ",";
-                if (i % 3 == 0 && i != 0) sampleStr += "\n";
-                sampleStr = sampleStr + String.format("%.1f", sample[i]);
+            DataType data = (DataType) intent.getParcelableExtra("data");
+            if (data instanceof DataTypeFloat) {
+                sampleStr = String.format("%.1f", ((DataTypeFloat) data).getSample());
+            } else if (data instanceof DataTypeFloatArray) {
+                float[] sample = ((DataTypeFloatArray) data).getSample();
+                for (int i = 0; i < sample.length; i++) {
+                    if (i != 0) sampleStr += ",";
+                    if (i % 3 == 0 && i != 0) sampleStr += "\n";
+                    sampleStr = sampleStr + String.format("%.1f", sample[i]);
+                }
+            } else if (data instanceof DataTypeDouble) {
+                sampleStr = String.format("%.1f", ((DataTypeDouble) data).getSample());
+            } else if (data instanceof DataTypeDoubleArray) {
+                double[] sample = ((DataTypeDoubleArray) data).getSample();
+                for (int i = 0; i < sample.length; i++) {
+                    if (i != 0) sampleStr += ",";
+                    if (i % 3 == 0 && i != 0) sampleStr += "\n";
+                    sampleStr = sampleStr + String.format("%.1f", sample[i]);
+                }
+            } else if (data instanceof DataTypeInt) {
+                sampleStr = String.format("%d", ((DataTypeInt) data).getSample());
+            } else if (data instanceof DataTypeIntArray) {
+                int[] sample = ((DataTypeIntArray) data).getSample();
+                for (int i = 0; i < sample.length; i++) {
+                    if (i != 0) sampleStr += ",";
+                    if (i % 3 == 0 && i != 0) sampleStr += "\n";
+                    sampleStr = sampleStr + String.format("%d", sample[i]);
+                }
             }
-        }else if (data instanceof DataTypeDouble) {
-            sampleStr = String.format("%.1f", ((DataTypeDouble) data).getSample());
-        } else if (data instanceof DataTypeDoubleArray) {
-            double[] sample = ((DataTypeDoubleArray) data).getSample();
-            for (int i = 0; i < sample.length; i++) {
-                if (i != 0) sampleStr += ",";
-                if (i % 3 == 0 && i != 0) sampleStr += "\n";
-                sampleStr = sampleStr + String.format("%.1f", sample[i]);
-            }
-        } else if (data instanceof DataTypeInt) {
-            sampleStr = String.format("%d", ((DataTypeInt) data).getSample());
-        } else if (data instanceof DataTypeIntArray) {
-            int[] sample = ((DataTypeIntArray) data).getSample();
-            for (int i = 0; i < sample.length; i++) {
-                if (i != 0) sampleStr += ",";
-                if (i % 3 == 0 && i != 0) sampleStr += "\n";
-                sampleStr = sampleStr + String.format("%d", sample[i]);
-            }
+
+            hashMapData.get(id + "_sample").setText(sampleStr);
+        } catch (Exception e) {
+            Log.d("MicrosoftBand", "Exception is UI table update");
+            Log.d("MicrosoftBand", e.getStackTrace().toString());
+            Crashlytics.logException(e);
         }
-
-        hashMapData.get(id + "_sample").setText(sampleStr);
     }
 
     @Override

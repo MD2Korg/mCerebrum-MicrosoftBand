@@ -18,21 +18,21 @@ import org.md2k.utilities.Report.Log;
 
 import java.util.ArrayList;
 
-/**
+/*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
- * <p/>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * <p/>
+ *
  * * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- * <p/>
+ *
  * * Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * <p/>
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -44,14 +44,23 @@ import java.util.ArrayList;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 public class MicrosoftBand extends Device {
     private static final String TAG = MicrosoftBand.class.getSimpleName();
     boolean isConnected = false;
     private Sensors sensors;
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "onreceive:" + platformId);
 
-    public void resetDataSource() {
-        sensors = new Sensors(context, getPlatform());
-    }
+            if (intent.getStringExtra("platformid").equals(platformId)) {
+                Log.d(TAG, "Restart msband ... id=" + platformId);
+//                unregister();
+//                register();
+            }
+        }
+    };
 
     MicrosoftBand(Context context, String platformId, String deviceId) {
         super(context, platformId, deviceId);
@@ -59,9 +68,14 @@ public class MicrosoftBand extends Device {
 
     }
 
+    public void resetDataSource() {
+        sensors = new Sensors(context, getPlatform());
+    }
+
     public ArrayList<Sensor> getSensors() {
         return sensors.getSensors();
     }
+
     public void setEnabled(boolean enabled){
         this.enabled=enabled;
     }
@@ -83,7 +97,6 @@ public class MicrosoftBand extends Device {
         return new PlatformBuilder().setId(platformId).setType(platformType).setMetadata(METADATA.DEVICE_ID, deviceId).setMetadata(METADATA.NAME, "MicrosoftBand ("+pid+")").
                 setMetadata(METADATA.VERSION_HARDWARE, versionHardware).setMetadata(METADATA.VERSION_FIRMWARE, versionFirmware).build();
     }
-
 
     public void register() {
         Log.d(TAG, "MicrosoftBand...register()...enabled=" + enabled+" bandCLient="+bandClient);
@@ -110,17 +123,5 @@ public class MicrosoftBand extends Device {
             disconnect();
         }
     }
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.d(TAG,"onreceive:"+platformId);
-
-            if(intent.getStringExtra("platformid").equals(platformId)) {
-                Log.d(TAG,"Restart msband ... id="+platformId);
-//                unregister();
-//                register();
-            }
-        }
-    };
 
 }
