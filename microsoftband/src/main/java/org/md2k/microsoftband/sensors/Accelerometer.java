@@ -10,7 +10,6 @@ import com.microsoft.band.sensors.BandAccelerometerEventListener;
 import com.microsoft.band.sensors.SampleRate;
 
 import org.md2k.datakitapi.datatype.DataTypeDoubleArray;
-import org.md2k.datakitapi.datatype.DataTypeFloatArray;
 import org.md2k.datakitapi.source.METADATA;
 import org.md2k.datakitapi.source.datasource.DataSourceBuilder;
 import org.md2k.datakitapi.source.datasource.DataSourceType;
@@ -50,6 +49,18 @@ import java.util.HashMap;
  */
 public class Accelerometer extends Sensor {
     private static final String TAG = Accelerometer.class.getSimpleName();
+    private BandAccelerometerEventListener mAccelerometerEventListener = new BandAccelerometerEventListener() {
+        @Override
+        public void onBandAccelerometerChanged(final BandAccelerometerEvent event) {
+            double[] samples = new double[3];
+            samples[0] = event.getAccelerationX() * 9.81;
+            samples[1] = event.getAccelerationY() * 9.81;
+            samples[2] = event.getAccelerationZ() * 9.81;
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), samples);
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
+        }
+    };
 
     Accelerometer() {
         super(DataSourceType.ACCELEROMETER, "31 Hz", 1);
@@ -69,7 +80,7 @@ public class Accelerometer extends Sensor {
         return dataSourceBuilder;
     }
 
-    ArrayList<HashMap<String, String>> createDataDescriptors() {
+    private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
         dataDescriptors.add(createDataDescriptor("Accelerometer X", "The x-axis acceleration of the Band in 9.81 m/s^2", "meter/second^2)", frequency, double.class.getName(), "-50", "50"));
         dataDescriptors.add(createDataDescriptor("Accelerometer Y", "The y-axis acceleration of the Band in 9.81 m/s^2", "meter/second^2)", frequency, double.class.getName(), "-50", "50"));
@@ -105,19 +116,6 @@ public class Accelerometer extends Sensor {
         });
         background.start();
     }
-
-    private BandAccelerometerEventListener mAccelerometerEventListener = new BandAccelerometerEventListener() {
-        @Override
-        public void onBandAccelerometerChanged(final BandAccelerometerEvent event) {
-            double[] samples = new double[3];
-            samples[0] = event.getAccelerationX() * 9.81;
-            samples[1] = event.getAccelerationY() * 9.81;
-            samples[2] = event.getAccelerationZ() * 9.81;
-            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), samples);
-            sendData(dataTypeDoubleArray);
-            callBack.onReceivedData(dataTypeDoubleArray);
-        }
-    };
 
     public void unregister(Context context, final BandClient bandClient) {
         if (!enabled) return;

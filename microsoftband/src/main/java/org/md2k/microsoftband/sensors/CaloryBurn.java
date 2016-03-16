@@ -47,6 +47,15 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class CaloryBurn  extends Sensor{
+    private BandCaloriesEventListener mCaloriesEventListener = new BandCaloriesEventListener() {
+        @Override
+        public void onBandCaloriesChanged(final BandCaloriesEvent event) {
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) event.getCalories());
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
+        }
+    };
+
     CaloryBurn() {
         super(DataSourceType.CALORY_BURN,"VALUE_CHANGE",1);
     }
@@ -64,7 +73,7 @@ public class CaloryBurn  extends Sensor{
         return dataSourceBuilder;
     }
 
-    ArrayList<HashMap<String, String>> createDataDescriptors() {
+    private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
         dataDescriptors.add(createDataDescriptor("Calory Burn", "Number of kilocalories (kcals) burned since the Band was last factory-reset", "kilo calories", frequency, double.class.getName(), null,null));
         return dataDescriptors;
@@ -86,14 +95,7 @@ public class CaloryBurn  extends Sensor{
         });
         background.start();
     }
-    private BandCaloriesEventListener mCaloriesEventListener = new BandCaloriesEventListener() {
-        @Override
-        public void onBandCaloriesChanged(final BandCaloriesEvent event) {
-            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) event.getCalories());
-            sendData(dataTypeDoubleArray);
-            callBack.onReceivedData(dataTypeDoubleArray);
-        }
-    };
+
     public void unregister(Context context, final BandClient bandClient) {
         if (!enabled) return;
         unregisterDataSource(context);

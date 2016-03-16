@@ -47,6 +47,15 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class Speed extends Sensor{
+    private BandDistanceEventListener mSpeedEventListener = new BandDistanceEventListener() {
+        @Override
+        public void onBandDistanceChanged(final BandDistanceEvent event) {
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) event.getSpeed());
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
+        }
+    };
+
     Speed() {
         super(DataSourceType.SPEED,"1 Hz",1);
     }
@@ -64,7 +73,7 @@ public class Speed extends Sensor{
         return dataSourceBuilder;
     }
 
-    ArrayList<HashMap<String, String>> createDataDescriptors() {
+    private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
         dataDescriptors.add(createDataDescriptor("Speed", "Current speed of the Band in cm/s", "cm/s", frequency, double.class.getName(), null,null));
         return dataDescriptors;
@@ -86,14 +95,7 @@ public class Speed extends Sensor{
         });
         background.start();
     }
-    private BandDistanceEventListener mSpeedEventListener = new BandDistanceEventListener() {
-        @Override
-        public void onBandDistanceChanged(final BandDistanceEvent event) {
-            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) event.getSpeed());
-            sendData(dataTypeDoubleArray);
-            callBack.onReceivedData(dataTypeDoubleArray);
-        }
-    };
+
     public void unregister(Context context, final BandClient bandClient) {
         if (!enabled) return;
         unregisterDataSource(context);

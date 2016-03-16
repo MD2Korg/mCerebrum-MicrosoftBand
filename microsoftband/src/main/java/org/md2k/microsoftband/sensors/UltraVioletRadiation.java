@@ -10,7 +10,6 @@ import com.microsoft.band.sensors.BandUVEventListener;
 import com.microsoft.band.sensors.UVIndexLevel;
 
 import org.md2k.datakitapi.datatype.DataTypeDoubleArray;
-import org.md2k.datakitapi.datatype.DataTypeInt;
 import org.md2k.datakitapi.datatype.DataTypeString;
 import org.md2k.datakitapi.source.METADATA;
 import org.md2k.datakitapi.source.datasource.DataSourceBuilder;
@@ -49,6 +48,21 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class UltraVioletRadiation extends Sensor{
+    private BandUVEventListener mUltravioletEventListener = new BandUVEventListener() {
+        @Override
+        public void onBandUVChanged(final BandUVEvent event) {
+            double uv = 0;
+            if (event.getUVIndexLevel() == UVIndexLevel.NONE) uv = 0;
+            else if (event.getUVIndexLevel() == UVIndexLevel.LOW) uv = 1;
+            else if (event.getUVIndexLevel() == UVIndexLevel.MEDIUM) uv = 2;
+            else if (event.getUVIndexLevel() == UVIndexLevel.HIGH) uv = 3;
+            else if (event.getUVIndexLevel() == UVIndexLevel.VERY_HIGH) uv = 4;
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), uv);
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
+        }
+    };
+
     UltraVioletRadiation() {
         super(DataSourceType.ULTRA_VIOLET_RADIATION, "1 Hz",1);
     }
@@ -66,11 +80,12 @@ public class UltraVioletRadiation extends Sensor{
         return dataSourceBuilder;
     }
 
-    ArrayList<HashMap<String, String>> createDataDescriptors() {
+    private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
         dataDescriptors.add(createDataDescriptor("Index Level", "Current UVIndexLevel value as calculated by the Band", "NONE (0),LOW (1),MEDIUM (2),HIGH (3), VERY HIGH (4)", frequency, double.class.getName(), null, null));
         return dataDescriptors;
     }
+
     public void register(Context context, final BandClient bandClient, Platform platform, CallBack callBack){
         registerDataSource(context, platform);
         this.callBack=callBack;
@@ -88,20 +103,6 @@ public class UltraVioletRadiation extends Sensor{
         background.start();
     }
 
-    private BandUVEventListener mUltravioletEventListener = new BandUVEventListener() {
-        @Override
-        public void onBandUVChanged(final BandUVEvent event) {
-            double uv = 0;
-            if (event.getUVIndexLevel() == UVIndexLevel.NONE) uv = 0;
-            else if (event.getUVIndexLevel() == UVIndexLevel.LOW) uv=1;
-            else if (event.getUVIndexLevel() == UVIndexLevel.MEDIUM) uv = 2;
-            else if (event.getUVIndexLevel() == UVIndexLevel.HIGH) uv = 3;
-            else if (event.getUVIndexLevel() == UVIndexLevel.VERY_HIGH) uv = 4;
-            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), uv);
-            sendData(dataTypeDoubleArray);
-            callBack.onReceivedData(dataTypeDoubleArray);
-        }
-    };
     public void unregister(Context context, final BandClient bandClient) {
         if (!enabled) return;
         unregisterDataSource(context);

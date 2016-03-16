@@ -47,6 +47,26 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class MotionType extends Sensor{
+    private BandDistanceEventListener mMotionTypeEventListener = new BandDistanceEventListener() {
+        @Override
+        public void onBandDistanceChanged(final BandDistanceEvent event) {
+            double motionType = 0;
+            if (event.getMotionType().equals(com.microsoft.band.sensors.MotionType.IDLE))
+                motionType = 0;
+            else if (event.getMotionType().equals(com.microsoft.band.sensors.MotionType.UNKNOWN))
+                motionType = 1;
+            else if (event.getMotionType().equals(com.microsoft.band.sensors.MotionType.JOGGING))
+                motionType = 2;
+            else if (event.getMotionType().equals(com.microsoft.band.sensors.MotionType.WALKING))
+                motionType = 3;
+            else if (event.getMotionType().equals(com.microsoft.band.sensors.MotionType.RUNNING))
+                motionType = 4;
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), motionType);
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
+        }
+    };
+
     MotionType() {
         super(DataSourceType.MOTION_TYPE,"1 Hz",1);
     }
@@ -64,11 +84,12 @@ public class MotionType extends Sensor{
         return dataSourceBuilder;
     }
 
-    ArrayList<HashMap<String, String>> createDataDescriptors() {
+    private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
         dataDescriptors.add(createDataDescriptor("Motion Type", "The current MotionType of the Band: IDLE (0), UNKNOWN (1), JOGGING (2), WALKING (3), RUNNING (4)", "type", frequency, double.class.getName(), null,null));
         return dataDescriptors;
     }
+
     public void register(Context context, final BandClient bandClient, Platform platform, CallBack callBack){
         registerDataSource(context, platform);
         this.callBack=callBack;
@@ -86,20 +107,7 @@ public class MotionType extends Sensor{
         background.start();
 
     }
-    private BandDistanceEventListener mMotionTypeEventListener = new BandDistanceEventListener() {
-        @Override
-        public void onBandDistanceChanged(final BandDistanceEvent event) {
-            double motionType = 0;
-            if (event.getMotionType().equals(com.microsoft.band.sensors.MotionType.IDLE)) motionType = 0;
-            else if (event.getMotionType().equals(com.microsoft.band.sensors.MotionType.UNKNOWN)) motionType = 1;
-            else if (event.getMotionType().equals(com.microsoft.band.sensors.MotionType.JOGGING)) motionType = 2;
-            else if (event.getMotionType().equals(com.microsoft.band.sensors.MotionType.WALKING)) motionType = 3;
-            else if (event.getMotionType().equals(com.microsoft.band.sensors.MotionType.RUNNING)) motionType = 4;
-            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), motionType);
-            sendData(dataTypeDoubleArray);
-            callBack.onReceivedData(dataTypeDoubleArray);
-        }
-    };
+
     public void unregister(Context context, final BandClient bandClient) {
         if (!enabled) return;
         unregisterDataSource(context);

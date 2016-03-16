@@ -51,6 +51,21 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class HeartRate extends Sensor {
+    private BandHeartRateEventListener mHeartRateEventListener = new BandHeartRateEventListener() {
+        @Override
+        public void onBandHeartRateChanged(final BandHeartRateEvent event) {
+            double samples[] = new double[2];
+            samples[0] = event.getHeartRate();
+            if (event.getQuality() == HeartRateQuality.ACQUIRING)
+                samples[1] = 1;
+            else if (event.getQuality() == HeartRateQuality.LOCKED)
+                samples[1] = 0;
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), samples);
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
+        }
+    };
+
     HeartRate() {
         super(DataSourceType.HEART_RATE,"1 Hz",1);
     }
@@ -68,12 +83,13 @@ public class HeartRate extends Sensor {
         return dataSourceBuilder;
     }
 
-    ArrayList<HashMap<String, String>> createDataDescriptors() {
+    private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
         dataDescriptors.add(createDataDescriptor("Heart Rate", "Current heart rate as read by the Band in beats/min", "beats/minute", frequency, double.class.getName(), "0", "200"));
         dataDescriptors.add(createDataDescriptor("Quality", "Quality of the current heart rate reading", "enum [0: locked, 1: acquiring]", frequency, double.class.getName(), "0", "1"));
         return dataDescriptors;
     }
+
     public void register(final Context context, final BandClient bandClient, Platform platform, CallBack callBack){
         registerDataSource(context, platform);
         this.callBack = callBack;
@@ -99,21 +115,6 @@ public class HeartRate extends Sensor {
         });
         background.start();
     }
-
-    private BandHeartRateEventListener mHeartRateEventListener = new BandHeartRateEventListener() {
-        @Override
-        public void onBandHeartRateChanged(final BandHeartRateEvent event) {
-            double samples[] = new double[2];
-            samples[0] = event.getHeartRate();
-            if (event.getQuality() == HeartRateQuality.ACQUIRING)
-                samples[1] = 1;
-            else if (event.getQuality() == HeartRateQuality.LOCKED)
-                samples[1] = 0;
-            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), samples);
-            sendData(dataTypeDoubleArray);
-            callBack.onReceivedData(dataTypeDoubleArray);
-        }
-    };
 
     public void unregister(Context context, final BandClient bandClient) {
         if (!enabled) return;

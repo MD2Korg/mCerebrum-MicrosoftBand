@@ -47,7 +47,7 @@ import java.util.ArrayList;
 
 public class MicrosoftBand extends Device {
     private static final String TAG = MicrosoftBand.class.getSimpleName();
-    boolean isConnected = false;
+    public boolean isConnected = false;
     private Sensors sensors;
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override

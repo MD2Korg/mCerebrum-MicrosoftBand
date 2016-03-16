@@ -51,6 +51,16 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class RRInterval extends Sensor {
+    private BandRRIntervalEventListener mRRIntervalEventListener = new BandRRIntervalEventListener() {
+        @Override
+        public void onBandRRIntervalChanged(BandRRIntervalEvent bandRRIntervalEvent) {
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), bandRRIntervalEvent.getInterval());
+            Log.d("MD2K", "rr=" + bandRRIntervalEvent.getInterval());
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
+        }
+    };
+
     RRInterval() {
         super(DataSourceType.RR_INTERVAL,"VALUE_CHANGE",2);
     }
@@ -68,7 +78,7 @@ public class RRInterval extends Sensor {
         return dataSourceBuilder;
     }
 
-    ArrayList<HashMap<String, String>> createDataDescriptors() {
+    private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
         dataDescriptors.add(createDataDescriptor("RR Interval", "Current RR interval in seconds as read by the Band", "second", frequency, double.class.getName(), "0", "5"));
         return dataDescriptors;
@@ -99,16 +109,6 @@ public class RRInterval extends Sensor {
         });
         background.start();
     }
-
-    private BandRRIntervalEventListener mRRIntervalEventListener = new BandRRIntervalEventListener() {
-        @Override
-        public void onBandRRIntervalChanged(BandRRIntervalEvent bandRRIntervalEvent) {
-            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) bandRRIntervalEvent.getInterval());
-            Log.d("MD2K", "rr=" + bandRRIntervalEvent.getInterval());
-            sendData(dataTypeDoubleArray);
-            callBack.onReceivedData(dataTypeDoubleArray);
-        }
-    };
 
     public void unregister(Context context, final BandClient bandClient) {
         if (!enabled) return;

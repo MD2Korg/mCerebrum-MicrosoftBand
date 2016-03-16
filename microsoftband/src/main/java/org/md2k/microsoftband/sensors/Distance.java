@@ -47,6 +47,15 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class Distance  extends Sensor{
+    private BandDistanceEventListener mDistanceEventListener = new BandDistanceEventListener() {
+        @Override
+        public void onBandDistanceChanged(final BandDistanceEvent event) {
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) event.getTotalDistance());
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
+        }
+    };
+
     Distance() {
         super(DataSourceType.DISTANCE,"1 Hz",1);
     }
@@ -64,7 +73,7 @@ public class Distance  extends Sensor{
         return dataSourceBuilder;
     }
 
-    ArrayList<HashMap<String, String>> createDataDescriptors() {
+    private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
         dataDescriptors.add(createDataDescriptor("Distance", "Distance traveled in cm since the Band was last factory-reset", "cm", frequency, double.class.getName(), "-20", "20"));
         return dataDescriptors;
@@ -86,14 +95,7 @@ public class Distance  extends Sensor{
         });
         background.start();
     }
-    private BandDistanceEventListener mDistanceEventListener = new BandDistanceEventListener() {
-        @Override
-        public void onBandDistanceChanged(final BandDistanceEvent event) {
-            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) event.getTotalDistance());
-            sendData(dataTypeDoubleArray);
-            callBack.onReceivedData(dataTypeDoubleArray);
-        }
-    };
+
     public void unregister(Context context, final BandClient bandClient) {
         if (!enabled) return;
         unregisterDataSource(context);

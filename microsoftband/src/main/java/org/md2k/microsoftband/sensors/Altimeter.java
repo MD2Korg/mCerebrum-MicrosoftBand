@@ -7,11 +7,8 @@ import com.microsoft.band.BandException;
 import com.microsoft.band.BandIOException;
 import com.microsoft.band.sensors.BandAltimeterEvent;
 import com.microsoft.band.sensors.BandAltimeterEventListener;
-import com.microsoft.band.sensors.BandDistanceEvent;
-import com.microsoft.band.sensors.BandDistanceEventListener;
 
 import org.md2k.datakitapi.datatype.DataTypeDoubleArray;
-import org.md2k.datakitapi.datatype.DataTypeFloat;
 import org.md2k.datakitapi.source.METADATA;
 import org.md2k.datakitapi.source.datasource.DataSourceBuilder;
 import org.md2k.datakitapi.source.datasource.DataSourceType;
@@ -49,6 +46,25 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class Altimeter extends Sensor{
+    private BandAltimeterEventListener mAltimeterListener = new BandAltimeterEventListener() {
+        @Override
+        public void onBandAltimeterChanged(BandAltimeterEvent bandAltimeterEvent) {
+            double samples[] = new double[9];
+            samples[0] = bandAltimeterEvent.getFlightsAscended();
+            samples[1] = bandAltimeterEvent.getFlightsDescended();
+            samples[2] = bandAltimeterEvent.getRate();
+            samples[3] = bandAltimeterEvent.getSteppingGain();
+            samples[4] = bandAltimeterEvent.getSteppingLoss();
+            samples[5] = bandAltimeterEvent.getStepsAscended();
+            samples[6] = bandAltimeterEvent.getStepsDescended();
+            samples[7] = bandAltimeterEvent.getTotalGain();
+            samples[8] = bandAltimeterEvent.getTotalLoss();
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), samples);
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
+        }
+    };
+
     Altimeter() {
         super(DataSourceType.ALTIMETER,"1 Hz",2);
     }
@@ -65,7 +81,7 @@ public class Altimeter extends Sensor{
         return dataSourceBuilder;
     }
 
-    ArrayList<HashMap<String, String>> createDataDescriptors() {
+    private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
         dataDescriptors.add(createDataDescriptor("FlightsAscended", "Number of floors ascended since the Band was last factory-reset", "count", frequency, double.class.getName(), null, null));
         dataDescriptors.add(createDataDescriptor("FlightsDescended", "Number of floors ascended since the Band was last factory-reset", "count", frequency, double.class.getName(), null, null));
@@ -78,6 +94,7 @@ public class Altimeter extends Sensor{
         dataDescriptors.add(createDataDescriptor("TotalLoss", "Total elevation loss in centimeters since the Band was last factory-reset", "count", frequency, double.class.getName(), null, null));
         return dataDescriptors;
     }
+
     public void register(Context context, final BandClient bandClient, Platform platform, CallBack callBack){
         registerDataSource(context, platform);
         this.callBack=callBack;
@@ -94,24 +111,7 @@ public class Altimeter extends Sensor{
         });
         background.start();
     }
-    private BandAltimeterEventListener mAltimeterListener = new BandAltimeterEventListener() {
-        @Override
-        public void onBandAltimeterChanged(BandAltimeterEvent bandAltimeterEvent) {
-            double samples[] = new double[9];
-            samples[0] = bandAltimeterEvent.getFlightsAscended();
-            samples[1]=bandAltimeterEvent.getFlightsDescended();
-            samples[2]=bandAltimeterEvent.getRate();
-            samples[3]=bandAltimeterEvent.getSteppingGain();
-            samples[4]=bandAltimeterEvent.getSteppingLoss();
-            samples[5]=bandAltimeterEvent.getStepsAscended();
-            samples[6]=bandAltimeterEvent.getStepsDescended();
-            samples[7]=bandAltimeterEvent.getTotalGain();
-            samples[8]=bandAltimeterEvent.getTotalLoss();
-            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), samples);
-            sendData(dataTypeDoubleArray);
-            callBack.onReceivedData(dataTypeDoubleArray);
-        }
-    };
+
     public void unregister(Context context, final BandClient bandClient) {
         if (!enabled) return;
         unregisterDataSource(context);

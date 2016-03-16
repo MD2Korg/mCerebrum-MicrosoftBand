@@ -4,33 +4,30 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-import org.md2k.datakitapi.source.datasource.DataSourceType;
-import org.md2k.utilities.Report.Log;
-
-/**
- * Created by smh on 5/31/2015.
- */
 public class MySharedPreference {
     public static SharedPreferences sharedPreferences=null;
     private static MySharedPreference instance=null;
+
+    private MySharedPreference(Context context) {
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        clear();
+    }
+
     public static MySharedPreference getInstance(Context context){
         if(instance==null) instance=new MySharedPreference(context);
         return instance;
     }
+
     public void clear(){
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.clear();
         editor.commit();
     }
+
     public void clear(String key){
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove(key);
         editor.commit();
-    }
-
-    private MySharedPreference(Context context){
-        sharedPreferences= PreferenceManager.getDefaultSharedPreferences(context);
-        clear();
     }
 
     public void setListener(SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener){

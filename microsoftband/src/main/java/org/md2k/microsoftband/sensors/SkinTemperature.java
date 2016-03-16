@@ -47,6 +47,15 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class SkinTemperature extends Sensor{
+    private BandSkinTemperatureEventListener mSkinTemperatureEventListener = new BandSkinTemperatureEventListener() {
+        @Override
+        public void onBandSkinTemperatureChanged(final BandSkinTemperatureEvent event) {
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) event.getTemperature());
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
+        }
+    };
+
     SkinTemperature() {
         super(DataSourceType.SKIN_TEMPERATURE,"1 Hz",1);
     }
@@ -64,11 +73,12 @@ public class SkinTemperature extends Sensor{
         return dataSourceBuilder;
     }
 
-    ArrayList<HashMap<String, String>> createDataDescriptors() {
+    private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
         dataDescriptors.add(createDataDescriptor("Skin Temperature", "Current temperature in degrees Celsius of the person wearing the Band ", "degree celsius", frequency, double.class.getName(), null,null));
         return dataDescriptors;
     }
+
     public void register(Context context, final BandClient bandClient, Platform platform, CallBack callBack){
         registerDataSource(context, platform);
         this.callBack=callBack;
@@ -85,14 +95,7 @@ public class SkinTemperature extends Sensor{
         });
         background.start();
     }
-    private BandSkinTemperatureEventListener mSkinTemperatureEventListener = new BandSkinTemperatureEventListener() {
-        @Override
-        public void onBandSkinTemperatureChanged(final BandSkinTemperatureEvent event) {
-            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) event.getTemperature());
-            sendData(dataTypeDoubleArray);
-            callBack.onReceivedData(dataTypeDoubleArray);
-        }
-    };
+
     public void unregister(Context context, final BandClient bandClient) {
         if (!enabled) return;
         unregisterDataSource(context);

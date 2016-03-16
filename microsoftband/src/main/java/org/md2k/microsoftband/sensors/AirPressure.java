@@ -47,6 +47,15 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class AirPressure  extends Sensor{
+    private BandBarometerEventListener mAirPressureEventListener = new BandBarometerEventListener() {
+        @Override
+        public void onBandBarometerChanged(BandBarometerEvent bandBarometerEvent) {
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), bandBarometerEvent.getAirPressure());
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
+        }
+    };
+
     AirPressure() {
         super(DataSourceType.AIR_PRESSURE,"1 Hz",2);
     }
@@ -64,7 +73,7 @@ public class AirPressure  extends Sensor{
         return dataSourceBuilder;
     }
 
-    ArrayList<HashMap<String, String>> createDataDescriptors() {
+    private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
         dataDescriptors.add(createDataDescriptor("Air Pressure", "Current air pressure in hectopascals", "meter/second^2", frequency, double.class.getName(), "-20", "2000"));
         return dataDescriptors;
@@ -87,14 +96,6 @@ public class AirPressure  extends Sensor{
         background.start();
     }
 
-    private BandBarometerEventListener mAirPressureEventListener=new BandBarometerEventListener() {
-        @Override
-        public void onBandBarometerChanged(BandBarometerEvent bandBarometerEvent) {
-            DataTypeDoubleArray dataTypeDoubleArray=new DataTypeDoubleArray(DateTime.getDateTime(),bandBarometerEvent.getAirPressure());
-            sendData(dataTypeDoubleArray);
-            callBack.onReceivedData(dataTypeDoubleArray);
-        }
-    };
     public void unregister(Context context, final BandClient bandClient) {
         if (!enabled) return;
         unregisterDataSource(context);

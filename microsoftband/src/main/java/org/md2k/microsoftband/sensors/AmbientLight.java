@@ -47,6 +47,15 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class AmbientLight extends Sensor{
+    private BandAmbientLightEventListener mAmbientLightEventListener = new BandAmbientLightEventListener() {
+        @Override
+        public void onBandAmbientLightChanged(BandAmbientLightEvent bandAmbientLightEvent) {
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) bandAmbientLightEvent.getBrightness());
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
+        }
+    };
+
     AmbientLight() {
         super(DataSourceType.AMBIENT_LIGHT,"2 Hz",2);
     }
@@ -64,11 +73,12 @@ public class AmbientLight extends Sensor{
         return dataSourceBuilder;
     }
 
-    ArrayList<HashMap<String, String>> createDataDescriptors() {
+    private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
         dataDescriptors.add(createDataDescriptor("Ambient Light", "Current ambient light in lumens per square meter (lux)", "lux", frequency, double.class.getName(), "-20", "20"));
         return dataDescriptors;
     }
+
     public void register(Context context, final BandClient bandClient, Platform platform, CallBack callBack){
         registerDataSource(context, platform);
         this.callBack=callBack;
@@ -86,14 +96,7 @@ public class AmbientLight extends Sensor{
         background.start();
 
     }
-    private BandAmbientLightEventListener mAmbientLightEventListener=new BandAmbientLightEventListener() {
-        @Override
-        public void onBandAmbientLightChanged(BandAmbientLightEvent bandAmbientLightEvent) {
-            DataTypeDoubleArray dataTypeDoubleArray=new DataTypeDoubleArray(DateTime.getDateTime(),(double) bandAmbientLightEvent.getBrightness());
-            sendData(dataTypeDoubleArray);
-            callBack.onReceivedData(dataTypeDoubleArray);
-        }
-    };
+
     public void unregister(Context context, final BandClient bandClient) {
         if (!enabled) return;
         unregisterDataSource(context);

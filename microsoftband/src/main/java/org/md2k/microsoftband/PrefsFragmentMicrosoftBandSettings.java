@@ -57,10 +57,64 @@ import java.util.ArrayList;
  */
 public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
     private static final String TAG = PrefsFragmentMicrosoftBandSettings.class.getSimpleName();
-    MicrosoftBands microsoftBands;
     public final int ADD_DEVICE = 1;
-    MyBlueTooth myBlueTooth;
-    ProgressDialog progressDialog;
+    private MicrosoftBands microsoftBands;
+    private MyBlueTooth myBlueTooth;
+    private ProgressDialog progressDialog;
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            progressDialog.dismiss();
+            getActivity().finish();
+        }
+    };
+    private DialogInterface.OnClickListener dialogChangeBackgroundListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            switch (which) {
+                case DialogInterface.BUTTON_POSITIVE:
+                    for (int i = 0; i < microsoftBands.find().size(); i++) {
+                        if (!microsoftBands.find().get(i).enabled)
+                            continue;
+                        final String location = microsoftBands.find().get(i).getPlatformId();
+                        if (location == null) continue;
+                        progressDialog = new ProgressDialog(getActivity());
+                        progressDialog.setMessage("Updating Background theme ... (" + location.toLowerCase().replace("_", " ") + ")");
+                        progressDialog.show();
+                        final int finalI = i;
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                microsoftBands.find().get(finalI).configureMicrosoftBand(getActivity(), location);
+                            }
+                        });
+                    }
+                    break;
+                case DialogInterface.BUTTON_NEGATIVE:
+                    getActivity().finish();
+                    break;
+            }
+        }
+    };
+    private DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            switch (which) {
+                case DialogInterface.BUTTON_POSITIVE:
+                    Intent intent = new Intent(getActivity(), ServiceMicrosoftBands.class);
+                    getActivity().stopService(intent);
+                    saveConfigurationFile();
+                    intent = new Intent(getActivity(), ServiceMicrosoftBands.class);
+                    getActivity().startService(intent);
+                    break;
+
+                case DialogInterface.BUTTON_NEGATIVE:
+                    Toast.makeText(getActivity(), "Configuration file is not saved.", Toast.LENGTH_LONG).show();
+                    getActivity().finish();
+                    break;
+            }
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -76,7 +130,7 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
                 new IntentFilter("background"));
     }
 
-    void initializeBluetoothConnection() {
+    private void initializeBluetoothConnection() {
         myBlueTooth = new MyBlueTooth(getActivity(), new BlueToothCallBack() {
             @Override
             public void onConnected() {
@@ -101,14 +155,6 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
         }
         return super.onOptionsItemSelected(item);
     }
-
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            progressDialog.dismiss();
-            getActivity().finish();
-        }
-    };
 
     @Override
     public void onResume() {
@@ -177,11 +223,12 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
         }
     }
 
-    void updatePreference(MicrosoftBand microsoftBand) {
+    private void updatePreference(MicrosoftBand microsoftBand) {
         Preference preference = findPreference(microsoftBand.getDeviceId());
         preference.setTitle(microsoftBand.getPlatformName());
         preference.setSummary(getLocationSummary(microsoftBand));
     }
+
     private Preference.OnPreferenceClickListener microsoftBandListener() {
         return new Preference.OnPreferenceClickListener() {
             @Override
@@ -234,7 +281,7 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
         };
     }
 
-    void setSharedPreference(MicrosoftBand microsoftBand) {
+    private void setSharedPreference(MicrosoftBand microsoftBand) {
         MySharedPreference mySharedPreference = MySharedPreference.getInstance(getActivity());
         mySharedPreference.setSharedPreferencesString("deviceId", microsoftBand.getDeviceId());
         mySharedPreference.setSharedPreferencesString("platformName", microsoftBand.getPlatformName());
@@ -253,7 +300,7 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
         }
     }
 
-    void getSharedPreference() {
+    private void getSharedPreference() {
         MySharedPreference mySharedPreference = MySharedPreference.getInstance(getActivity());
         String deviceId = mySharedPreference.getSharedPreferenceString("deviceId");
         MicrosoftBand microsoftBand = microsoftBands.find(deviceId);
@@ -270,7 +317,7 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
         }
     }
 
-    void enablePage() {
+    private void enablePage() {
         Log.d(TAG, "enable page");
         setupPreferenceScreenBluetooth(true);
         setupPreferenceScreenMicrosoftBand();
@@ -278,7 +325,7 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
         setCancelButton();
     }
 
-    void disablePage() {
+    private void disablePage() {
         if (microsoftBands != null) microsoftBands.unregister();
         microsoftBands = null;
         setupPreferenceScreenBluetooth(false);
@@ -325,7 +372,6 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
         }
     }
 
-
     private void updateMicrosoftBand() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         int count = 0;
@@ -338,54 +384,7 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
                     .setNegativeButton("No", dialogChangeBackgroundListener).show();
     }
 
-    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-        @Override
-        public void onClick(DialogInterface dialog, int which) {
-            switch (which) {
-                case DialogInterface.BUTTON_POSITIVE:
-                    Intent intent = new Intent(getActivity(), ServiceMicrosoftBands.class);
-                    getActivity().stopService(intent);
-                    saveConfigurationFile();
-                    intent = new Intent(getActivity(), ServiceMicrosoftBands.class);
-                    getActivity().startService(intent);
-                    break;
-
-                case DialogInterface.BUTTON_NEGATIVE:
-                    Toast.makeText(getActivity(), "Configuration file is not saved.", Toast.LENGTH_LONG).show();
-                    getActivity().finish();
-                    break;
-            }
-        }
-    };
-    DialogInterface.OnClickListener dialogChangeBackgroundListener = new DialogInterface.OnClickListener() {
-        @Override
-        public void onClick(DialogInterface dialog, int which) {
-            switch (which) {
-                case DialogInterface.BUTTON_POSITIVE:
-                    for (int i = 0; i < microsoftBands.find().size(); i++) {
-                        if (!microsoftBands.find().get(i).enabled)
-                            continue;
-                        final String location = microsoftBands.find().get(i).getPlatformId();
-                        if (location == null) continue;
-                        progressDialog = new ProgressDialog(getActivity());
-                        progressDialog.setMessage("Updating Background theme ... (" + location.toLowerCase().replace("_", " ") + ")");
-                        progressDialog.show();
-                        final int finalI = i;
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                microsoftBands.find().get(finalI).configureMicrosoftBand(getActivity(),location);
-                            }
-                        });
-                    }
-                    break;
-                case DialogInterface.BUTTON_NEGATIVE:
-                    getActivity().finish();
-                    break;
-            }
-        }
-    };
-    String getLocationSummary(MicrosoftBand microsoftBand){
+    private String getLocationSummary(MicrosoftBand microsoftBand) {
         String summary;
         if (microsoftBand.getPlatformId() != null)
             summary = microsoftBand.getPlatformId().toLowerCase().replace("_", " ");
@@ -397,7 +396,7 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
         return summary;
     }
 
-    void saveConfigurationFile() {
+    private void saveConfigurationFile() {
         try {
             microsoftBands.writeDataSourceToFile();
             updateMicrosoftBand();

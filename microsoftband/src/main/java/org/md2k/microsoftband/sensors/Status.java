@@ -10,7 +10,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import com.microsoft.band.BandClient;
 
 import org.md2k.datakitapi.datatype.DataTypeDoubleArray;
-import org.md2k.datakitapi.datatype.DataTypeInt;
 import org.md2k.datakitapi.datatype.DataTypeIntArray;
 import org.md2k.datakitapi.source.METADATA;
 import org.md2k.datakitapi.source.datasource.DataSourceBuilder;
@@ -51,13 +50,38 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class Status extends Sensor {
+    public static final long PERIOD = 5000;
+    public static final long RESTART = 30000;
     private static final String TAG = Status.class.getSimpleName();
     Handler handler;
     long lastReceivedTimestamp;
     double lastBandContact;
-    public static final long PERIOD=5000;
-    public static final long RESTART=30000;
+    Runnable getStatus = new Runnable() {
+        @Override
+        public void run() {
+            int status[] = new int[1];
+            if (DateTime.getDateTime() - lastReceivedTimestamp > PERIOD)
+                status[0] = DATA_QUALITY.BAND_OFF;
+            else if (lastBandContact != 0)
+                status[0] = DATA_QUALITY.NOT_WORN;
+            else
+                status[0] = DATA_QUALITY.GOOD;
 
+            DataTypeIntArray dataTypeIntArray = new DataTypeIntArray(DateTime.getDateTime(), status);
+            sendDataStatus(dataTypeIntArray);
+
+            callBack.onReceivedData(dataTypeIntArray);
+            handler.postDelayed(getStatus, PERIOD);
+        }
+    };
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            lastReceivedTimestamp = intent.getLongExtra("timestamp", 0);
+            if (DataSourceType.BAND_CONTACT.equals(intent.getStringExtra("datasourcetype")))
+                lastBandContact = ((DataTypeDoubleArray) intent.getParcelableExtra("data")).getSample()[0];
+        }
+    };
 
     Status() {
         super(DataSourceType.STATUS, String.valueOf(1.0/(PERIOD/1000))+" Hz", 1);
@@ -80,7 +104,7 @@ public class Status extends Sensor {
         return dataSourceBuilder;
     }
 
-    ArrayList<HashMap<String, String>> createDataDescriptors() {
+    private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
         dataDescriptors.add(createDataDescriptor("Connection Status", "measures the connection status of microsoft band", "meter/second^2)", frequency, double.class.getName(), "0", "4"));
         return dataDescriptors;
@@ -94,39 +118,11 @@ public class Status extends Sensor {
         handler.post(getStatus);
     }
 
-    Runnable getStatus = new Runnable() {
-        @Override
-        public void run() {
-            int status[] = new int[1];
-            if (DateTime.getDateTime() - lastReceivedTimestamp > PERIOD)
-                status[0] = DATA_QUALITY.BAND_OFF;
-            else if (lastBandContact != 0)
-                status[0] = DATA_QUALITY.NOT_WORN;
-            else
-                status[0] = DATA_QUALITY.GOOD;
-
-            DataTypeIntArray dataTypeIntArray = new DataTypeIntArray(DateTime.getDateTime(), status);
-            sendDataStatus(dataTypeIntArray);
-
-            callBack.onReceivedData(dataTypeIntArray);
-            handler.postDelayed(getStatus, PERIOD);
-        }
-    };
-
     public void unregister(Context context, final BandClient bandClient) {
         if (!enabled) return;
         LocalBroadcastManager.getInstance(context).unregisterReceiver(mMessageReceiver);
         handler.removeCallbacks(getStatus);
         unregisterDataSource(context);
     }
-
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            lastReceivedTimestamp = intent.getLongExtra("timestamp", 0);
-            if (DataSourceType.BAND_CONTACT.equals(intent.getStringExtra("datasourcetype")))
-                lastBandContact = ((DataTypeDoubleArray) intent.getParcelableExtra("data")).getSample()[0];
-        }
-    };
 
 }

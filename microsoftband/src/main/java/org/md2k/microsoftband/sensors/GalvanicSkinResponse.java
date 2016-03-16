@@ -47,6 +47,15 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class GalvanicSkinResponse  extends Sensor{
+    private BandGsrEventListener mGSREventListener = new BandGsrEventListener() {
+        @Override
+        public void onBandGsrChanged(BandGsrEvent bandGsrEvent) {
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) bandGsrEvent.getResistance());
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
+        }
+    };
+
     GalvanicSkinResponse() {
         super(DataSourceType.GALVANIC_SKIN_RESPONSE,"0.2 Hz",2);
     }
@@ -64,7 +73,7 @@ public class GalvanicSkinResponse  extends Sensor{
         return dataSourceBuilder;
     }
 
-    ArrayList<HashMap<String, String>> createDataDescriptors() {
+    private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
         dataDescriptors.add(createDataDescriptor("Galvanic Skin Response", "Current skin resistance in kohms of the person wearing the Band", "kohms", frequency, double.class.getName(), null, null));
         return dataDescriptors;
@@ -87,14 +96,7 @@ public class GalvanicSkinResponse  extends Sensor{
         background.start();
 
     }
-    private BandGsrEventListener mGSREventListener=new BandGsrEventListener() {
-        @Override
-        public void onBandGsrChanged(BandGsrEvent bandGsrEvent) {
-            DataTypeDoubleArray dataTypeDoubleArray= new DataTypeDoubleArray(DateTime.getDateTime(), (double) bandGsrEvent.getResistance());
-            sendData(dataTypeDoubleArray);
-            callBack.onReceivedData(dataTypeDoubleArray);
-        }
-    };
+
     public void unregister(Context context, final BandClient bandClient) {
         if (!enabled) return;
         unregisterDataSource(context);

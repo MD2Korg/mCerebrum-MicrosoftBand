@@ -47,6 +47,15 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class AmbientTemperature extends Sensor {
+    private BandBarometerEventListener mAmbientTemperatureEventListener = new BandBarometerEventListener() {
+        @Override
+        public void onBandBarometerChanged(BandBarometerEvent bandBarometerEvent) {
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), bandBarometerEvent.getTemperature());
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
+        }
+    };
+
     AmbientTemperature() {
         super(DataSourceType.AMBIENT_TEMPERATURE,"1 Hz",2);
     }
@@ -64,11 +73,12 @@ public class AmbientTemperature extends Sensor {
         return dataSourceBuilder;
     }
 
-    ArrayList<HashMap<String, String>> createDataDescriptors() {
+    private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
         dataDescriptors.add(createDataDescriptor("Ambient Temperature", "Current temperature in degrees Celsius", "degree celsius", frequency, double.class.getName(), "-20", "20"));
         return dataDescriptors;
     }
+
     public void register(Context context, final BandClient bandClient, Platform platform, CallBack callBack){
         registerDataSource(context, platform);
         this.callBack = callBack;
@@ -85,15 +95,6 @@ public class AmbientTemperature extends Sensor {
         });
         background.start();
     }
-
-    private BandBarometerEventListener mAmbientTemperatureEventListener = new BandBarometerEventListener() {
-        @Override
-        public void onBandBarometerChanged(BandBarometerEvent bandBarometerEvent) {
-            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) bandBarometerEvent.getTemperature());
-            sendData(dataTypeDoubleArray);
-            callBack.onReceivedData(dataTypeDoubleArray);
-        }
-    };
 
     public void unregister(Context context, final BandClient bandClient) {
         if (!enabled) return;

@@ -47,6 +47,19 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class Gyroscope extends Sensor{
+    private BandGyroscopeEventListener mGyroscopeEventListener = new BandGyroscopeEventListener() {
+        @Override
+        public void onBandGyroscopeChanged(final BandGyroscopeEvent event) {
+            double[] samples = new double[3];
+            samples[0] = event.getAngularVelocityX();
+            samples[1] = event.getAngularVelocityY();
+            samples[2] = event.getAngularVelocityZ();
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), samples);
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
+        }
+    };
+
     Gyroscope() {
         super(DataSourceType.GYROSCOPE,"31 Hz",1);
     }
@@ -64,13 +77,14 @@ public class Gyroscope extends Sensor{
         return dataSourceBuilder;
     }
 
-    ArrayList<HashMap<String, String>> createDataDescriptors() {
+    private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
         dataDescriptors.add(createDataDescriptor("Gyroscope X", "Angular velocity around the x-axis of the Band in degrees/sec","degrees/second",frequency,double.class.getName(),"-800","800"));
         dataDescriptors.add(createDataDescriptor("Gyroscope Y", "Angular velocity around the y-axis of the Band in degrees/sec","degrees/second",frequency,double.class.getName(),"-800","800"));
         dataDescriptors.add(createDataDescriptor("Gyroscope Z", "Angular velocity around the z-axis of the Band in degrees/sec","degrees/second",frequency,double.class.getName(),"-800","800"));
         return dataDescriptors;
     }
+
     public void register(Context context, final BandClient bandClient, Platform platform, CallBack callBack){
         registerDataSource(context, platform);
         this.callBack=callBack;
@@ -99,18 +113,6 @@ public class Gyroscope extends Sensor{
         background.start();
     }
 
-    private BandGyroscopeEventListener mGyroscopeEventListener = new BandGyroscopeEventListener() {
-        @Override
-        public void onBandGyroscopeChanged(final BandGyroscopeEvent event) {
-            double[] samples = new double[3];
-            samples[0] = event.getAngularVelocityX();
-            samples[1] = event.getAngularVelocityY();
-            samples[2] = event.getAngularVelocityZ();
-            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), samples);
-            sendData(dataTypeDoubleArray);
-            callBack.onReceivedData(dataTypeDoubleArray);
-        }
-    };
     public void unregister(Context context, final BandClient bandClient) {
         if (!enabled) return;
         unregisterDataSource(context);

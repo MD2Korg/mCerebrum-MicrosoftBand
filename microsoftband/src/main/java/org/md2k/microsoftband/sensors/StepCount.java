@@ -47,6 +47,15 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class StepCount extends Sensor{
+    private BandPedometerEventListener mPedometerEventListener = new BandPedometerEventListener() {
+        @Override
+        public void onBandPedometerChanged(final BandPedometerEvent event) {
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) event.getTotalSteps());
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
+        }
+    };
+
     StepCount() {
         super(DataSourceType.STEP_COUNT,"VALUE_CHANGE",1);
     }
@@ -64,7 +73,7 @@ public class StepCount extends Sensor{
         return dataSourceBuilder;
     }
 
-    ArrayList<HashMap<String, String>> createDataDescriptors() {
+    private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
         dataDescriptors.add(createDataDescriptor("Total Steps", "Total number of steps taken since the Band was last factory-reset", "count", frequency, double.class.getName(), null,null));
         return dataDescriptors;
@@ -86,14 +95,7 @@ public class StepCount extends Sensor{
         });
         background.start();
     }
-    private BandPedometerEventListener mPedometerEventListener = new BandPedometerEventListener() {
-        @Override
-        public void onBandPedometerChanged(final BandPedometerEvent event) {
-            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) event.getTotalSteps());
-            sendData(dataTypeDoubleArray);
-            callBack.onReceivedData(dataTypeDoubleArray);
-        }
-    };
+
     public void unregister(Context context, final BandClient bandClient) {
         if (!enabled) return;
         unregisterDataSource(context);
