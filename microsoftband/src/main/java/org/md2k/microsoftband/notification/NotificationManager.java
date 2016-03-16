@@ -20,21 +20,21 @@ import org.md2k.utilities.data_format.Notification;
 
 import java.util.ArrayList;
 
-/**
+/*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
- * <p/>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * <p/>
+ *
  * * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- * <p/>
+ *
  * * Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * <p/>
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -48,11 +48,11 @@ import java.util.ArrayList;
  */
 public class NotificationManager {
     private static final String TAG = NotificationManager.class.getSimpleName();
-    DataKitAPI dataKitAPI;
-    Context context;
-    ArrayList<MicrosoftBand> microsoftBands;
-    ArrayList<DataSourceClient> dataSourceClientArrayList;
-    Handler handler;
+    private DataKitAPI dataKitAPI;
+    private Context context;
+    private ArrayList<MicrosoftBand> microsoftBands;
+    private ArrayList<DataSourceClient> dataSourceClientArrayList;
+    private Handler handler;
 
     public NotificationManager(Context context, ArrayList<MicrosoftBand> microsoftBands) {
         handler = new Handler();
@@ -66,13 +66,13 @@ public class NotificationManager {
         unsubscribe();
     }
 
-    void unsubscribe() {
+    private void unsubscribe() {
         if (dataSourceClientArrayList != null)
             for (int i = 0; i < dataSourceClientArrayList.size(); i++)
                 dataKitAPI.unsubscribe(dataSourceClientArrayList.get(i));
     }
 
-    void subscribe() {
+    private void subscribe() {
         Log.d(TAG, "NotificationManager : subscribe()");
         dataKitAPI = DataKitAPI.getInstance(context);
         DataSourceBuilder dataSourceBuilder = new DataSourceBuilder().setType(DataSourceType.NOTIFICATION);
@@ -92,7 +92,7 @@ public class NotificationManager {
         }
     }
 
-    void processMessage(DataSourceClient dataSourceClient,DataType dataType) {
+    private void processMessage(DataSourceClient dataSourceClient, DataType dataType) {
         DataTypeString dataTypeString = (DataTypeString) dataType;
         Log.d(TAG, "onReceived=" + dataTypeString.getSample());
         Gson gson = new Gson();

@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
 
-/**
+/*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
@@ -44,8 +44,8 @@ import java.util.EmptyStackException;
  */
 public class MicrosoftBands {
     private static final String TAG = MicrosoftBands.class.getSimpleName();
-    private ArrayList<MicrosoftBand> microsoftBands;
     Context context;
+    private ArrayList<MicrosoftBand> microsoftBands;
     public MicrosoftBands(Context context) {
         Log.d(TAG,"Constructor()...");
         this.context=context;

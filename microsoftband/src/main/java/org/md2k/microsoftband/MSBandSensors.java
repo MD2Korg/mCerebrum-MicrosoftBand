@@ -4,21 +4,21 @@ import org.md2k.datakitapi.source.datasource.DataSourceType;
 
 import java.util.ArrayList;
 
-/**
+/*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
- * <p/>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * <p/>
+ *
  * * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- * <p/>
+ *
  * * Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * <p/>
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -31,21 +31,6 @@ import java.util.ArrayList;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class MSBandSensors {
-    static class MSBandSensor {
-        int version;
-        String dataSourceType;
-        String description;
-        String unit;
-        String frequency;
-
-        public MSBandSensor(int version, String dataSourceType, String description, String unit, String frequency) {
-            this.version = version;
-            this.dataSourceType = dataSourceType;
-            this.description = description;
-            this.unit = unit;
-            this.frequency = frequency;
-        }
-    };
     public static ArrayList<MSBandSensor> getSensors(){
         ArrayList<MSBandSensor> msBandSensors=new ArrayList<>();
         msBandSensors.add(new MSBandSensor(1,DataSourceType.ACCELEROMETER,"represent the band's axes acceleration in units of standard gravity", "meter/second^2",""));
@@ -76,6 +61,22 @@ public class MSBandSensors {
         msBandSensors.add(new MSBandSensor(2,DataSourceType.AMBIENT_TEMPERATURE,"Current temperature in degrees Celsius", "degree celcius","1"));
         return msBandSensors;
 
+    }
+
+    static class MSBandSensor {
+        int version;
+        String dataSourceType;
+        String description;
+        String unit;
+        String frequency;
+
+        public MSBandSensor(int version, String dataSourceType, String description, String unit, String frequency) {
+            this.version = version;
+            this.dataSourceType = dataSourceType;
+            this.description = description;
+            this.unit = unit;
+            this.frequency = frequency;
+        }
     }
 }
 

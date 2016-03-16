@@ -39,21 +39,21 @@ import java.util.HashMap;
 
 import io.fabric.sdk.android.Fabric;
 
-/**
+/*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
- * <p/>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * <p/>
+ *
  * * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- * <p/>
+ *
  * * Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * <p/>
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -67,9 +67,9 @@ import io.fabric.sdk.android.Fabric;
  */
 public class ActivityMain extends AppCompatActivity {
     private static final String TAG = ActivityMain.class.getSimpleName();
-    HashMap<String, TextView> hashMapData = new HashMap<>();
-    Handler mHandler = new Handler();
-    Runnable runnable = new Runnable() {
+    private HashMap<String, TextView> hashMapData = new HashMap<>();
+    private Handler mHandler = new Handler();
+    private Runnable runnable = new Runnable() {
         @Override
         public void run() {
             {
@@ -151,11 +151,13 @@ public class ActivityMain extends AppCompatActivity {
                 intent = new Intent(this, ActivityCopyright.class);
                 startActivity(intent);
                 break;
+            default:
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    TableRow createDefaultRow() {
+    private TableRow createDefaultRow() {
         TableRow row = new TableRow(this);
         TextView tvSensor = new TextView(this);
         tvSensor.setText("sensor");
@@ -180,7 +182,7 @@ public class ActivityMain extends AppCompatActivity {
         return row;
     }
 
-    void prepareTable(ArrayList<MicrosoftBand> microsoftBands) {
+    private void prepareTable(ArrayList<MicrosoftBand> microsoftBands) {
         TableLayout ll = (TableLayout) findViewById(R.id.tableLayout);
         ll.removeAllViews();
         ll.addView(createDefaultRow());
@@ -215,7 +217,7 @@ public class ActivityMain extends AppCompatActivity {
         }
     }
 
-    void updateTable(Intent intent) {
+    private void updateTable(Intent intent) {
         try {
             String sampleStr = "";
             String dataSourceType = intent.getStringExtra("datasourcetype");
@@ -230,7 +232,7 @@ public class ActivityMain extends AppCompatActivity {
             hashMapData.get(id + "_freq").setText(String.format("%.1f", freq));
 
 
-            DataType data = (DataType) intent.getParcelableExtra("data");
+            DataType data = intent.getParcelableExtra("data");
             if (data instanceof DataTypeFloat) {
                 sampleStr = String.format("%.1f", ((DataTypeFloat) data).getSample());
             } else if (data instanceof DataTypeFloatArray) {
