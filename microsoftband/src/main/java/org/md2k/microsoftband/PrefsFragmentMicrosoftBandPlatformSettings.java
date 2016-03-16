@@ -29,9 +29,28 @@ import java.util.ArrayList;
 
 public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragment {
     public static final String TAG = PrefsFragmentMicrosoftBandPlatformSettings.class.getSimpleName();
-    String deviceId="";
-    MySharedPreference mySharedPreference;
-    ArrayList<DataSource> dataSourcesDefault;
+    private String deviceId = "";
+    private MySharedPreference mySharedPreference;
+    private ArrayList<DataSource> dataSourcesDefault;
+    private SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+            switch (key) {
+                case "platformId":
+                    findPreference("platformId").setSummary(getLocationSummary(mySharedPreference.getSharedPreferenceString("platformId")));
+                    ListPreference lpLocation = (ListPreference) findPreference("platformId");
+                    lpLocation.setValue(mySharedPreference.getSharedPreferenceString("platformId"));
+                    updateDefaultConfiguration();
+                    break;
+                case DataSourceType.ACCELEROMETER + "_frequency":
+                    findPreference(DataSourceType.ACCELEROMETER).setSummary(mySharedPreference.getSharedPreferenceString(key));
+                    break;
+                case DataSourceType.GYROSCOPE + "_frequency":
+                    findPreference(DataSourceType.GYROSCOPE).setSummary(mySharedPreference.getSharedPreferenceString(key));
+                    break;
+            }
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -45,6 +64,7 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
         setAddButton();
         setCancelButton();
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -55,7 +75,8 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
         }
         return super.onOptionsItemSelected(item);
     }
-    int getBandVersion(){
+
+    private int getBandVersion() {
         String version=mySharedPreference.getSharedPreferenceString("version");
         int versionInt=1;
         if(version==null)
@@ -67,8 +88,7 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
         }
     }
 
-
-    void updatePreferenceScreen() {
+    private void updatePreferenceScreen() {
         int versionFirmwareInt=getBandVersion();
         findPreference("platformName").setSummary(mySharedPreference.getSharedPreferenceString("platformName"));
         findPreference("deviceId").setSummary(mySharedPreference.getSharedPreferenceString("deviceId"));
@@ -90,11 +110,11 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
             }
         }
     }
+
     private void createMySharedPreference(){
         mySharedPreference = MySharedPreference.getInstance(getActivity());
         mySharedPreference.setListener(onSharedPreferenceChangeListener);
     }
-
 
     private void addPreferenceScreenSensors() {
         PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference("dataSourceType");
@@ -136,6 +156,7 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
             preferenceCategory.setEnabled(false);
         else preferenceCategory.setEnabled(true);
     }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -193,26 +214,8 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
             }
         });
     }
-    SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-        @Override
-        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-            switch (key) {
-                case "platformId":
-                    findPreference("platformId").setSummary(getLocationSummary(mySharedPreference.getSharedPreferenceString("platformId")));
-                    ListPreference lpLocation=(ListPreference)findPreference("platformId");
-                    lpLocation.setValue(mySharedPreference.getSharedPreferenceString("platformId"));
-                    updateDefaultConfiguration();
-                    break;
-                case DataSourceType.ACCELEROMETER + "_frequency":
-                    findPreference(DataSourceType.ACCELEROMETER).setSummary(mySharedPreference.getSharedPreferenceString(key));
-                    break;
-                case DataSourceType.GYROSCOPE + "_frequency":
-                    findPreference(DataSourceType.GYROSCOPE).setSummary(mySharedPreference.getSharedPreferenceString(key));
-                    break;
-            }
-        }
-    };
-    String getLocationSummary(String curSummary){
+
+    private String getLocationSummary(String curSummary) {
         String summary;
         if (curSummary != null)
             summary = curSummary.toLowerCase().replace("_", " ");
@@ -251,14 +254,16 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
                 });
         builderSingle.show();
     }
-    void readDefaultDataSources(){
+
+    private void readDefaultDataSources() {
         try {
             dataSourcesDefault=Configuration.readDefault();
         } catch (FileNotFoundException e) {
             dataSourcesDefault=null;
         }
     }
-    void updateDefaultConfiguration(){
+
+    private void updateDefaultConfiguration() {
         if(dataSourcesDefault==null) return;
         String curPlatformId=mySharedPreference.getSharedPreferenceString("platformId");
         for(int i=0;i<dataSourcesDefault.size();i++){

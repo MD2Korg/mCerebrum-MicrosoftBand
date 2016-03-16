@@ -6,24 +6,22 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
-import org.md2k.utilities.Report.Log;
 
-
-/**
+/*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
- * <p/>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * <p/>
+ *
  * * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- * <p/>
+ *
  * * Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * <p/>
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -35,10 +33,35 @@ import org.md2k.utilities.Report.Log;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 public class MyBlueTooth {
     private static final String TAG = MyBlueTooth.class.getSimpleName();
-    BlueToothCallBack blueToothCallBack;
-    Context context;
+    private BlueToothCallBack blueToothCallBack;
+    public final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
+                        BluetoothAdapter.ERROR);
+                switch (state) {
+                    case BluetoothAdapter.STATE_OFF:
+                        blueToothCallBack.onDisconnected();
+                        break;
+                    case BluetoothAdapter.STATE_ON:
+                        blueToothCallBack.onConnected();
+                        break;
+                    case BluetoothAdapter.STATE_TURNING_ON:
+                        break;
+                    case BluetoothAdapter.STATE_TURNING_OFF:
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    };
+    private Context context;
 
     MyBlueTooth(Context context, BlueToothCallBack blueToothCallBack) {
         this.context = context;
@@ -76,27 +99,5 @@ public class MyBlueTooth {
         }
         return mBluetoothAdapter.isEnabled();
     }
-    public final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
-                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
-                        BluetoothAdapter.ERROR);
-                switch (state) {
-                    case BluetoothAdapter.STATE_OFF:
-                        blueToothCallBack.onDisconnected();
-                        break;
-                    case BluetoothAdapter.STATE_ON:
-                        blueToothCallBack.onConnected();
-                        break;
-                    case BluetoothAdapter.STATE_TURNING_ON:
-                        break;
-                    case BluetoothAdapter.STATE_TURNING_OFF:
-                        break;
-                }
-            }
-        }
-    };
 
 }

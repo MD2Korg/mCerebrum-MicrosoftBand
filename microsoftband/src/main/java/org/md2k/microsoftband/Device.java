@@ -24,8 +24,6 @@ import com.microsoft.band.tiles.pages.PageRect;
 import com.microsoft.band.tiles.pages.ScrollFlowPanel;
 import com.microsoft.band.tiles.pages.VerticalAlignment;
 
-
-import org.md2k.datakitapi.DataKitAPI;
 import org.md2k.datakitapi.source.platform.PlatformType;
 import org.md2k.utilities.Report.Log;
 import org.md2k.utilities.data_format.Notification;
@@ -34,8 +32,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
@@ -75,9 +71,44 @@ public abstract class Device {
     protected int version;
     protected boolean enabled;
     protected BandClient bandClient = null;
-    Thread connectThread;
     protected Notification notification;
-    Handler handler;
+    private Thread connectThread;
+    private Handler handler;
+    private BandCallBack bandCallBack;
+    private Runnable connectRunnable = new Runnable() {
+        @Override
+        public void run() {
+            Log.d(TAG, deviceId + " connect run()...");
+            while (true) {
+                boolean res = connectDevice();
+                if (res) {
+                    Log.d(TAG, deviceId + " connect run() status= CONNECTED");
+
+                    try {
+                        bandCallBack.onBandConnected();
+                    } catch (BandIOException e) {
+//                        e.printStackTrace();
+                    }
+                    break;
+                } else {
+                    Log.d(TAG, deviceId + " connect run() status=NOTCONNECTED post delayed()");
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        Log.d(TAG, "Sleep Error");
+                    }
+                }
+            }
+            Log.d(TAG, deviceId + "...connect run()");
+        }
+    };
+    private Runnable runAlarm = new Runnable() {
+        @Override
+        public void run() {
+            vibrate();
+            sendMessage();
+        }
+    };
 
     Device(Context context, String platformId, String deviceId) {
         this.context = context;
@@ -93,12 +124,12 @@ public abstract class Device {
         handler = new Handler();
     }
 
-    public void setNotification(Notification notification) {
-        this.notification = notification;
-    }
-
     public static BandInfo[] findBandInfo() {
         return BandClientManager.getInstance().getPairedBands();
+    }
+
+    public void setNotification(Notification notification) {
+        this.notification = notification;
     }
 
     public String getDeviceId() {
@@ -109,7 +140,7 @@ public abstract class Device {
         return platformName;
     }
 
-    BandInfo findBandInfo(String deviceId) {
+    private BandInfo findBandInfo(String deviceId) {
         BandInfo[] mPairBands = BandClientManager.getInstance().getPairedBands();
         for (BandInfo bandInfo : mPairBands) {
             if (bandInfo.getMacAddress().equals(deviceId)) return bandInfo;
@@ -146,35 +177,6 @@ public abstract class Device {
         return platformType;
     }
 
-    Runnable connectRunnable = new Runnable() {
-        @Override
-        public void run() {
-            Log.d(TAG, deviceId + " connect run()...");
-            while (true) {
-                boolean res = connectDevice();
-                if (res) {
-                    Log.d(TAG, deviceId + " connect run() status= CONNECTED");
-
-                    try {
-                        bandCallBack.onBandConnected();
-                    } catch (BandIOException e) {
-//                        e.printStackTrace();
-                    }
-                    break;
-                } else {
-                    Log.d(TAG, deviceId + " connect run() status=NOTCONNECTED post delayed()");
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e) {
-                        Log.d(TAG, "Sleep Error");
-                    }
-                }
-            }
-            Log.d(TAG, deviceId + "...connect run()");
-        }
-    };
-    BandCallBack bandCallBack;
-
     public void connect(BandCallBack bandCallBack) {
         this.bandCallBack = bandCallBack;
         if (bandClient != null) {
@@ -188,7 +190,6 @@ public abstract class Device {
             connectThread.interrupt();
     }
 
-
     public void disconnect() {
         Log.d(TAG, deviceId + "disconnect...");
         stopConnectThread();
@@ -201,7 +202,7 @@ public abstract class Device {
         Log.d(TAG, deviceId + "...disconnect");
     }
 
-    void changeBackGround(String wrist) throws BandException, InterruptedException {
+    private void changeBackGround(String wrist) throws BandException, InterruptedException {
         Log.d(TAG, "change background: band connected");
         Bitmap image = getBitmap(wrist);
         BandTheme bandTheme = getTheme(wrist);
@@ -230,14 +231,6 @@ public abstract class Device {
         return panel;
     }
 
-    Runnable runAlarm = new Runnable() {
-        @Override
-        public void run() {
-            vibrate();
-            sendMessage();
-        }
-    };
-
     public void vibrate() {
         try {
             bandClient.getNotificationManager().vibrate(getVibrationType(notification.getVibration_type())).await();
@@ -264,7 +257,7 @@ public abstract class Device {
                 }
     }
 
-    void addTile(Activity activity, TileInfo tileInfo) throws BandException, InterruptedException {
+    private void addTile(Activity activity, TileInfo tileInfo) throws BandException, InterruptedException {
         UUID tileId = tileInfo.UUID;
         if (doesTileExist(bandClient.getTileManager().getTiles().await(), tileId))
             return;
@@ -298,7 +291,7 @@ public abstract class Device {
         bandClient.getTileManager().addTile(activity, tile).await();
     }
 
-    void addTiles(Activity activity, String wrist) throws BandException, InterruptedException {
+    private void addTiles(Activity activity, String wrist) throws BandException, InterruptedException {
         ArrayList<TileInfo> tileInfos = TileInfo.readFile(context);
         for (int i = 0; i < tileInfos.size(); i++) {
             for (int j = 0; j < tileInfos.get(i).location.size(); j++) {
@@ -358,7 +351,7 @@ public abstract class Device {
         else return null;
     }
 
-    VibrationType getVibrationType(int vibrationType) {
+    private VibrationType getVibrationType(int vibrationType) {
         VibrationType vType = VibrationType.NOTIFICATION_TWO_TONE;
         switch (vibrationType) {
             case Notification.VIBRATION.NOTIFICATION_ONE_TONE:

@@ -2,14 +2,12 @@ package org.md2k.microsoftband.sensors;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Parcelable;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandIOException;
 
 import org.md2k.datakitapi.datatype.DataType;
-import org.md2k.datakitapi.datatype.DataTypeInt;
 import org.md2k.datakitapi.datatype.DataTypeIntArray;
 import org.md2k.datakitapi.source.METADATA;
 import org.md2k.datakitapi.source.datasource.DataSourceType;
@@ -22,21 +20,21 @@ import org.md2k.utilities.data_format.DATA_QUALITY;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/**
+/*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
- * <p/>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * <p/>
+ *
  * * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- * <p/>
+ *
  * * Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * <p/>
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -50,13 +48,14 @@ import java.util.HashMap;
  */
 public class Sensors {
     private static final String TAG =Sensors.class.getSimpleName() ;
-    Context context;
-    ArrayList<Sensor> sensors;
-    HashMap<String, Integer> hm = new HashMap<>();
-    long starttimestamp = 0;
-    int countOff=0;
-    Platform platform;
-    BandClient bandClient;
+    private Context context;
+    private ArrayList<Sensor> sensors;
+    private HashMap<String, Integer> hm = new HashMap<>();
+    private long starttimestamp = 0;
+    private int countOff = 0;
+    private Platform platform;
+    private BandClient bandClient;
+
     public Sensors(Context context, Platform platform){
         this.context=context;
         this.platform=platform;
@@ -115,7 +114,7 @@ public class Sensors {
                         intent.putExtra("count", hm.get(dataSourceType));
                         intent.putExtra("timestamp", data.getDateTime());
                         intent.putExtra("starttimestamp", starttimestamp);
-                        intent.putExtra("data",(Parcelable) data);
+                        intent.putExtra("data", data);
                         intent.putExtra("datasourcetype", dataSourceType);
                         intent.putExtra("deviceid", Sensors.this.platform.getMetadata().get(METADATA.DEVICE_ID));
                         intent.putExtra("platformid", Sensors.this.platform.getId());
