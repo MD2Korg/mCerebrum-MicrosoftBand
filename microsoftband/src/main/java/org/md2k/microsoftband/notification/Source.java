@@ -27,8 +27,8 @@ package org.md2k.microsoftband.notification;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class Source{
-    String platform_type;
-    String location;
+    public String platform_type;
+    public String location;
 
     public String getPlatform_type() {
         return platform_type;

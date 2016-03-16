@@ -35,7 +35,7 @@ import android.content.IntentFilter;
  */
 
 public class MyBlueTooth {
-    private static final String TAG = MyBlueTooth.class.getSimpleName();
+    //    private static final String TAG = MyBlueTooth.class.getSimpleName();
     private BlueToothCallBack blueToothCallBack;
     public final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override

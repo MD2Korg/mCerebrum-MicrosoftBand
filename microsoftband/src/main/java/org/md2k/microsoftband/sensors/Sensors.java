@@ -54,7 +54,7 @@ public class Sensors {
     private long starttimestamp = 0;
     private int countOff = 0;
     private Platform platform;
-    private BandClient bandClient;
+//    private BandClient bandClient;
 
     public Sensors(Context context, Platform platform){
         this.context=context;
@@ -92,7 +92,7 @@ public class Sensors {
         }
     }
     public void register(final BandClient bandClient, final Platform platform) {
-        this.bandClient=bandClient;
+//        this.bandClient=bandClient;
         this.platform=platform;
         hm.clear();
         starttimestamp = DateTime.getDateTime();

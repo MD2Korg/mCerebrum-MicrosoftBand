@@ -1,7 +1,6 @@
 package org.md2k.microsoftband;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -38,7 +37,6 @@ public class HRConsentActivity extends Activity implements HeartRateConsentListe
     private static final String TAG = HRConsentActivity.class.getSimpleName();
     public static BandClient bandClient;
 
-    Context context=this;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

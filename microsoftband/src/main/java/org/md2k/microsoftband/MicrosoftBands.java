@@ -44,7 +44,7 @@ import java.util.EmptyStackException;
  */
 public class MicrosoftBands {
     private static final String TAG = MicrosoftBands.class.getSimpleName();
-    Context context;
+    private Context context;
     private ArrayList<MicrosoftBand> microsoftBands;
     public MicrosoftBands(Context context) {
         Log.d(TAG,"Constructor()...");
@@ -64,7 +64,7 @@ public class MicrosoftBands {
         return count;
     }
 
-    void addOthers(){
+    public void addOthers() {
         BandInfo[] bandInfos=Device.findBandInfo();
         for (BandInfo bandInfo : bandInfos) {
             String deviceId = bandInfo.getMacAddress();

@@ -93,6 +93,8 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
                 case DialogInterface.BUTTON_NEGATIVE:
                     getActivity().finish();
                     break;
+                default:
+                    break;
             }
         }
     };
@@ -111,6 +113,8 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
                 case DialogInterface.BUTTON_NEGATIVE:
                     Toast.makeText(getActivity(), "Configuration file is not saved.", Toast.LENGTH_LONG).show();
                     getActivity().finish();
+                    break;
+                default:
                     break;
             }
         }
@@ -363,12 +367,10 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == ADD_DEVICE) {
-            if (resultCode == getActivity().RESULT_OK) {
-                getSharedPreference();
-                Log.d(TAG, "result add");
-                setupPreferenceScreenMicrosoftBand();
-            }
+        if (requestCode == ADD_DEVICE && resultCode == getActivity().RESULT_OK) {
+            getSharedPreference();
+            Log.d(TAG, "result add");
+            setupPreferenceScreenMicrosoftBand();
         }
     }
 

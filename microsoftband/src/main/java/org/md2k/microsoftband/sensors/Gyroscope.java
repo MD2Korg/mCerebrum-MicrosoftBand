@@ -46,7 +46,7 @@ import java.util.HashMap;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class Gyroscope extends Sensor{
+public class Gyroscope extends Sensor {
     private BandGyroscopeEventListener mGyroscopeEventListener = new BandGyroscopeEventListener() {
         @Override
         public void onBandGyroscopeChanged(final BandGyroscopeEvent event) {
@@ -61,7 +61,7 @@ public class Gyroscope extends Sensor{
     };
 
     Gyroscope() {
-        super(DataSourceType.GYROSCOPE,"31 Hz",1);
+        super(DataSourceType.GYROSCOPE, "31 Hz", 1);
     }
 
     public DataSourceBuilder createDataSourceBuilder(Platform platform) {
@@ -79,31 +79,33 @@ public class Gyroscope extends Sensor{
 
     private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
-        dataDescriptors.add(createDataDescriptor("Gyroscope X", "Angular velocity around the x-axis of the Band in degrees/sec","degrees/second",frequency,double.class.getName(),"-800","800"));
-        dataDescriptors.add(createDataDescriptor("Gyroscope Y", "Angular velocity around the y-axis of the Band in degrees/sec","degrees/second",frequency,double.class.getName(),"-800","800"));
-        dataDescriptors.add(createDataDescriptor("Gyroscope Z", "Angular velocity around the z-axis of the Band in degrees/sec","degrees/second",frequency,double.class.getName(),"-800","800"));
+        dataDescriptors.add(createDataDescriptor("Gyroscope X", "Angular velocity around the x-axis of the Band in degrees/sec", "degrees/second", frequency, double.class.getName(), "-800", "800"));
+        dataDescriptors.add(createDataDescriptor("Gyroscope Y", "Angular velocity around the y-axis of the Band in degrees/sec", "degrees/second", frequency, double.class.getName(), "-800", "800"));
+        dataDescriptors.add(createDataDescriptor("Gyroscope Z", "Angular velocity around the z-axis of the Band in degrees/sec", "degrees/second", frequency, double.class.getName(), "-800", "800"));
         return dataDescriptors;
     }
 
-    public void register(Context context, final BandClient bandClient, Platform platform, CallBack callBack){
+    public void register(Context context, final BandClient bandClient, Platform platform, CallBack callBack) {
         registerDataSource(context, platform);
-        this.callBack=callBack;
+        this.callBack = callBack;
         final Thread background = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
 
-        switch (frequency) {
-            case "8 Hz":
-                bandClient.getSensorManager().registerGyroscopeEventListener(mGyroscopeEventListener, SampleRate.MS128);
-                break;
-            case "31 Hz":
-                bandClient.getSensorManager().registerGyroscopeEventListener(mGyroscopeEventListener, SampleRate.MS32);
-                break;
-            case "62 Hz":
-                bandClient.getSensorManager().registerGyroscopeEventListener(mGyroscopeEventListener, SampleRate.MS16);
-                break;
-        }
+                    switch (frequency) {
+                        case "8 Hz":
+                            bandClient.getSensorManager().registerGyroscopeEventListener(mGyroscopeEventListener, SampleRate.MS128);
+                            break;
+                        case "31 Hz":
+                            bandClient.getSensorManager().registerGyroscopeEventListener(mGyroscopeEventListener, SampleRate.MS32);
+                            break;
+                        case "62 Hz":
+                            bandClient.getSensorManager().registerGyroscopeEventListener(mGyroscopeEventListener, SampleRate.MS16);
+                            break;
+                        default:
+                            break;
+                    }
                 } catch (BandException e) {
                     e.printStackTrace();
                 }

@@ -64,11 +64,11 @@ public class MSBandSensors {
     }
 
     static class MSBandSensor {
-        int version;
-        String dataSourceType;
-        String description;
-        String unit;
-        String frequency;
+        public int version;
+        public String dataSourceType;
+        public String description;
+        public String unit;
+        public String frequency;
 
         public MSBandSensor(int version, String dataSourceType, String description, String unit, String frequency) {
             this.version = version;

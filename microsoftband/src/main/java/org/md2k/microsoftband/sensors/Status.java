@@ -53,7 +53,7 @@ public class Status extends Sensor {
     public static final long PERIOD = 5000;
     public static final long RESTART = 30000;
     private static final String TAG = Status.class.getSimpleName();
-    long lastReceivedTimestamp;
+    private long lastReceivedTimestamp;
     private Handler handler;
     private double lastBandContact;
     private Runnable getStatus = new Runnable() {

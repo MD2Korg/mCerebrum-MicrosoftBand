@@ -1,7 +1,6 @@
 package org.md2k.microsoftband.notification;
 
 import android.content.Context;
-import android.os.Handler;
 
 import com.google.gson.Gson;
 
@@ -52,10 +51,10 @@ public class NotificationManager {
     private Context context;
     private ArrayList<MicrosoftBand> microsoftBands;
     private ArrayList<DataSourceClient> dataSourceClientArrayList;
-    private Handler handler;
+//    private Handler handler;
 
     public NotificationManager(Context context, ArrayList<MicrosoftBand> microsoftBands) {
-        handler = new Handler();
+//        handler = new Handler();
         this.context = context;
         this.microsoftBands = microsoftBands;
         dataSourceClientArrayList = null;

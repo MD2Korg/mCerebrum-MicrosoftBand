@@ -45,10 +45,10 @@ import java.util.HashMap;
 public abstract class Sensor {
     private static final String TAG =Sensor.class.getSimpleName() ;
     protected CallBack callBack;
+    protected String dataSourceType;
+    protected String frequency;
+    protected boolean enabled;
     private Context context;
-    private String dataSourceType;
-    private String frequency;
-    private boolean enabled;
     private int version;
     private DataSourceClient dataSourceClient;
 
@@ -74,7 +74,8 @@ public abstract class Sensor {
     public String getDataSourceType(){
         return dataSourceType;
     }
-    HashMap<String, String> createDataDescriptor(String name, String description, String unit, String frequency, String dataType, String minValue, String maxValue) {
+
+    protected HashMap<String, String> createDataDescriptor(String name, String description, String unit, String frequency, String dataType, String minValue, String maxValue) {
         HashMap<String, String> dataDescriptor = new HashMap<>();
         dataDescriptor.put(METADATA.NAME, name);
         dataDescriptor.put(METADATA.DESCRIPTION, description);

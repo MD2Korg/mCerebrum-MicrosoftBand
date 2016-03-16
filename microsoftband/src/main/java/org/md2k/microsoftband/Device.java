@@ -283,7 +283,7 @@ public abstract class Device {
         }
         Bitmap tileIcon = BitmapFactory.decodeResource(context.getResources(), idLarge, options);
         Bitmap tileIconSmall = BitmapFactory.decodeResource(context.getResources(), idSmall, options);
-        ScrollFlowPanel panel = createPanel();
+//        ScrollFlowPanel panel = createPanel();
 
         BandTile tile = new BandTile.Builder(tileId, tileInfo.name, tileIcon)
                 .setTileSmallIcon(tileIconSmall)
@@ -380,6 +380,8 @@ public abstract class Device {
                 break;
             case Notification.VIBRATION.RAMP_DOWN:
                 vType = VibrationType.RAMP_DOWN;
+                break;
+            default:
                 break;
         }
         Log.d(TAG, "vibrationtype=" + vibrationType + " enum=" + vType.toString());

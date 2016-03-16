@@ -107,6 +107,8 @@ public class Accelerometer extends Sensor {
                         case "62 Hz":
                             bandClient.getSensorManager().registerAccelerometerEventListener(mAccelerometerEventListener, SampleRate.MS16);
                             break;
+                        default:
+                            break;
                     }
                 } catch (BandException e) {
                     Log.d(TAG," exception...............");

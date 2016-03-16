@@ -29,7 +29,7 @@ import java.util.ArrayList;
 
 public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragment {
     public static final String TAG = PrefsFragmentMicrosoftBandPlatformSettings.class.getSimpleName();
-    private String deviceId = "";
+    //    private String deviceId = "";
     private MySharedPreference mySharedPreference;
     private ArrayList<DataSource> dataSourcesDefault;
     private SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
@@ -48,6 +48,8 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
                 case DataSourceType.GYROSCOPE + "_frequency":
                     findPreference(DataSourceType.GYROSCOPE).setSummary(mySharedPreference.getSharedPreferenceString(key));
                     break;
+                default:
+                    break;
             }
         }
     };
@@ -55,7 +57,7 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        deviceId=getActivity().getIntent().getStringExtra("deviceId");
+//        deviceId=getActivity().getIntent().getStringExtra("deviceId");
         readDefaultDataSources();
         createMySharedPreference();
         addPreferencesFromResource(R.xml.pref_microsoftband_platform);
