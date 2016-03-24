@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 
+import com.google.gson.Gson;
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandClientManager;
 import com.microsoft.band.BandException;
@@ -24,9 +25,20 @@ import com.microsoft.band.tiles.pages.PageRect;
 import com.microsoft.band.tiles.pages.ScrollFlowPanel;
 import com.microsoft.band.tiles.pages.VerticalAlignment;
 
+
+import org.md2k.datakitapi.DataKitAPI;
+import org.md2k.datakitapi.datatype.DataTypeString;
+import org.md2k.datakitapi.source.METADATA;
+import org.md2k.datakitapi.source.datasource.DataSourceBuilder;
+import org.md2k.datakitapi.source.datasource.DataSourceClient;
+import org.md2k.datakitapi.source.datasource.DataSourceType;
+import org.md2k.datakitapi.source.platform.Platform;
+import org.md2k.datakitapi.source.platform.PlatformBuilder;
 import org.md2k.datakitapi.source.platform.PlatformType;
+import org.md2k.datakitapi.time.DateTime;
 import org.md2k.utilities.Report.Log;
-import org.md2k.utilities.data_format.Notification;
+import org.md2k.utilities.data_format.NotificationDeliver;
+import org.md2k.utilities.data_format.NotificationRequest;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -71,44 +83,28 @@ public abstract class Device {
     protected int version;
     protected boolean enabled;
     protected BandClient bandClient = null;
-    protected Notification notification;
-    private Thread connectThread;
-    private Handler handler;
-    private BandCallBack bandCallBack;
-    private Runnable connectRunnable = new Runnable() {
-        @Override
-        public void run() {
-            Log.d(TAG, deviceId + " connect run()...");
-            while (true) {
-                boolean res = connectDevice();
-                if (res) {
-                    Log.d(TAG, deviceId + " connect run() status= CONNECTED");
+    Thread connectThread;
+    protected NotificationRequest notificationRequestVibration;
+    protected NotificationRequest notificationRequestMessage;
+    Handler handlerVibration;
+    Handler handlerMessage;
+    int curMessage=0;
+    int curVibration=0;
+    DataSourceClient dataSourceClientDeliver;
 
-                    try {
-                        bandCallBack.onBandConnected();
-                    } catch (BandIOException e) {
-//                        e.printStackTrace();
-                    }
-                    break;
-                } else {
-                    Log.d(TAG, deviceId + " connect run() status=NOTCONNECTED post delayed()");
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e) {
-                        Log.d(TAG, "Sleep Error");
-                    }
-                }
-            }
-            Log.d(TAG, deviceId + "...connect run()");
-        }
-    };
-    private Runnable runAlarm = new Runnable() {
-        @Override
-        public void run() {
-            vibrate();
-            sendMessage();
-        }
-    };
+    public Platform getPlatform() {
+        String pid=platformId;
+        if(Constants.LEFT_WRIST.equals(platformId))
+            pid="Left Wrist";
+        else if(Constants.RIGHT_WRIST.equals(platformId))
+            pid="Right Wrist";
+        return new PlatformBuilder().setId(platformId).setType(platformType).setMetadata(METADATA.DEVICE_ID, deviceId).setMetadata(METADATA.NAME, "MicrosoftBand ("+pid+")").
+                setMetadata(METADATA.VERSION_HARDWARE, versionHardware).setMetadata(METADATA.VERSION_FIRMWARE, versionFirmware).build();
+    }
+
+    public void setDataSourceClientDeliver(DataSourceClient dataSourceClientDeliver) {
+        this.dataSourceClientDeliver = dataSourceClientDeliver;
+    }
 
     Device(Context context, String platformId, String deviceId) {
         this.context = context;
@@ -121,15 +117,19 @@ public abstract class Device {
             platformName = bandInfo.getName();
             bandClient = BandClientManager.getInstance().create(context, bandInfo);
         }
-        handler = new Handler();
+        handlerVibration = new Handler();
+        handlerMessage=new Handler();
+    }
+
+    public void setNotificationRequestVibration(NotificationRequest notificationRequest) {
+        this.notificationRequestVibration = notificationRequest;
+    }
+    public void setNotificationRequestMessage(NotificationRequest notificationRequest) {
+        this.notificationRequestMessage = notificationRequest;
     }
 
     public static BandInfo[] findBandInfo() {
         return BandClientManager.getInstance().getPairedBands();
-    }
-
-    public void setNotification(Notification notification) {
-        this.notification = notification;
     }
 
     public String getDeviceId() {
@@ -176,6 +176,35 @@ public abstract class Device {
     public String getPlatformType() {
         return platformType;
     }
+
+    Runnable connectRunnable = new Runnable() {
+        @Override
+        public void run() {
+            Log.d(TAG, deviceId + " connect run()...");
+            while (true) {
+                boolean res = connectDevice();
+                if (res) {
+                    Log.d(TAG, deviceId + " connect run() status= CONNECTED");
+
+                    try {
+                        bandCallBack.onBandConnected();
+                    } catch (BandIOException e) {
+//                        e.printStackTrace();
+                    }
+                    break;
+                } else {
+                    Log.d(TAG, deviceId + " connect run() status=NOTCONNECTED post delayed()");
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        Log.d(TAG, "Sleep Error");
+                    }
+                }
+            }
+            Log.d(TAG, deviceId + "...connect run()");
+        }
+    };
+    BandCallBack bandCallBack;
 
     public void connect(BandCallBack bandCallBack) {
         this.bandCallBack = bandCallBack;
@@ -231,29 +260,55 @@ public abstract class Device {
         return panel;
     }
 
-    public void vibrate() {
-        try {
-            bandClient.getNotificationManager().vibrate(getVibrationType(notification.getVibration_type())).await();
-        } catch (InterruptedException | BandException e) {
-            Log.e(TAG, "ERROR=" + e.toString());
-            //    handle InterruptedException
+    Runnable runVibrate = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                curVibration++;
+                Log.d(TAG,"vibrate..."+curVibration+" repeat="+notificationRequestVibration.getRepeat());
+                if(curVibration<=notificationRequestVibration.getRepeat()) {
+                    bandClient.getNotificationManager().vibrate(VibrationType.ONE_TONE_HIGH).await();
+                    handlerVibration.postDelayed(this,notificationRequestVibration.getDuration()/notificationRequestVibration.getRepeat());
+                }else{
+                    insertToDataKit(notificationRequestVibration,getPlatform(),NotificationDeliver.DELIVERED);
+                }
+
+
+            } catch (InterruptedException | BandException e) {
+                insertToDataKit(notificationRequestVibration,getPlatform(),NotificationDeliver.INTERNAL_ERROR);
+                Log.e(TAG, "ERROR=" + e.toString());
+                //    handle InterruptedException
+            }
+
         }
+    };
 
+    public void vibrate() {
+        Log.d(TAG,"vibrate..");
+        handlerVibration.removeCallbacks(runVibrate);
+        curVibration=0;
+        handlerVibration.post(runVibrate);
     }
+    void insertToDataKit(NotificationRequest notificationRequest, Platform platform, String status){
+        Gson gson=new Gson();
+        NotificationDeliver notificationDeliver=new NotificationDeliver();
+        notificationDeliver.setNotificationRequest(notificationRequest);
+        notificationDeliver.setStatus(status);
+        notificationDeliver.setPlatform(platform);
+        DataTypeString dataTypeString=new DataTypeString(DateTime.getDateTime(),gson.toJson(notificationDeliver));
+        DataKitAPI.getInstance(context).insert(dataSourceClientDeliver, dataTypeString);
 
-    public void alarm() {
-        handler.post(runAlarm);
     }
 
     public void sendMessage() {
-        if (notification.getNotification_type() == null) return;
         ArrayList<TileInfo> tileInfos = TileInfo.readFile(context);
         for (int i = 0; i < tileInfos.size(); i++)
-            if (tileInfos.get(i).name.equals(notification.getNotification_type()))
+            if (tileInfos.get(i).name.equals("EMA"))
                 try {
-                    bandClient.getNotificationManager().sendMessage(tileInfos.get(i).UUID, notification.getMessage()[0], notification.getMessage()[1], new Date(), MessageFlags.SHOW_DIALOG);
+                    bandClient.getNotificationManager().sendMessage(tileInfos.get(i).UUID, notificationRequestMessage.getMessage()[0], notificationRequestMessage.getMessage()[1], new Date(), MessageFlags.SHOW_DIALOG);
+                    insertToDataKit(notificationRequestVibration, getPlatform(), NotificationDeliver.DELIVERED);
                 } catch (BandIOException e) {
-                    e.printStackTrace();
+                    insertToDataKit(notificationRequestVibration, getPlatform(), NotificationDeliver.INTERNAL_ERROR);
                 }
     }
 
@@ -283,7 +338,7 @@ public abstract class Device {
         }
         Bitmap tileIcon = BitmapFactory.decodeResource(context.getResources(), idLarge, options);
         Bitmap tileIconSmall = BitmapFactory.decodeResource(context.getResources(), idSmall, options);
-//        ScrollFlowPanel panel = createPanel();
+        ScrollFlowPanel panel = createPanel();
 
         BandTile tile = new BandTile.Builder(tileId, tileInfo.name, tileIcon)
                 .setTileSmallIcon(tileIconSmall)
@@ -291,7 +346,7 @@ public abstract class Device {
         bandClient.getTileManager().addTile(activity, tile).await();
     }
 
-    private void addTiles(Activity activity, String wrist) throws BandException, InterruptedException {
+    void addTiles(Activity activity, String wrist) throws BandException, InterruptedException {
         ArrayList<TileInfo> tileInfos = TileInfo.readFile(context);
         for (int i = 0; i < tileInfos.size(); i++) {
             for (int j = 0; j < tileInfos.get(i).location.size(); j++) {
@@ -344,48 +399,13 @@ public abstract class Device {
     }
 
     private BandTheme getTheme(String wrist) {
-        if (wrist.equals(Constants.LEFT_WRIST))
-            return new BandTheme(0x39bf6f, 0x41ce7a, 0x35aa65, 0x939982, 0x33a361, 0x2c8454);
-        else if (wrist.equals(Constants.RIGHT_WRIST))
-            return new BandTheme(0x3366cc, 0x3a78dd, 0x3165ba, 0x8997ab, 0x3a78dd, 0x2b5aa5);
-        else return null;
-    }
-
-    private VibrationType getVibrationType(int vibrationType) {
-        VibrationType vType = VibrationType.NOTIFICATION_TWO_TONE;
-        switch (vibrationType) {
-            case Notification.VIBRATION.NOTIFICATION_ONE_TONE:
-                vType = VibrationType.NOTIFICATION_ONE_TONE;
-                break;
-            case Notification.VIBRATION.NOTIFICATION_TWO_TONE:
-                vType = VibrationType.NOTIFICATION_TWO_TONE;
-                break;
-            case Notification.VIBRATION.NOTIFICATION_ALARM:
-                vType = VibrationType.NOTIFICATION_ALARM;
-                break;
-            case Notification.VIBRATION.NOTIFICATION_TIMER:
-                vType = VibrationType.NOTIFICATION_TIMER;
-                break;
-            case Notification.VIBRATION.ONE_TONE_HIGH:
-                vType = VibrationType.ONE_TONE_HIGH;
-                break;
-            case Notification.VIBRATION.TWO_TONE_HIGH:
-                vType = VibrationType.TWO_TONE_HIGH;
-                break;
-            case Notification.VIBRATION.THREE_TONE_HIGH:
-                vType = VibrationType.THREE_TONE_HIGH;
-                break;
-            case Notification.VIBRATION.RAMP_UP:
-                vType = VibrationType.RAMP_UP;
-                break;
-            case Notification.VIBRATION.RAMP_DOWN:
-                vType = VibrationType.RAMP_DOWN;
-                break;
+        switch (wrist) {
+            case Constants.LEFT_WRIST:
+                return new BandTheme(0x39bf6f, 0x41ce7a, 0x35aa65, 0x939982, 0x33a361, 0x2c8454);
+            case Constants.RIGHT_WRIST:
+                return new BandTheme(0x3366cc, 0x3a78dd, 0x3165ba, 0x8997ab, 0x3a78dd, 0x2b5aa5);
             default:
-                break;
+                return null;
         }
-        Log.d(TAG, "vibrationtype=" + vibrationType + " enum=" + vType.toString());
-        return vType;
     }
-
 }

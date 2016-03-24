@@ -3,15 +3,5 @@
     "name":"EMA",
     "UUID":"85357e32-2db0-4916-9eb8-2bc7fca109de",
     "location": ["LEFT_WRIST","RIGHT_WRIST"]
-  },
-  {
-    "name":"INTERVENTION",
-    "UUID":"85357e32-2db0-4916-9eb8-2bc7fca109da",
-    "location": ["LEFT_WRIST","RIGHT_WRIST"]
-  },
-  {
-    "name":"DATA_QUALITY",
-    "UUID":"85357e32-2db0-4916-9eb8-2bc7fca109dd",
-    "location": ["LEFT_WRIST","RIGHT_WRIST"]
   }
 ]

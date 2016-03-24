@@ -1,7 +1,10 @@
 package org.md2k.microsoftband.sensors;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandException;
@@ -51,21 +54,6 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class HeartRate extends Sensor {
-    private BandHeartRateEventListener mHeartRateEventListener = new BandHeartRateEventListener() {
-        @Override
-        public void onBandHeartRateChanged(final BandHeartRateEvent event) {
-            double samples[] = new double[2];
-            samples[0] = event.getHeartRate();
-            if (event.getQuality() == HeartRateQuality.ACQUIRING)
-                samples[1] = 1;
-            else if (event.getQuality() == HeartRateQuality.LOCKED)
-                samples[1] = 0;
-            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), samples);
-            sendData(dataTypeDoubleArray);
-            callBack.onReceivedData(dataTypeDoubleArray);
-        }
-    };
-
     HeartRate() {
         super(DataSourceType.HEART_RATE,"1 Hz",1);
     }
@@ -89,10 +77,8 @@ public class HeartRate extends Sensor {
         dataDescriptors.add(createDataDescriptor("Quality", "Quality of the current heart rate reading", "enum [0: locked, 1: acquiring]", frequency, double.class.getName(), "0", "1"));
         return dataDescriptors;
     }
-
-    public void register(final Context context, final BandClient bandClient, Platform platform, CallBack callBack){
-        registerDataSource(context, platform);
-        this.callBack = callBack;
+    BandClient bandClient;
+    public void start(){
         final Thread background = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -100,6 +86,7 @@ public class HeartRate extends Sensor {
 
                     if (bandClient.getSensorManager().getCurrentHeartRateConsent() != UserConsent.GRANTED) {
                         Intent intent = new Intent(context, HRConsentActivity.class);
+                        intent.putExtra("type",HeartRate.class.getSimpleName());
                         HRConsentActivity.bandClient = bandClient;
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         context.startActivity(intent);
@@ -115,6 +102,29 @@ public class HeartRate extends Sensor {
         });
         background.start();
     }
+    public void register(final Context context, final BandClient bandClient, Platform platform, CallBack callBack){
+        LocalBroadcastManager.getInstance(context).registerReceiver(mMessageReceiver,
+                new IntentFilter(HRConsentActivity.HRCONSENT));
+        registerDataSource(context, platform);
+        this.callBack = callBack;
+        this.bandClient=bandClient;
+        start();
+    }
+
+    private BandHeartRateEventListener mHeartRateEventListener = new BandHeartRateEventListener() {
+        @Override
+        public void onBandHeartRateChanged(final BandHeartRateEvent event) {
+            double samples[] = new double[2];
+            samples[0] = event.getHeartRate();
+            if (event.getQuality() == HeartRateQuality.ACQUIRING)
+                samples[1] = 1;
+            else if (event.getQuality() == HeartRateQuality.LOCKED)
+                samples[1] = 0;
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), samples);
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
+        }
+    };
 
     public void unregister(Context context, final BandClient bandClient) {
         if (!enabled) return;
@@ -131,6 +141,16 @@ public class HeartRate extends Sensor {
             }
         });
         background.start();
-
+        LocalBroadcastManager.getInstance(context).unregisterReceiver(mMessageReceiver);
     }
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String type=intent.getStringExtra("type");
+            boolean value=intent.getBooleanExtra("value", false);
+            if(type.equals(HeartRate.class.getSimpleName())){
+                start();
+            }
+        }
+    };
 }

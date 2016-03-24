@@ -47,20 +47,12 @@ import java.util.ArrayList;
 
 public class MicrosoftBand extends Device {
     private static final String TAG = MicrosoftBand.class.getSimpleName();
-    public boolean isConnected = false;
+    boolean isConnected = false;
     private Sensors sensors;
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "onreceive:" + platformId);
 
-            if (intent.getStringExtra("platformid").equals(platformId)) {
-                Log.d(TAG, "Restart msband ... id=" + platformId);
-//                unregister();
-//                register();
-            }
-        }
-    };
+    public void resetDataSource() {
+        sensors = new Sensors(context, getPlatform());
+    }
 
     MicrosoftBand(Context context, String platformId, String deviceId) {
         super(context, platformId, deviceId);
@@ -68,14 +60,9 @@ public class MicrosoftBand extends Device {
 
     }
 
-    public void resetDataSource() {
-        sensors = new Sensors(context, getPlatform());
-    }
-
     public ArrayList<Sensor> getSensors() {
         return sensors.getSensors();
     }
-
     public void setEnabled(boolean enabled){
         this.enabled=enabled;
     }
@@ -88,15 +75,7 @@ public class MicrosoftBand extends Device {
         return this.deviceId.equals(deviceId);
     }
 
-    public Platform getPlatform() {
-        String pid=platformId;
-        if(Constants.LEFT_WRIST.equals(platformId))
-            pid="Left Wrist";
-        else if(Constants.RIGHT_WRIST.equals(platformId))
-            pid="Right Wrist";
-        return new PlatformBuilder().setId(platformId).setType(platformType).setMetadata(METADATA.DEVICE_ID, deviceId).setMetadata(METADATA.NAME, "MicrosoftBand ("+pid+")").
-                setMetadata(METADATA.VERSION_HARDWARE, versionHardware).setMetadata(METADATA.VERSION_FIRMWARE, versionFirmware).build();
-    }
+
 
     public void register() {
         Log.d(TAG, "MicrosoftBand...register()...enabled=" + enabled+" bandCLient="+bandClient);
@@ -113,6 +92,7 @@ public class MicrosoftBand extends Device {
     }
 
     public void unregister(){
+        if(bandClient==null) return;
         if (bandClient.isConnected()) {
             try {
                 LocalBroadcastManager.getInstance(context).unregisterReceiver(mMessageReceiver);
@@ -123,5 +103,17 @@ public class MicrosoftBand extends Device {
             disconnect();
         }
     }
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG,"onreceive:"+platformId);
+
+            if(intent.getStringExtra("platformid").equals(platformId)) {
+                Log.d(TAG,"Restart msband ... id="+platformId);
+//                unregister();
+//                register();
+            }
+        }
+    };
 
 }

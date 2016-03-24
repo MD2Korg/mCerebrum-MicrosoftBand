@@ -22,8 +22,8 @@ android {
         applicationId "org.md2k.microsoftband"
         minSdkVersion 19
         targetSdkVersion 21
-        versionCode 14
-        versionName '0.2.7'
+        versionCode 15
+        versionName '0.2.8'
     }
     buildTypes {
         release {
@@ -39,6 +39,8 @@ android {
     }
     lintOptions {
         abortOnError false
+    }
+    productFlavors {
     }
 }
 

@@ -1,7 +1,10 @@
 package org.md2k.microsoftband.sensors;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandException;
@@ -51,18 +54,8 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class RRInterval extends Sensor {
-    private BandRRIntervalEventListener mRRIntervalEventListener = new BandRRIntervalEventListener() {
-        @Override
-        public void onBandRRIntervalChanged(BandRRIntervalEvent bandRRIntervalEvent) {
-            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), bandRRIntervalEvent.getInterval());
-            Log.d("MD2K", "rr=" + bandRRIntervalEvent.getInterval());
-            sendData(dataTypeDoubleArray);
-            callBack.onReceivedData(dataTypeDoubleArray);
-        }
-    };
-
     RRInterval() {
-        super(DataSourceType.RR_INTERVAL,"VALUE_CHANGE",2);
+        super(DataSourceType.RR_INTERVAL, "VALUE_CHANGE", 2);
     }
 
     public DataSourceBuilder createDataSourceBuilder(Platform platform) {
@@ -83,10 +76,9 @@ public class RRInterval extends Sensor {
         dataDescriptors.add(createDataDescriptor("RR Interval", "Current RR interval in seconds as read by the Band", "second", frequency, double.class.getName(), "0", "5"));
         return dataDescriptors;
     }
+    BandClient bandClient;
+    void start(){
 
-    public void register(final Context context, final BandClient bandClient, Platform platform, CallBack callBack){
-        registerDataSource(context, platform);
-        this.callBack = callBack;
         final Thread background = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -94,6 +86,7 @@ public class RRInterval extends Sensor {
 
                     if (bandClient.getSensorManager().getCurrentHeartRateConsent() != UserConsent.GRANTED) {
                         Intent intent = new Intent(context, HRConsentActivity.class);
+                        intent.putExtra("type", RRInterval.class.getSimpleName());
                         HRConsentActivity.bandClient = bandClient;
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         context.startActivity(intent);
@@ -110,6 +103,24 @@ public class RRInterval extends Sensor {
         background.start();
     }
 
+    public void register(final Context context, final BandClient bandClient, Platform platform, CallBack callBack){
+        LocalBroadcastManager.getInstance(context).registerReceiver(mMessageReceiver,
+                new IntentFilter(HRConsentActivity.HRCONSENT));
+        registerDataSource(context, platform);
+        this.callBack = callBack;
+        this.bandClient=bandClient;
+        start();
+    }
+
+    private BandRRIntervalEventListener mRRIntervalEventListener = new BandRRIntervalEventListener() {
+        @Override
+        public void onBandRRIntervalChanged(BandRRIntervalEvent bandRRIntervalEvent) {
+            DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), (double) bandRRIntervalEvent.getInterval());
+            sendData(dataTypeDoubleArray);
+            callBack.onReceivedData(dataTypeDoubleArray);
+        }
+    };
+
     public void unregister(Context context, final BandClient bandClient) {
         if (!enabled) return;
         unregisterDataSource(context);
@@ -125,5 +136,16 @@ public class RRInterval extends Sensor {
             }
         });
         background.start();
+        LocalBroadcastManager.getInstance(context).unregisterReceiver(mMessageReceiver);
     }
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String type=intent.getStringExtra("type");
+            boolean value=intent.getBooleanExtra("value", false);
+            if(type.equals(RRInterval.class.getSimpleName())){
+                start();
+            }
+        }
+    };
 }

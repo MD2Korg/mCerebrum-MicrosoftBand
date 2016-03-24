@@ -48,7 +48,7 @@ public abstract class Sensor {
     protected String dataSourceType;
     protected String frequency;
     protected boolean enabled;
-    private Context context;
+    protected Context context;
     private int version;
     private DataSourceClient dataSourceClient;
 
