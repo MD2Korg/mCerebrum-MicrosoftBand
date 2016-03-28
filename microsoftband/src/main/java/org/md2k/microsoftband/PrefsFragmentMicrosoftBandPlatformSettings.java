@@ -186,7 +186,7 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
                 if (deviceId == null || deviceId.equals("")) {
                     Toast.makeText(getActivity(), "!!! Device ID is missing !!!", Toast.LENGTH_LONG).show();
                 } else if (location == null || location.equals("")) {
-                    Toast.makeText(getActivity(), "!!! Location is missing !!!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(), "!!! Band Placement is missing !!!", Toast.LENGTH_LONG).show();
                 } else {
                     enabled=false;
                     for(int i=0;i< microsoftBand.getSensors().size();i++)
