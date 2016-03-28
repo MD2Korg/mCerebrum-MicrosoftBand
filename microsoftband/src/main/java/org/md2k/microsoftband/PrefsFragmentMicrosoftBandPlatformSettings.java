@@ -137,7 +137,7 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
                     @Override
                     public boolean onPreferenceClick(Preference preference) {
                         SwitchPreference switchPreference = (SwitchPreference) preference;
-                        switchPreference.setChecked(!switchPreference.isChecked());
+//                        switchPreference.setChecked(!switchPreference.isChecked());
                         String[] string = getResources().getStringArray(R.array.frequency_entries);//{"8 Hz", "31 Hz", "62 Hz"};
                         String curFreq=mySharedPreference.getSharedPreferenceString(dataSourceType+"_frequency");
                         int curIndex=1;
