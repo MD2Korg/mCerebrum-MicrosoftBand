@@ -80,10 +80,7 @@ public class ServiceMicrosoftBands extends Service {
         dataKitAPI.connect(new OnConnectionListener() {
             @Override
             public void onConnected() {
-                Log.d(TAG," datakit connected.................");
-                Log.d(TAG,"datakitapi connected="+dataKitAPI.isConnected());
                 microsoftBands.register();
-                //TODO: Notitification manager turn on to vibrate MSBand
                 notificationManager=new NotificationManager(ServiceMicrosoftBands.this, microsoftBands.find());
                 Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand Started successfully", Toast.LENGTH_SHORT).show();
             }
