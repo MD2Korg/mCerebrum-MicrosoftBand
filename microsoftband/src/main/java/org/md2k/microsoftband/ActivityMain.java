@@ -225,11 +225,13 @@ public class ActivityMain extends AppCompatActivity {
 
             String id = platformId + ":" + dataSourceType;
             int count = intent.getIntExtra("count", 0);
-            hashMapData.get(id + "_count").setText(String.valueOf(count));
+            if(hashMapData.containsKey(id+"_count"))
+                hashMapData.get(id + "_count").setText(String.valueOf(count));
 
             double time = (intent.getLongExtra("timestamp", 0) - intent.getLongExtra("starttimestamp", 0)) / 1000.0;
             double freq = (double) count / time;
-            hashMapData.get(id + "_freq").setText(String.format("%.1f", freq));
+            if(hashMapData.containsKey(id+"_freq"))
+                hashMapData.get(id + "_freq").setText(String.format("%.1f", freq));
 
 
             DataType data = intent.getParcelableExtra("data");
@@ -261,8 +263,8 @@ public class ActivityMain extends AppCompatActivity {
                     sampleStr = sampleStr + String.format("%d", sample[i]);
                 }
             }
-
-            hashMapData.get(id + "_sample").setText(sampleStr);
+            if(hashMapData.containsKey(id+"_sample"))
+                hashMapData.get(id + "_sample").setText(sampleStr);
         } catch (Exception e) {
             Log.d("MicrosoftBand", "Exception is UI table update");
             Log.d("MicrosoftBand", e.getStackTrace().toString());

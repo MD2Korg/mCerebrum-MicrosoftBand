@@ -63,7 +63,7 @@ public class NotificationManager {
         dataSourceClientArrayList = null;
         DataSourceBuilder dataSourceBuilder = new DataSourceBuilder().setType(DataSourceType.NOTIFICATION_DELIVER);
         dataSourceClientDeliver= DataKitAPI.getInstance(context).register(dataSourceBuilder);
-        subscribe();
+        handler.post(runnableSubscribe);
     }
 
     public void clear() {
@@ -71,18 +71,30 @@ public class NotificationManager {
     }
 
     private void unsubscribe() {
-        if (dataSourceClientArrayList != null)
-            for (int i = 0; i < dataSourceClientArrayList.size(); i++)
-                dataKitAPI.unsubscribe(dataSourceClientArrayList.get(i));
+        try {
+            if (dataSourceClientArrayList != null)
+                for (int i = 0; i < dataSourceClientArrayList.size(); i++) {
+                    dataKitAPI.unsubscribe(dataSourceClientArrayList.get(i));
+                }
+        }catch(Exception e){
+
+        }
     }
+    Runnable runnableSubscribe=new Runnable() {
+        @Override
+        public void run() {
+            dataKitAPI = DataKitAPI.getInstance(context);
+            Application application=new ApplicationBuilder().setId("org.md2k.notificationmanager").build();
+            DataSourceBuilder dataSourceBuilder = new DataSourceBuilder().setType(DataSourceType.NOTIFICATION_REQUEST).setApplication(application);
+            dataSourceClientArrayList = dataKitAPI.find(dataSourceBuilder);
+            Log.d(TAG, "datasourceclient=" + dataSourceClientArrayList.size());
+            if(dataSourceClientArrayList.size()==0)
+                handler.postDelayed(runnableSubscribe,5000);
+            else subscribe();
+        }
+    };
 
     private void subscribe() {
-        Log.d(TAG, "NotificationManager : subscribe()");
-        dataKitAPI = DataKitAPI.getInstance(context);
-        Application application=new ApplicationBuilder().setId("org.md2k.notificationmanager").build();
-        DataSourceBuilder dataSourceBuilder = new DataSourceBuilder().setType(DataSourceType.NOTIFICATION_REQUEST).setApplication(application);
-        dataSourceClientArrayList = dataKitAPI.find(dataSourceBuilder);
-        Log.d(TAG, "datasourceclient=" + dataSourceClientArrayList.size());
         if (dataSourceClientArrayList.size() > 0) {
             for (int i = 0; i < dataSourceClientArrayList.size(); i++) {
                 Log.d(TAG, "ds_id=" + dataSourceClientArrayList.get(i).getDs_id());
