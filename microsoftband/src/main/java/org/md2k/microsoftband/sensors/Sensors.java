@@ -60,7 +60,7 @@ public class Sensors {
         this.context=context;
         this.platform=platform;
         sensors=new ArrayList<>();
-        sensors.add(new Status());
+        sensors.add(new DataQuality());
         sensors.add(new Accelerometer());
         sensors.add(new Gyroscope());
         sensors.add(new AirPressure());
@@ -122,10 +122,10 @@ public class Sensors {
                         if(dataSourceType.equals(DataSourceType.STATUS)){
                             int status[]=((DataTypeIntArray) data).getSample();
                             if(status[0]== DATA_QUALITY.BAND_OFF){
-                                countOff+=Status.PERIOD;
+                                countOff+= DataQuality.PERIOD;
                             }
                             else countOff=0;
-                            if(countOff>Status.RESTART){
+                            if(countOff> DataQuality.RESTART){
                                 Log.d(TAG,"localbroadcast...platformId="+platform.getId());
                                 Intent intentRestart = new Intent("microsoftband_restart");
                                 intentRestart.putExtra("platformid",platform.getId());

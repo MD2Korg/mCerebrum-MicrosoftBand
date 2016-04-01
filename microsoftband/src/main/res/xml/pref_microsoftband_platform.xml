@@ -15,7 +15,7 @@
             />
     </PreferenceCategory>
     <ListPreference
-        android:title="Placement"
+        android:title="Band Placement"
         android:key="platformId"
         android:entries="@array/wrist_entries"
         android:entryValues="@array/wrist_entries" />

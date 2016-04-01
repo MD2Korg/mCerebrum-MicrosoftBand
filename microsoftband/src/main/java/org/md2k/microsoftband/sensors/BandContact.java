@@ -17,6 +17,7 @@ import org.md2k.datakitapi.source.datasource.DataSourceType;
 import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.datakitapi.time.DateTime;
 import org.md2k.microsoftband.CallBack;
+import org.md2k.utilities.data_format.DATA_QUALITY;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,11 +54,11 @@ public class BandContact  extends Sensor{
         public void onBandContactChanged(final BandContactEvent event) {
             double state = -1;
             if (event.getContactState() == BandContactState.UNKNOWN)
-                state = -2;
+                state = DATA_QUALITY.BAND_LOOSE;
             else if (event.getContactState() == BandContactState.NOT_WORN)
-                state = -1;
+                state = DATA_QUALITY.NOT_WORN;
             else if (event.getContactState() == BandContactState.WORN)
-                state = 0;
+                state = DATA_QUALITY.GOOD;
             DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), state);
             sendData(dataTypeDoubleArray);
             callBack.onReceivedData(dataTypeDoubleArray);
@@ -83,7 +84,7 @@ public class BandContact  extends Sensor{
 
     private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
-        dataDescriptors.add(createDataDescriptor("Band Contact", "Current contact state of the Band", "enum [-2: unknown, -1: not worn, 0: worn]", frequency, double.class.getName(), "-1", "1"));
+        dataDescriptors.add(createDataDescriptor("Band Contact", "Current contact state of the Band", "values: UNKNOWN(3), NOT_WORN(2), GOOD(0)", frequency, double.class.getName(), "-1", "1"));
         return dataDescriptors;
     }
 

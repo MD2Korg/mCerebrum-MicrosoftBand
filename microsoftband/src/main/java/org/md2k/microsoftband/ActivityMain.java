@@ -196,7 +196,7 @@ public class ActivityMain extends AppCompatActivity {
                 TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
                 row.setLayoutParams(lp);
                 TextView tvSensor = new TextView(this);
-                String sname = microsoftBands.get(i).getPlatform().getType() + "\n" + microsoftBands.get(i).getSensors().get(j).getDataSourceType().toLowerCase();
+                String sname = microsoftBands.get(i).getPlatform().getType().toLowerCase()+"("+microsoftBands.get(i).getPlatform().getId().substring(0,1) + ")\n" + microsoftBands.get(i).getSensors().get(j).getDataSourceType().toLowerCase();
                 tvSensor.setText(sname);
                 TextView tvCount = new TextView(this);
                 tvCount.setText("0");
