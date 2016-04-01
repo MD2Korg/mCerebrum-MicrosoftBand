@@ -84,7 +84,7 @@ public class BandContact  extends Sensor{
 
     private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
-        dataDescriptors.add(createDataDescriptor("Band Contact", "Current contact state of the Band", "values: UNKNOWN(3), NOT_WORN(2), GOOD(0)", frequency, double.class.getName(), "-1", "1"));
+        dataDescriptors.add(createDataDescriptor("Band Contact", "Current contact state of the Band", "values="+ DATA_QUALITY.METADATA_STR, frequency, double.class.getName(), "-1", "1"));
         return dataDescriptors;
     }
 

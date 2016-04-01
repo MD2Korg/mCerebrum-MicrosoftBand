@@ -11,7 +11,6 @@ import com.microsoft.band.BandClient;
 
 import org.md2k.datakitapi.datatype.DataTypeDoubleArray;
 import org.md2k.datakitapi.datatype.DataTypeInt;
-import org.md2k.datakitapi.datatype.DataTypeIntArray;
 import org.md2k.datakitapi.source.METADATA;
 import org.md2k.datakitapi.source.datasource.DataSourceBuilder;
 import org.md2k.datakitapi.source.datasource.DataSourceType;
@@ -101,7 +100,7 @@ public class DataQuality extends Sensor {
         dataSourceBuilder = dataSourceBuilder.setMetadata(METADATA.NAME, "");
         dataSourceBuilder = dataSourceBuilder.setMetadata(METADATA.UNIT, "enum");
         dataSourceBuilder = dataSourceBuilder.setMetadata(METADATA.DESCRIPTION, "measures the Data Quality of microsoft band. Values= GOOD(0), BAND_OFF(1), NOT_WORN(2), BAND_LOOSE(3), NOISE(4)");
-        dataSourceBuilder = dataSourceBuilder.setMetadata(METADATA.DATA_TYPE, DataTypeIntArray.class.getName());
+        dataSourceBuilder = dataSourceBuilder.setMetadata(METADATA.DATA_TYPE, DataTypeInt.class.getName());
         dataSourceBuilder = dataSourceBuilder.setPlatform(platform);
         return dataSourceBuilder;
     }
