@@ -82,6 +82,7 @@ public class ServiceMicrosoftBands extends Service {
             public void onConnected() {
                 microsoftBands.register();
                 notificationManager=new NotificationManager(ServiceMicrosoftBands.this, microsoftBands.find());
+                notificationManager.start();
                 Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand Started successfully", Toast.LENGTH_SHORT).show();
             }
         }, new OnExceptionListener() {
@@ -98,6 +99,7 @@ public class ServiceMicrosoftBands extends Service {
         Log.d(TAG,"disconnectDataKit()...");
         if(microsoftBands !=null)
             microsoftBands.unregister();
+        if(notificationManager!=null) notificationManager.clear();
         if(dataKitAPI!=null) {
             dataKitAPI.disconnect();
             dataKitAPI.close();
@@ -105,8 +107,6 @@ public class ServiceMicrosoftBands extends Service {
     }
     @Override
     public void onDestroy() {
-        if(notificationManager!=null)
-            notificationManager.clear();
         Log.d(TAG, "onDestroy()...");
         clearDataKitSettingsBluetooth();
         super.onDestroy();

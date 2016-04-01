@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.microsoft.band.BandClient;
@@ -54,8 +55,13 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class HeartRate extends Sensor {
+    Handler handler;
+    boolean isRegistered;
+
     HeartRate() {
-        super(DataSourceType.HEART_RATE,"1 Hz",1);
+        super(DataSourceType.HEART_RATE, "1 Hz", 1);
+        handler = new Handler();
+        isRegistered = false;
     }
 
     public DataSourceBuilder createDataSourceBuilder(Platform platform) {
@@ -77,38 +83,37 @@ public class HeartRate extends Sensor {
         dataDescriptors.add(createDataDescriptor("Quality", "Quality of the current heart rate reading", "enum [0: locked, 1: acquiring]", frequency, double.class.getName(), "0", "1"));
         return dataDescriptors;
     }
+
     BandClient bandClient;
-    public void start(){
-        final Thread background = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-
-                    if (bandClient.getSensorManager().getCurrentHeartRateConsent() != UserConsent.GRANTED) {
-                        Intent intent = new Intent(context, HRConsentActivity.class);
-                        intent.putExtra("type",HeartRate.class.getSimpleName());
-                        HRConsentActivity.bandClient = bandClient;
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        context.startActivity(intent);
-                    }
-                    if (bandClient.getSensorManager().getCurrentHeartRateConsent() == UserConsent.GRANTED) {
-                        bandClient.getSensorManager().registerHeartRateEventListener(mHeartRateEventListener);
-                    }
-                } catch (BandException e) {
-                    e.printStackTrace();
+    Runnable runnableStart = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                if (isRegistered == true) return;
+                if (bandClient.getSensorManager().getCurrentHeartRateConsent() != UserConsent.GRANTED) {
+                    Intent intent = new Intent(context, HRConsentActivity.class);
+                    intent.putExtra("type", HeartRate.class.getSimpleName());
+                    HRConsentActivity.bandClient = bandClient;
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(intent);
+                } else if (bandClient.getSensorManager().getCurrentHeartRateConsent() == UserConsent.GRANTED) {
+                    bandClient.getSensorManager().registerHeartRateEventListener(mHeartRateEventListener);
+                    isRegistered = true;
                 }
+            } catch (BandException e) {
+                e.printStackTrace();
             }
+        }
+    };
 
-        });
-        background.start();
-    }
-    public void register(final Context context, final BandClient bandClient, Platform platform, CallBack callBack){
+    public void register(final Context context, final BandClient bandClient, Platform platform, CallBack callBack) {
         LocalBroadcastManager.getInstance(context).registerReceiver(mMessageReceiver,
                 new IntentFilter(HRConsentActivity.HRCONSENT));
         registerDataSource(context, platform);
         this.callBack = callBack;
-        this.bandClient=bandClient;
-        start();
+        this.bandClient = bandClient;
+        isRegistered = false;
+        handler.post(runnableStart);
     }
 
     private BandHeartRateEventListener mHeartRateEventListener = new BandHeartRateEventListener() {
@@ -127,6 +132,8 @@ public class HeartRate extends Sensor {
     };
 
     public void unregister(Context context, final BandClient bandClient) {
+        handler.removeCallbacks(runnableStart);
+        isRegistered=false;
         if (!enabled) return;
         unregisterDataSource(context);
         if (bandClient == null) return;
@@ -143,14 +150,11 @@ public class HeartRate extends Sensor {
         background.start();
         LocalBroadcastManager.getInstance(context).unregisterReceiver(mMessageReceiver);
     }
+
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String type=intent.getStringExtra("type");
-            boolean value=intent.getBooleanExtra("value", false);
-            if(type.equals(HeartRate.class.getSimpleName())){
-                start();
-            }
+            handler.post(runnableStart);
         }
     };
 }

@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.microsoft.band.BandClient;
@@ -22,7 +23,6 @@ import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.datakitapi.time.DateTime;
 import org.md2k.microsoftband.CallBack;
 import org.md2k.microsoftband.HRConsentActivity;
-import org.md2k.utilities.Report.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,8 +54,13 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class RRInterval extends Sensor {
+    Handler handler;
+    boolean isRegistered;
+
     RRInterval() {
         super(DataSourceType.RR_INTERVAL, "VALUE_CHANGE", 2);
+        handler = new Handler();
+        isRegistered = false;
     }
 
     public DataSourceBuilder createDataSourceBuilder(Platform platform) {
@@ -76,40 +81,38 @@ public class RRInterval extends Sensor {
         dataDescriptors.add(createDataDescriptor("RR Interval", "Current RR interval in seconds as read by the Band", "second", frequency, double.class.getName(), "0", "5"));
         return dataDescriptors;
     }
+
     BandClient bandClient;
-    void start(){
-
-        final Thread background = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-
-                    if (bandClient.getSensorManager().getCurrentHeartRateConsent() != UserConsent.GRANTED) {
-                        Intent intent = new Intent(context, HRConsentActivity.class);
-                        intent.putExtra("type", RRInterval.class.getSimpleName());
-                        HRConsentActivity.bandClient = bandClient;
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        context.startActivity(intent);
-                    }
-                    if (bandClient.getSensorManager().getCurrentHeartRateConsent() == UserConsent.GRANTED) {
-                        bandClient.getSensorManager().registerRRIntervalEventListener(mRRIntervalEventListener);
-                    }
-                } catch (BandException e) {
-                    e.printStackTrace();
+    Runnable runnableStart = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                if (isRegistered == true) return;
+                if (bandClient.getSensorManager().getCurrentHeartRateConsent() != UserConsent.GRANTED) {
+                    Intent intent = new Intent(context, HRConsentActivity.class);
+                    intent.putExtra("type", RRInterval.class.getSimpleName());
+                    HRConsentActivity.bandClient = bandClient;
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(intent);
                 }
+                if (bandClient.getSensorManager().getCurrentHeartRateConsent() == UserConsent.GRANTED) {
+                    bandClient.getSensorManager().registerRRIntervalEventListener(mRRIntervalEventListener);
+                    isRegistered = true;
+                }
+            } catch (BandException e) {
+                e.printStackTrace();
             }
+        }
+    };
 
-        });
-        background.start();
-    }
-
-    public void register(final Context context, final BandClient bandClient, Platform platform, CallBack callBack){
+    public void register(final Context context, final BandClient bandClient, Platform platform, CallBack callBack) {
         LocalBroadcastManager.getInstance(context).registerReceiver(mMessageReceiver,
                 new IntentFilter(HRConsentActivity.HRCONSENT));
         registerDataSource(context, platform);
         this.callBack = callBack;
-        this.bandClient=bandClient;
-        start();
+        this.bandClient = bandClient;
+        isRegistered = false;
+        handler.post(runnableStart);
     }
 
     private BandRRIntervalEventListener mRRIntervalEventListener = new BandRRIntervalEventListener() {
@@ -122,6 +125,8 @@ public class RRInterval extends Sensor {
     };
 
     public void unregister(Context context, final BandClient bandClient) {
+        handler.removeCallbacks(runnableStart);
+        isRegistered=false;
         if (!enabled) return;
         unregisterDataSource(context);
         if (bandClient == null) return;
@@ -138,14 +143,11 @@ public class RRInterval extends Sensor {
         background.start();
         LocalBroadcastManager.getInstance(context).unregisterReceiver(mMessageReceiver);
     }
+
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String type=intent.getStringExtra("type");
-            boolean value=intent.getBooleanExtra("value", false);
-            if(type.equals(RRInterval.class.getSimpleName())){
-                start();
-            }
+            handler.post(runnableStart);
         }
     };
 }

@@ -60,6 +60,8 @@ public class NotificationManager {
         handler = new Handler();
         this.context = context;
         this.microsoftBands = microsoftBands;
+    }
+    public void start(){
         dataSourceClientArrayList = null;
         DataSourceBuilder dataSourceBuilder = new DataSourceBuilder().setType(DataSourceType.NOTIFICATION_DELIVER);
         dataSourceClientDeliver= DataKitAPI.getInstance(context).register(dataSourceBuilder);
@@ -67,6 +69,7 @@ public class NotificationManager {
     }
 
     public void clear() {
+        handler.removeCallbacks(runnableSubscribe);
         unsubscribe();
     }
 
