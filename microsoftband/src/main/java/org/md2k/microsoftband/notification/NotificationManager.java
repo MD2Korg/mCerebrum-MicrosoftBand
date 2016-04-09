@@ -7,7 +7,7 @@ import com.google.gson.Gson;
 
 import org.md2k.datakitapi.DataKitAPI;
 import org.md2k.datakitapi.datatype.DataType;
-import org.md2k.datakitapi.datatype.DataTypeString;
+import org.md2k.datakitapi.datatype.DataTypeJSONObject;
 import org.md2k.datakitapi.messagehandler.OnReceiveListener;
 import org.md2k.datakitapi.source.application.Application;
 import org.md2k.datakitapi.source.application.ApplicationBuilder;
@@ -112,16 +112,14 @@ public class NotificationManager {
     }
 
     void processMessage(DataType dataType) {
-        DataTypeString dataTypeString = (DataTypeString) dataType;
-        Log.d(TAG, "onReceived=" + dataTypeString.getSample());
+        DataTypeJSONObject dataTypeJSONObject = (DataTypeJSONObject) dataType;
         Gson gson = new Gson();
-        NotificationRequest notificationRequest = gson.fromJson(dataTypeString.getSample(), NotificationRequest.class);
+        NotificationRequest notificationRequest = gson.fromJson(dataTypeJSONObject.getSample().toString(), NotificationRequest.class);
         if (notificationRequest.getDatasource().getPlatform() == null) return;
         if (notificationRequest.getDatasource().getPlatform().getType() == null) return;
         if (!notificationRequest.getDatasource().getPlatform().getType().equals(PlatformType.MICROSOFT_BAND))
             return;
-        Log.d(TAG, "onReceived=" + dataTypeString.getSample());
-        Log.d(TAG,"microsoftbandNo="+microsoftBands.size());
+        Log.d(TAG, "microsoftbandNo=" + microsoftBands.size());
         if (notificationRequest.getDatasource().getPlatform().getId() != null) {
             Log.d(TAG,"first...");
             for (int i = 0; i < microsoftBands.size(); i++) {

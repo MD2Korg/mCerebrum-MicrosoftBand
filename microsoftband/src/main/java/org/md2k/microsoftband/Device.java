@@ -9,6 +9,8 @@ import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandClientManager;
 import com.microsoft.band.BandException;
@@ -25,13 +27,10 @@ import com.microsoft.band.tiles.pages.PageRect;
 import com.microsoft.band.tiles.pages.ScrollFlowPanel;
 import com.microsoft.band.tiles.pages.VerticalAlignment;
 
-
 import org.md2k.datakitapi.DataKitAPI;
-import org.md2k.datakitapi.datatype.DataTypeString;
+import org.md2k.datakitapi.datatype.DataTypeJSONObject;
 import org.md2k.datakitapi.source.METADATA;
-import org.md2k.datakitapi.source.datasource.DataSourceBuilder;
 import org.md2k.datakitapi.source.datasource.DataSourceClient;
-import org.md2k.datakitapi.source.datasource.DataSourceType;
 import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.datakitapi.source.platform.PlatformBuilder;
 import org.md2k.datakitapi.source.platform.PlatformType;
@@ -295,8 +294,9 @@ public abstract class Device {
         notificationDeliver.setNotificationRequest(notificationRequest);
         notificationDeliver.setStatus(status);
         notificationDeliver.setPlatform(platform);
-        DataTypeString dataTypeString=new DataTypeString(DateTime.getDateTime(),gson.toJson(notificationDeliver));
-        DataKitAPI.getInstance(context).insert(dataSourceClientDeliver, dataTypeString);
+        JsonObject sample = new JsonParser().parse(gson.toJson(notificationDeliver)).getAsJsonObject();
+        DataTypeJSONObject dataTypeJSONObject = new DataTypeJSONObject(DateTime.getDateTime(), sample);
+        DataKitAPI.getInstance(context).insert(dataSourceClientDeliver, dataTypeJSONObject);
 
     }
 
