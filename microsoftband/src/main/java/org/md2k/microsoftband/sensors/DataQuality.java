@@ -56,7 +56,7 @@ public class DataQuality extends Sensor {
     private long lastReceivedTimestamp;
     private Handler handler;
     private double lastBandContact;
-    private Runnable getStatus = new Runnable() {
+    private Runnable runnableGetStatus = new Runnable() {
         @Override
         public void run() {
             int dataQuality = 0;
@@ -71,7 +71,7 @@ public class DataQuality extends Sensor {
             sendDataStatus(dataTypeInt);
 
             callBack.onReceivedData(dataTypeInt);
-            handler.postDelayed(getStatus, PERIOD);
+            handler.postDelayed(runnableGetStatus, PERIOD);
         }
     };
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
@@ -99,7 +99,7 @@ public class DataQuality extends Sensor {
         dataSourceBuilder = dataSourceBuilder.setMetadata(METADATA.FREQUENCY, frequency);
         dataSourceBuilder = dataSourceBuilder.setMetadata(METADATA.NAME, "");
         dataSourceBuilder = dataSourceBuilder.setMetadata(METADATA.UNIT, "enum");
-        dataSourceBuilder = dataSourceBuilder.setMetadata(METADATA.DESCRIPTION, "measures the Data Quality of microsoft band. Values= GOOD(0), BAND_OFF(1), NOT_WORN(2), BAND_LOOSE(3), NOISE(4)");
+        dataSourceBuilder = dataSourceBuilder.setMetadata(METADATA.DESCRIPTION, "measures the Data Quality of microsoft band. Values="+DATA_QUALITY.METADATA_STR);
         dataSourceBuilder = dataSourceBuilder.setMetadata(METADATA.DATA_TYPE, DataTypeInt.class.getName());
         dataSourceBuilder = dataSourceBuilder.setPlatform(platform);
         return dataSourceBuilder;
@@ -107,7 +107,7 @@ public class DataQuality extends Sensor {
 
     private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
-        dataDescriptors.add(createDataDescriptor("Measures the data quality", "measures the data quality of microsoft band", "GOOD(0), BAND_OFF(1), NOT_WORN(2), BAND_LOOSE(3), NOISE(4)", frequency, double.class.getName(), "0", "4"));
+        dataDescriptors.add(createDataDescriptor("Measures the data quality", "measures the data quality of microsoft band",DATA_QUALITY.METADATA_STR, frequency, double.class.getName(), "0", "6"));
         return dataDescriptors;
     }
 
@@ -117,13 +117,13 @@ public class DataQuality extends Sensor {
         this.callBack = callBack;
         LocalBroadcastManager.getInstance(context).registerReceiver(mMessageReceiver,
                 new IntentFilter("microsoftBand"));
-        handler.post(getStatus);
+        handler.post(runnableGetStatus);
     }
 
     public void unregister(Context context, final BandClient bandClient) {
         if (!enabled) return;
+        handler.removeCallbacks(runnableGetStatus);
         LocalBroadcastManager.getInstance(context).unregisterReceiver(mMessageReceiver);
-        handler.removeCallbacks(getStatus);
         unregisterDataSource(context);
     }
 
