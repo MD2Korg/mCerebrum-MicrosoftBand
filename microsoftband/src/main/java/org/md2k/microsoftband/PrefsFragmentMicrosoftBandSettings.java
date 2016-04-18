@@ -64,7 +64,8 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            progressDialog.dismiss();
+            if(progressDialog!=null)
+                progressDialog.dismiss();
             getActivity().finish();
         }
     };
