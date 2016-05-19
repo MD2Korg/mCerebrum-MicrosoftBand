@@ -1,12 +1,16 @@
 package org.md2k.microsoftband.sensors;
 
 import android.content.Context;
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
+import android.widget.Toast;
 
 import com.microsoft.band.BandClient;
 
 import org.md2k.datakitapi.DataKitAPI;
 import org.md2k.datakitapi.datatype.DataType;
 import org.md2k.datakitapi.datatype.DataTypeDoubleArray;
+import org.md2k.datakitapi.exception.DataKitException;
 import org.md2k.datakitapi.source.METADATA;
 import org.md2k.datakitapi.source.datasource.DataSourceBuilder;
 import org.md2k.datakitapi.source.datasource.DataSourceClient;
@@ -109,16 +113,41 @@ public abstract class Sensor {
     public void registerDataSource(Context context, Platform platform){
         Log.d(TAG, "context=" + context+" connected="+DataKitAPI.getInstance(context).isConnected());
         this.context=context;
-        dataSourceClient= DataKitAPI.getInstance(context).register(createDataSourceBuilder(platform));
+        try {
+            dataSourceClient = DataKitAPI.getInstance(context).register(createDataSourceBuilder(platform));
+        } catch (DataKitException e) {
+            Intent intentRestart = new Intent("microsoftband_restart");
+            intentRestart.putExtra("platformid", dataSourceClient.getDataSource().getPlatform().getId());
+            LocalBroadcastManager.getInstance(context).sendBroadcast(intentRestart);
+            e.printStackTrace();
+        }
     }
     public void unregisterDataSource(Context context){
-        DataKitAPI.getInstance(context).unregister(dataSourceClient);
+        try {
+            DataKitAPI.getInstance(context).unregister(dataSourceClient);
+        } catch (DataKitException e) {
+            Intent intentRestart = new Intent("microsoftband_stop");
+            LocalBroadcastManager.getInstance(context).sendBroadcast(intentRestart);
+            e.printStackTrace();
+        }
     }
     public void sendData(DataTypeDoubleArray dataType){
-        DataKitAPI.getInstance(context).insertHighFrequency(dataSourceClient, dataType);
+        try {
+            DataKitAPI.getInstance(context).insertHighFrequency(dataSourceClient, dataType);
+        } catch (DataKitException e) {
+            Intent intentRestart = new Intent("microsoftband_stop");
+            LocalBroadcastManager.getInstance(context).sendBroadcast(intentRestart);
+            Toast.makeText(context, "Send Data Error", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
     }
     public void sendDataStatus(DataType dataType){
-        DataKitAPI.getInstance(context).insert(dataSourceClient, dataType);
+        try {
+            DataKitAPI.getInstance(context).insert(dataSourceClient, dataType);
+        } catch (DataKitException e) {
+            Toast.makeText(context, "Send Status Error", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
     }
 
 }

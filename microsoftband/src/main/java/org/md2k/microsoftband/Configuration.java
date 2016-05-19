@@ -3,7 +3,7 @@ package org.md2k.microsoftband;
 import android.os.Environment;
 
 import org.md2k.datakitapi.source.datasource.DataSource;
-import org.md2k.utilities.Files;
+import org.md2k.utilities.FileManager;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -42,18 +42,18 @@ public class Configuration {
 
     public static ArrayList<DataSource> read() {
         try {
-            return Files.readJSONArray(CONFIG_DIRECTORY, CONFIG_FILENAME, DataSource.class);
+            return FileManager.readJSONArray(CONFIG_DIRECTORY, CONFIG_FILENAME, DataSource.class);
         } catch (FileNotFoundException e) {
             return null;
         }
     }
 
     public static ArrayList<DataSource> readDefault() throws FileNotFoundException {
-        return Files.readJSONArray(CONFIG_DIRECTORY, DEFAULT_CONFIG_FILENAME,DataSource.class);
+        return FileManager.readJSONArray(CONFIG_DIRECTORY, DEFAULT_CONFIG_FILENAME, DataSource.class);
     }
 
     public static void write(ArrayList<DataSource> dataSources) throws IOException {
-        Files.writeJSONArray(CONFIG_DIRECTORY,CONFIG_FILENAME,dataSources);
+        FileManager.writeJSONArray(CONFIG_DIRECTORY, CONFIG_FILENAME, dataSources);
     }
     public static ArrayList<DataSource> getDataSources() throws FileNotFoundException {
         return read();
