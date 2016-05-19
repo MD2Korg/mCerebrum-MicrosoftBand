@@ -8,10 +8,7 @@ import android.support.v4.content.LocalBroadcastManager;
 
 import com.microsoft.band.BandIOException;
 
-import org.md2k.datakitapi.source.METADATA;
 import org.md2k.datakitapi.source.datasource.DataSource;
-import org.md2k.datakitapi.source.platform.Platform;
-import org.md2k.datakitapi.source.platform.PlatformBuilder;
 import org.md2k.microsoftband.sensors.Sensor;
 import org.md2k.microsoftband.sensors.Sensors;
 import org.md2k.utilities.Report.Log;
@@ -49,10 +46,18 @@ public class MicrosoftBand extends Device {
     private static final String TAG = MicrosoftBand.class.getSimpleName();
     boolean isConnected = false;
     private Sensors sensors;
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "onreceive:" + platformId);
 
-    public void resetDataSource() {
-        sensors = new Sensors(context, getPlatform());
-    }
+            if (intent.getStringExtra("platformid").equals(platformId)) {
+                Log.d(TAG, "Restart msband ... id=" + platformId);
+                unregister();
+                register();
+            }
+        }
+    };
 
     MicrosoftBand(Context context, String platformId, String deviceId) {
         super(context, platformId, deviceId);
@@ -60,9 +65,14 @@ public class MicrosoftBand extends Device {
 
     }
 
+    public void resetDataSource() {
+        sensors = new Sensors(context, getPlatform());
+    }
+
     public ArrayList<Sensor> getSensors() {
         return sensors.getSensors();
     }
+
     public void setEnabled(boolean enabled){
         this.enabled=enabled;
     }
@@ -75,8 +85,6 @@ public class MicrosoftBand extends Device {
         return this.deviceId.equals(deviceId);
     }
 
-
-
     public void register() {
         Log.d(TAG, "MicrosoftBand...register()...enabled=" + enabled+" bandCLient="+bandClient);
         if (!enabled) return;
@@ -86,6 +94,7 @@ public class MicrosoftBand extends Device {
                 Log.d(TAG,"band connected...");
                 LocalBroadcastManager.getInstance(context).registerReceiver(mMessageReceiver,
                         new IntentFilter("microsoftband_restart"));
+
                 sensors.register(bandClient, getPlatform());
             }
         });
@@ -103,17 +112,5 @@ public class MicrosoftBand extends Device {
             disconnect();
         }
     }
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.d(TAG,"onreceive:"+platformId);
-
-            if(intent.getStringExtra("platformid").equals(platformId)) {
-                Log.d(TAG,"Restart msband ... id="+platformId);
-//                unregister();
-//                register();
-            }
-        }
-    };
 
 }

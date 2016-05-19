@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -29,6 +30,7 @@ import com.microsoft.band.tiles.pages.VerticalAlignment;
 
 import org.md2k.datakitapi.DataKitAPI;
 import org.md2k.datakitapi.datatype.DataTypeJSONObject;
+import org.md2k.datakitapi.exception.DataKitException;
 import org.md2k.datakitapi.source.METADATA;
 import org.md2k.datakitapi.source.datasource.DataSourceClient;
 import org.md2k.datakitapi.source.platform.Platform;
@@ -82,28 +84,64 @@ public abstract class Device {
     protected int version;
     protected boolean enabled;
     protected BandClient bandClient = null;
-    Thread connectThread;
     protected NotificationRequest notificationRequestVibration;
     protected NotificationRequest notificationRequestMessage;
+    Thread connectThread;
     Handler handlerVibration;
     Handler handlerMessage;
     int curMessage=0;
     int curVibration=0;
     DataSourceClient dataSourceClientDeliver;
+    BandCallBack bandCallBack;
+    Runnable connectRunnable = new Runnable() {
+        @Override
+        public void run() {
+            Log.d(TAG, deviceId + " connect run()...");
+            while (true) {
+                boolean res = connectDevice();
+                if (res) {
+                    Log.d(TAG, deviceId + " connect run() status= CONNECTED");
 
-    public Platform getPlatform() {
-        String pid=platformId;
-        if(Constants.LEFT_WRIST.equals(platformId))
-            pid="Left Wrist";
-        else if(Constants.RIGHT_WRIST.equals(platformId))
-            pid="Right Wrist";
-        return new PlatformBuilder().setId(platformId).setType(platformType).setMetadata(METADATA.DEVICE_ID, deviceId).setMetadata(METADATA.NAME, "MicrosoftBand ("+pid+")").
-                setMetadata(METADATA.VERSION_HARDWARE, versionHardware).setMetadata(METADATA.VERSION_FIRMWARE, versionFirmware).build();
-    }
+                    try {
+                        bandCallBack.onBandConnected();
+                    } catch (BandIOException e) {
+//                        e.printStackTrace();
+                    }
+                    break;
+                } else {
+                    Log.d(TAG, deviceId + " connect run() status=NOTCONNECTED post delayed()");
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        Log.d(TAG, "Sleep Error");
+                    }
+                }
+            }
+            Log.d(TAG, deviceId + "...connect run()");
+        }
+    };
+    Runnable runVibrate = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                curVibration++;
+                Log.d(TAG, "vibrate..." + curVibration + " repeat=" + notificationRequestVibration.getRepeat());
+                if (curVibration <= notificationRequestVibration.getRepeat()) {
+                    bandClient.getNotificationManager().vibrate(VibrationType.ONE_TONE_HIGH).await();
+                    handlerVibration.postDelayed(this, notificationRequestVibration.getDuration() / notificationRequestVibration.getRepeat());
+                } else {
+                    insertToDataKit(notificationRequestVibration, getPlatform(), NotificationDeliver.DELIVERED);
+                }
 
-    public void setDataSourceClientDeliver(DataSourceClient dataSourceClientDeliver) {
-        this.dataSourceClientDeliver = dataSourceClientDeliver;
-    }
+
+            } catch (InterruptedException | BandException e) {
+                insertToDataKit(notificationRequestVibration, getPlatform(), NotificationDeliver.INTERNAL_ERROR);
+                Log.e(TAG, "ERROR=" + e.toString());
+                //    handle InterruptedException
+            }
+
+        }
+    };
 
     Device(Context context, String platformId, String deviceId) {
         this.context = context;
@@ -120,15 +158,30 @@ public abstract class Device {
         handlerMessage=new Handler();
     }
 
+    public static BandInfo[] findBandInfo() {
+        return BandClientManager.getInstance().getPairedBands();
+    }
+
+    public Platform getPlatform() {
+        String pid = platformId;
+        if (Constants.LEFT_WRIST.equals(platformId))
+            pid = "Left Wrist";
+        else if (Constants.RIGHT_WRIST.equals(platformId))
+            pid = "Right Wrist";
+        return new PlatformBuilder().setId(platformId).setType(platformType).setMetadata(METADATA.DEVICE_ID, deviceId).setMetadata(METADATA.NAME, "MicrosoftBand (" + pid + ")").
+                setMetadata(METADATA.VERSION_HARDWARE, versionHardware).setMetadata(METADATA.VERSION_FIRMWARE, versionFirmware).build();
+    }
+
+    public void setDataSourceClientDeliver(DataSourceClient dataSourceClientDeliver) {
+        this.dataSourceClientDeliver = dataSourceClientDeliver;
+    }
+
     public void setNotificationRequestVibration(NotificationRequest notificationRequest) {
         this.notificationRequestVibration = notificationRequest;
     }
+
     public void setNotificationRequestMessage(NotificationRequest notificationRequest) {
         this.notificationRequestMessage = notificationRequest;
-    }
-
-    public static BandInfo[] findBandInfo() {
-        return BandClientManager.getInstance().getPairedBands();
     }
 
     public String getDeviceId() {
@@ -175,35 +228,6 @@ public abstract class Device {
     public String getPlatformType() {
         return platformType;
     }
-
-    Runnable connectRunnable = new Runnable() {
-        @Override
-        public void run() {
-            Log.d(TAG, deviceId + " connect run()...");
-            while (true) {
-                boolean res = connectDevice();
-                if (res) {
-                    Log.d(TAG, deviceId + " connect run() status= CONNECTED");
-
-                    try {
-                        bandCallBack.onBandConnected();
-                    } catch (BandIOException e) {
-//                        e.printStackTrace();
-                    }
-                    break;
-                } else {
-                    Log.d(TAG, deviceId + " connect run() status=NOTCONNECTED post delayed()");
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e) {
-                        Log.d(TAG, "Sleep Error");
-                    }
-                }
-            }
-            Log.d(TAG, deviceId + "...connect run()");
-        }
-    };
-    BandCallBack bandCallBack;
 
     public void connect(BandCallBack bandCallBack) {
         this.bandCallBack = bandCallBack;
@@ -259,29 +283,6 @@ public abstract class Device {
         return panel;
     }
 
-    Runnable runVibrate = new Runnable() {
-        @Override
-        public void run() {
-            try {
-                curVibration++;
-                Log.d(TAG,"vibrate..."+curVibration+" repeat="+notificationRequestVibration.getRepeat());
-                if(curVibration<=notificationRequestVibration.getRepeat()) {
-                    bandClient.getNotificationManager().vibrate(VibrationType.ONE_TONE_HIGH).await();
-                    handlerVibration.postDelayed(this,notificationRequestVibration.getDuration()/notificationRequestVibration.getRepeat());
-                }else{
-                    insertToDataKit(notificationRequestVibration,getPlatform(),NotificationDeliver.DELIVERED);
-                }
-
-
-            } catch (InterruptedException | BandException e) {
-                insertToDataKit(notificationRequestVibration,getPlatform(),NotificationDeliver.INTERNAL_ERROR);
-                Log.e(TAG, "ERROR=" + e.toString());
-                //    handle InterruptedException
-            }
-
-        }
-    };
-
     public void vibrate() {
         Log.d(TAG,"vibrate..");
         handlerVibration.removeCallbacks(runVibrate);
@@ -296,7 +297,13 @@ public abstract class Device {
         notificationDeliver.setPlatform(platform);
         JsonObject sample = new JsonParser().parse(gson.toJson(notificationDeliver)).getAsJsonObject();
         DataTypeJSONObject dataTypeJSONObject = new DataTypeJSONObject(DateTime.getDateTime(), sample);
-        DataKitAPI.getInstance(context).insert(dataSourceClientDeliver, dataTypeJSONObject);
+        try {
+            DataKitAPI.getInstance(context).insert(dataSourceClientDeliver, dataTypeJSONObject);
+        } catch (DataKitException e) {
+            Toast.makeText(context, "Data Insertion Error", Toast.LENGTH_LONG).show();
+            disconnect();
+            e.printStackTrace();
+        }
 
     }
 

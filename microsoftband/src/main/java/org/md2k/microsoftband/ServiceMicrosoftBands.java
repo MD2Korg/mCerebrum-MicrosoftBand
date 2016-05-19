@@ -2,17 +2,20 @@ package org.md2k.microsoftband;
 
 import android.app.AlertDialog;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Toast;
 
 import org.md2k.datakitapi.DataKitAPI;
+import org.md2k.datakitapi.exception.DataKitException;
 import org.md2k.datakitapi.messagehandler.OnConnectionListener;
-import org.md2k.datakitapi.messagehandler.OnExceptionListener;
-import org.md2k.datakitapi.status.Status;
 import org.md2k.microsoftband.notification.NotificationManager;
 
 /*
@@ -48,17 +51,29 @@ public class ServiceMicrosoftBands extends Service {
     private MicrosoftBands microsoftBands;
     private DataKitAPI dataKitAPI = null;
     private NotificationManager notificationManager;
+    private BroadcastReceiver mMessageReceiverStop = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            org.md2k.utilities.Report.Log.d(TAG, "onStop");
+            org.md2k.utilities.Report.Log.d(TAG, "Stop msband ...");
+            Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand DataKit Disconnected, Data collection stopped", Toast.LENGTH_LONG).show();
+            disconnectDataKit();
+            close();
+        }
+    };
 
     @Override
     public void onCreate() {
         super.onCreate();
         setBluetoothSettingsDataKit();
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(mMessageReceiverStop,
+                new IntentFilter("microsoftband_stop"));
     }
+
     private boolean readSettings(){
         microsoftBands = new MicrosoftBands(getApplicationContext());
         return microsoftBands.size(true) != 0;
     }
-
 
     private void initializeBluetoothConnection() {
         myBlueTooth = new MyBlueTooth(ServiceMicrosoftBands.this, new BlueToothCallBack() {
@@ -77,22 +92,22 @@ public class ServiceMicrosoftBands extends Service {
     private void connectDataKit() {
         dataKitAPI = DataKitAPI.getInstance(getApplicationContext());
         Log.d(TAG,"datakitapi connected="+dataKitAPI.isConnected());
-        dataKitAPI.connect(new OnConnectionListener() {
-            @Override
-            public void onConnected() {
-                microsoftBands.register();
-                notificationManager=new NotificationManager(ServiceMicrosoftBands.this, microsoftBands.find());
-                notificationManager.start();
-                Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand Started successfully", Toast.LENGTH_SHORT).show();
-            }
-        }, new OnExceptionListener() {
-            @Override
-            public void onException(Status status) {
-                Log.d(TAG, "onException...");
-                Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand Stopped. Error: " + status.getStatusMessage(), Toast.LENGTH_SHORT).show();
-                stopSelf();
-            }
-        });
+        try {
+            dataKitAPI.connect(new OnConnectionListener() {
+                @Override
+                public void onConnected() {
+                    microsoftBands.register();
+                    notificationManager = new NotificationManager(ServiceMicrosoftBands.this, microsoftBands.find());
+                    notificationManager.start();
+                    Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand Started successfully", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } catch (DataKitException e) {
+            Log.d(TAG, "onException...");
+            Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand Stopped. Error: " + e.toString(), Toast.LENGTH_SHORT).show();
+            stopSelf();
+        }
+
     }
 
     private void disconnectDataKit() {
@@ -102,7 +117,6 @@ public class ServiceMicrosoftBands extends Service {
         if(notificationManager!=null) notificationManager.clear();
         if(dataKitAPI!=null) {
             dataKitAPI.disconnect();
-            dataKitAPI.close();
         }
     }
     @Override
@@ -123,7 +137,6 @@ public class ServiceMicrosoftBands extends Service {
         else {
             myBlueTooth.enable();
             Log.d(TAG,"bluetooth not enabled..");
-//            showAlertDialogBluetooth();
             close();
         }
     }
@@ -151,8 +164,6 @@ public class ServiceMicrosoftBands extends Service {
     }
     private void clearBlueTooth(){
         myBlueTooth.close();
-//        if(myBlueTooth.isEnabled()) myBlueTooth.disable();
-//        close();
     }
 
     private void close() {

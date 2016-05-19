@@ -2,12 +2,14 @@ package org.md2k.microsoftband.notification;
 
 import android.content.Context;
 import android.os.Handler;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
 import org.md2k.datakitapi.DataKitAPI;
 import org.md2k.datakitapi.datatype.DataType;
 import org.md2k.datakitapi.datatype.DataTypeJSONObject;
+import org.md2k.datakitapi.exception.DataKitException;
 import org.md2k.datakitapi.messagehandler.OnReceiveListener;
 import org.md2k.datakitapi.source.application.Application;
 import org.md2k.datakitapi.source.application.ApplicationBuilder;
@@ -49,23 +51,48 @@ import java.util.ArrayList;
  */
 public class NotificationManager {
     private static final String TAG = NotificationManager.class.getSimpleName();
+    DataSourceClient dataSourceClientDeliver;
     private DataKitAPI dataKitAPI;
     private Context context;
     private ArrayList<MicrosoftBand> microsoftBands;
     private ArrayList<DataSourceClient> dataSourceClientArrayList;
     private Handler handler;
-    DataSourceClient dataSourceClientDeliver;
-
+    Runnable runnableSubscribe = new Runnable() {
+        @Override
+        public void run() {
+            dataKitAPI = DataKitAPI.getInstance(context);
+            Application application = new ApplicationBuilder().setId("org.md2k.notificationmanager").build();
+            DataSourceBuilder dataSourceBuilder = new DataSourceBuilder().setType(DataSourceType.NOTIFICATION_REQUEST).setApplication(application);
+            try {
+                dataSourceClientArrayList = dataKitAPI.find(dataSourceBuilder);
+                Log.d(TAG, "datasourceclient=" + dataSourceClientArrayList.size());
+                if (dataSourceClientArrayList.size() == 0) {
+                    handler.postDelayed(runnableSubscribe, 5000);
+                } else {
+                    subscribe();
+                }
+            } catch (DataKitException e) {
+                Toast.makeText(context, "DataSource Not Found Error", Toast.LENGTH_LONG).show();
+                e.printStackTrace();
+            }
+        }
+    };
     public NotificationManager(Context context, ArrayList<MicrosoftBand> microsoftBands) {
         handler = new Handler();
         this.context = context;
         this.microsoftBands = microsoftBands;
     }
+
     public void start(){
         dataSourceClientArrayList = null;
         DataSourceBuilder dataSourceBuilder = new DataSourceBuilder().setType(DataSourceType.NOTIFICATION_DELIVER);
-        dataSourceClientDeliver= DataKitAPI.getInstance(context).register(dataSourceBuilder);
-        handler.post(runnableSubscribe);
+        try {
+            dataSourceClientDeliver = DataKitAPI.getInstance(context).register(dataSourceBuilder);
+            handler.post(runnableSubscribe);
+        } catch (DataKitException e) {
+            Toast.makeText(context, "Notification Registration Error", Toast.LENGTH_LONG).show();
+            e.printStackTrace();
+        }
     }
 
     public void clear() {
@@ -83,30 +110,22 @@ public class NotificationManager {
 
         }
     }
-    Runnable runnableSubscribe=new Runnable() {
-        @Override
-        public void run() {
-            dataKitAPI = DataKitAPI.getInstance(context);
-            Application application=new ApplicationBuilder().setId("org.md2k.notificationmanager").build();
-            DataSourceBuilder dataSourceBuilder = new DataSourceBuilder().setType(DataSourceType.NOTIFICATION_REQUEST).setApplication(application);
-            dataSourceClientArrayList = dataKitAPI.find(dataSourceBuilder);
-            Log.d(TAG, "datasourceclient=" + dataSourceClientArrayList.size());
-            if(dataSourceClientArrayList.size()==0)
-                handler.postDelayed(runnableSubscribe,5000);
-            else subscribe();
-        }
-    };
 
     private void subscribe() {
         if (dataSourceClientArrayList.size() > 0) {
             for (int i = 0; i < dataSourceClientArrayList.size(); i++) {
                 Log.d(TAG, "ds_id=" + dataSourceClientArrayList.get(i).getDs_id());
-                dataKitAPI.subscribe(dataSourceClientArrayList.get(i), new OnReceiveListener() {
-                    @Override
-                    public void onReceived(final DataType dataType) {
-                        processMessage(dataType);
-                    }
-                });
+                try {
+                    dataKitAPI.subscribe(dataSourceClientArrayList.get(i), new OnReceiveListener() {
+                        @Override
+                        public void onReceived(final DataType dataType) {
+                            processMessage(dataType);
+                        }
+                    });
+                } catch (DataKitException e) {
+                    Toast.makeText(context, "Subscribe Error: " + dataSourceClientArrayList.get(i).getDataSource().toString(), Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+                }
             }
         }
     }
