@@ -85,7 +85,7 @@ public class NotificationManager {
 
     public void start(){
         dataSourceClientArrayList = null;
-        DataSourceBuilder dataSourceBuilder = new DataSourceBuilder().setType(DataSourceType.NOTIFICATION_DELIVER);
+        DataSourceBuilder dataSourceBuilder = new DataSourceBuilder().setType(DataSourceType.NOTIFICATION_ACKNOWLEDGE);
         try {
             dataSourceClientDeliver = DataKitAPI.getInstance(context).register(dataSourceBuilder);
             handler.post(runnableSubscribe);

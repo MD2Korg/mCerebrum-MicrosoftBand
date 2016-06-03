@@ -56,7 +56,7 @@ public class ServiceMicrosoftBands extends Service {
         public void onReceive(Context context, Intent intent) {
             org.md2k.utilities.Report.Log.d(TAG, "onStop");
             org.md2k.utilities.Report.Log.d(TAG, "Stop msband ...");
-            Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand DataKit Disconnected, Data collection stopped", Toast.LENGTH_LONG).show();
+//            Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand DataKit Disconnected, Data collection stopped", Toast.LENGTH_LONG).show();
             disconnectDataKit();
             close();
         }
@@ -99,12 +99,12 @@ public class ServiceMicrosoftBands extends Service {
                     microsoftBands.register();
                     notificationManager = new NotificationManager(ServiceMicrosoftBands.this, microsoftBands.find());
                     notificationManager.start();
-                    Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand Started successfully", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand Started successfully", Toast.LENGTH_SHORT).show();
                 }
             });
         } catch (DataKitException e) {
             Log.d(TAG, "onException...");
-            Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand Stopped. Error: " + e.toString(), Toast.LENGTH_SHORT).show();
+//            Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand Stopped. Error: " + e.toString(), Toast.LENGTH_SHORT).show();
             stopSelf();
         }
 
