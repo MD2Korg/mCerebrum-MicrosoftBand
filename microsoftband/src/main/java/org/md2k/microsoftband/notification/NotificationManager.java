@@ -19,7 +19,8 @@ import org.md2k.datakitapi.source.datasource.DataSourceType;
 import org.md2k.datakitapi.source.platform.PlatformType;
 import org.md2k.microsoftband.MicrosoftBand;
 import org.md2k.utilities.Report.Log;
-import org.md2k.utilities.data_format.NotificationRequest;
+import org.md2k.utilities.data_format.notification.NotificationRequest;
+import org.md2k.utilities.data_format.notification.NotificationRequests;
 
 import java.util.ArrayList;
 
@@ -51,12 +52,13 @@ import java.util.ArrayList;
  */
 public class NotificationManager {
     private static final String TAG = NotificationManager.class.getSimpleName();
-    DataSourceClient dataSourceClientDeliver;
+    DataSourceClient dataSourceClientAcknowledge;
     private DataKitAPI dataKitAPI;
     private Context context;
     private ArrayList<MicrosoftBand> microsoftBands;
-    private ArrayList<DataSourceClient> dataSourceClientArrayList;
+    private ArrayList<DataSourceClient> dataSourceClietNotificationRequests;
     private Handler handler;
+    int RERUN = 60;
     Runnable runnableSubscribe = new Runnable() {
         @Override
         public void run() {
@@ -64,10 +66,13 @@ public class NotificationManager {
             Application application = new ApplicationBuilder().setId("org.md2k.notificationmanager").build();
             DataSourceBuilder dataSourceBuilder = new DataSourceBuilder().setType(DataSourceType.NOTIFICATION_REQUEST).setApplication(application);
             try {
-                dataSourceClientArrayList = dataKitAPI.find(dataSourceBuilder);
-                Log.d(TAG, "datasourceclient=" + dataSourceClientArrayList.size());
-                if (dataSourceClientArrayList.size() == 0) {
-                    handler.postDelayed(runnableSubscribe, 5000);
+                dataSourceClietNotificationRequests = dataKitAPI.find(dataSourceBuilder);
+                Log.d(TAG, "datasourceclient=" + dataSourceClietNotificationRequests.size());
+                if (dataSourceClietNotificationRequests.size() == 0) {
+                    if (RERUN > 0) {
+                        RERUN--;
+                        handler.postDelayed(this, 1000);
+                    }
                 } else {
                     subscribe();
                 }
@@ -77,17 +82,18 @@ public class NotificationManager {
             }
         }
     };
+
     public NotificationManager(Context context, ArrayList<MicrosoftBand> microsoftBands) {
         handler = new Handler();
         this.context = context;
         this.microsoftBands = microsoftBands;
     }
 
-    public void start(){
-        dataSourceClientArrayList = null;
+    public void start() {
+        dataSourceClietNotificationRequests = null;
         DataSourceBuilder dataSourceBuilder = new DataSourceBuilder().setType(DataSourceType.NOTIFICATION_ACKNOWLEDGE);
         try {
-            dataSourceClientDeliver = DataKitAPI.getInstance(context).register(dataSourceBuilder);
+            dataSourceClientAcknowledge = DataKitAPI.getInstance(context).register(dataSourceBuilder);
             handler.post(runnableSubscribe);
         } catch (DataKitException e) {
             Toast.makeText(context, "Notification Registration Error", Toast.LENGTH_LONG).show();
@@ -102,75 +108,80 @@ public class NotificationManager {
 
     private void unsubscribe() {
         try {
-            if (dataSourceClientArrayList != null)
-                for (int i = 0; i < dataSourceClientArrayList.size(); i++) {
-                    dataKitAPI.unsubscribe(dataSourceClientArrayList.get(i));
+            if (dataSourceClietNotificationRequests != null)
+                for (int i = 0; i < dataSourceClietNotificationRequests.size(); i++) {
+                    dataKitAPI.unsubscribe(dataSourceClietNotificationRequests.get(i));
                 }
-        }catch(Exception e){
+        } catch (Exception e) {
 
         }
     }
 
     private void subscribe() {
-        if (dataSourceClientArrayList.size() > 0) {
-            for (int i = 0; i < dataSourceClientArrayList.size(); i++) {
-                Log.d(TAG, "ds_id=" + dataSourceClientArrayList.get(i).getDs_id());
+        if (dataSourceClietNotificationRequests.size() > 0) {
+            for (int i = 0; i < dataSourceClietNotificationRequests.size(); i++) {
+                Log.d(TAG, "ds_id=" + dataSourceClietNotificationRequests.get(i).getDs_id());
                 try {
-                    dataKitAPI.subscribe(dataSourceClientArrayList.get(i), new OnReceiveListener() {
+                    dataKitAPI.subscribe(dataSourceClietNotificationRequests.get(i), new OnReceiveListener() {
                         @Override
                         public void onReceived(final DataType dataType) {
-                            processMessage(dataType);
+                            try {
+                                processMessage(dataType);
+                            } catch (DataKitException e) {
+                                e.printStackTrace();
+                            }
                         }
                     });
                 } catch (DataKitException e) {
-                    Toast.makeText(context, "Subscribe Error: " + dataSourceClientArrayList.get(i).getDataSource().toString(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, "Subscribe Error: " + dataSourceClietNotificationRequests.get(i).getDataSource().toString(), Toast.LENGTH_LONG).show();
                     e.printStackTrace();
                 }
             }
         }
     }
 
-    void processMessage(DataType dataType) {
+    void processMessage(DataType dataType) throws DataKitException {
         DataTypeJSONObject dataTypeJSONObject = (DataTypeJSONObject) dataType;
         Gson gson = new Gson();
-        NotificationRequest notificationRequest = gson.fromJson(dataTypeJSONObject.getSample().toString(), NotificationRequest.class);
-        if (notificationRequest.getDatasource().getPlatform() == null) return;
-        if (notificationRequest.getDatasource().getPlatform().getType() == null) return;
-        if (!notificationRequest.getDatasource().getPlatform().getType().equals(PlatformType.MICROSOFT_BAND))
-            return;
-        Log.d(TAG, "microsoftbandNo=" + microsoftBands.size());
-        if (notificationRequest.getDatasource().getPlatform().getId() != null) {
-            Log.d(TAG,"first...");
-            for (int i = 0; i < microsoftBands.size(); i++) {
-                if (microsoftBands.get(i).getPlatformId().equals(notificationRequest.getDatasource().getPlatform().getId())) {
-                    switch(notificationRequest.getType()) {
-                        case NotificationRequest.VIBRATION:
-                            microsoftBands.get(i).setNotificationRequestVibration(notificationRequest);
-                            microsoftBands.get(i).setDataSourceClientDeliver(dataSourceClientDeliver);
-                            microsoftBands.get(i).vibrate();
-                            break;
-                        case NotificationRequest.MESSAGE:
-                            microsoftBands.get(i).setDataSourceClientDeliver(dataSourceClientDeliver);
-                            microsoftBands.get(i).setNotificationRequestMessage(notificationRequest);
-                            microsoftBands.get(i).sendMessage();
-                            break;
+        dataKitAPI.insert(dataSourceClientAcknowledge,dataTypeJSONObject);
+        NotificationRequests notificationRequests = gson.fromJson(dataTypeJSONObject.getSample().toString(), NotificationRequests.class);
+        for (int r = 0; r < notificationRequests.getNotification_option().size(); r++) {
+            if (notificationRequests.getNotification_option().get(r).getDatasource().getPlatform() == null)
+                continue;
+            if (notificationRequests.getNotification_option().get(r).getDatasource().getPlatform().getType() == null)
+                continue;
+            if (!notificationRequests.getNotification_option().get(r).getDatasource().getPlatform().getType().equals(PlatformType.MICROSOFT_BAND))
+                continue;
+            Log.d(TAG, "microsoftbandNo=" + microsoftBands.size());
+            if (notificationRequests.getNotification_option().get(r).getDatasource().getPlatform().getId() != null) {
+                Log.d(TAG, "first...");
+                for (int m = 0; m < microsoftBands.size(); m++) {
+                    if (microsoftBands.get(m).getPlatformId().equals(notificationRequests.getNotification_option().get(r).getDatasource().getPlatform().getId())) {
+                        switch (notificationRequests.getNotification_option().get(r).getType()) {
+                            case NotificationRequest.VIBRATION:
+                                microsoftBands.get(m).setNotificationRequestVibration(notificationRequests.getNotification_option().get(r));
+                                microsoftBands.get(m).vibrate();
+                                break;
+                            case NotificationRequest.MESSAGE:
+                                microsoftBands.get(m).setNotificationRequestMessage(notificationRequests.getNotification_option().get(m));
+                                microsoftBands.get(m).sendMessage();
+                                break;
+                        }
                     }
                 }
-            }
-        } else {
-            for (int i = 0; i < microsoftBands.size(); i++) {
-                Log.d(TAG,"second...i="+i);
-                switch(notificationRequest.getType()) {
-                    case NotificationRequest.VIBRATION:
-                        microsoftBands.get(i).setDataSourceClientDeliver(dataSourceClientDeliver);
-                        microsoftBands.get(i).setNotificationRequestVibration(notificationRequest);
-                        microsoftBands.get(i).vibrate();
-                        break;
-                    case NotificationRequest.MESSAGE:
-                        microsoftBands.get(i).setDataSourceClientDeliver(dataSourceClientDeliver);
-                        microsoftBands.get(i).setNotificationRequestMessage(notificationRequest);
-                        microsoftBands.get(i).sendMessage();
-                        break;
+            } else {
+                for (int m = 0; m < microsoftBands.size(); m++) {
+                    Log.d(TAG, "second...i=" + m);
+                    switch (notificationRequests.getNotification_option().get(m).getType()) {
+                        case NotificationRequest.VIBRATION:
+                            microsoftBands.get(m).setNotificationRequestVibration(notificationRequests.getNotification_option().get(r));
+                            microsoftBands.get(m).vibrate();
+                            break;
+                        case NotificationRequest.MESSAGE:
+                            microsoftBands.get(m).setNotificationRequestMessage(notificationRequests.getNotification_option().get(r));
+                            microsoftBands.get(m).sendMessage();
+                            break;
+                    }
                 }
             }
         }

@@ -7,11 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
-import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandClientManager;
 import com.microsoft.band.BandException;
@@ -28,18 +24,12 @@ import com.microsoft.band.tiles.pages.PageRect;
 import com.microsoft.band.tiles.pages.ScrollFlowPanel;
 import com.microsoft.band.tiles.pages.VerticalAlignment;
 
-import org.md2k.datakitapi.DataKitAPI;
-import org.md2k.datakitapi.datatype.DataTypeJSONObject;
-import org.md2k.datakitapi.exception.DataKitException;
 import org.md2k.datakitapi.source.METADATA;
-import org.md2k.datakitapi.source.datasource.DataSourceClient;
 import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.datakitapi.source.platform.PlatformBuilder;
 import org.md2k.datakitapi.source.platform.PlatformType;
-import org.md2k.datakitapi.time.DateTime;
 import org.md2k.utilities.Report.Log;
-import org.md2k.utilities.data_format.NotificationDeliver;
-import org.md2k.utilities.data_format.NotificationRequest;
+import org.md2k.utilities.data_format.notification.NotificationRequest;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -91,7 +81,6 @@ public abstract class Device {
     Handler handlerMessage;
     int curMessage=0;
     int curVibration=0;
-    DataSourceClient dataSourceClientDeliver;
     BandCallBack bandCallBack;
     Runnable connectRunnable = new Runnable() {
         @Override
@@ -129,13 +118,10 @@ public abstract class Device {
                 if (curVibration <= notificationRequestVibration.getRepeat()) {
                     bandClient.getNotificationManager().vibrate(VibrationType.ONE_TONE_HIGH).await();
                     handlerVibration.postDelayed(this, notificationRequestVibration.getDuration() / notificationRequestVibration.getRepeat());
-                } else {
-                    insertToDataKit(notificationRequestVibration, getPlatform(), NotificationDeliver.DELIVERED);
                 }
 
 
             } catch (InterruptedException | BandException e) {
-                insertToDataKit(notificationRequestVibration, getPlatform(), NotificationDeliver.INTERNAL_ERROR);
                 Log.e(TAG, "ERROR=" + e.toString());
                 //    handle InterruptedException
             }
@@ -172,9 +158,6 @@ public abstract class Device {
                 setMetadata(METADATA.VERSION_HARDWARE, versionHardware).setMetadata(METADATA.VERSION_FIRMWARE, versionFirmware).build();
     }
 
-    public void setDataSourceClientDeliver(DataSourceClient dataSourceClientDeliver) {
-        this.dataSourceClientDeliver = dataSourceClientDeliver;
-    }
 
     public void setNotificationRequestVibration(NotificationRequest notificationRequest) {
         this.notificationRequestVibration = notificationRequest;
@@ -289,23 +272,6 @@ public abstract class Device {
         curVibration=0;
         handlerVibration.post(runVibrate);
     }
-    void insertToDataKit(NotificationRequest notificationRequest, Platform platform, String status){
-        Gson gson=new Gson();
-        NotificationDeliver notificationDeliver=new NotificationDeliver();
-        notificationDeliver.setNotificationRequest(notificationRequest);
-        notificationDeliver.setStatus(status);
-        notificationDeliver.setPlatform(platform);
-        JsonObject sample = new JsonParser().parse(gson.toJson(notificationDeliver)).getAsJsonObject();
-        DataTypeJSONObject dataTypeJSONObject = new DataTypeJSONObject(DateTime.getDateTime(), sample);
-        try {
-            DataKitAPI.getInstance(context).insert(dataSourceClientDeliver, dataTypeJSONObject);
-        } catch (DataKitException e) {
-            Toast.makeText(context, "Data Insertion Error", Toast.LENGTH_LONG).show();
-            disconnect();
-            e.printStackTrace();
-        }
-
-    }
 
     public void sendMessage() {
         ArrayList<TileInfo> tileInfos = TileInfo.readFile(context);
@@ -313,9 +279,7 @@ public abstract class Device {
             if (tileInfos.get(i).name.equals("EMA"))
                 try {
                     bandClient.getNotificationManager().sendMessage(tileInfos.get(i).UUID, notificationRequestMessage.getMessage()[0], notificationRequestMessage.getMessage()[1], new Date(), MessageFlags.SHOW_DIALOG);
-                    insertToDataKit(notificationRequestVibration, getPlatform(), NotificationDeliver.DELIVERED);
                 } catch (BandIOException e) {
-                    insertToDataKit(notificationRequestVibration, getPlatform(), NotificationDeliver.INTERNAL_ERROR);
                 }
     }
 
