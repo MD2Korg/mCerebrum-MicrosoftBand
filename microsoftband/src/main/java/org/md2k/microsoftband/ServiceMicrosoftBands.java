@@ -83,7 +83,7 @@ public class ServiceMicrosoftBands extends Service {
             @Override
             public void onDisconnected() {
                 Log.d(TAG,"bluetooth disconnected...");
-                clearDataKitSettingsBluetooth();
+                stopSelf();
             }
         });
     }

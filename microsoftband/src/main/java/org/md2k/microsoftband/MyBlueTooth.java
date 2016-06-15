@@ -88,7 +88,11 @@ public class MyBlueTooth {
     }
 
     public void close() {
-        context.unregisterReceiver(mReceiver);
+        try {
+            context.unregisterReceiver(mReceiver);
+        }catch (Exception ignored){
+
+        }
     }
 
     public boolean isEnabled() {

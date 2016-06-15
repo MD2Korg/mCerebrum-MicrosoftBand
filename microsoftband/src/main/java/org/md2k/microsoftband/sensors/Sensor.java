@@ -3,7 +3,6 @@ package org.md2k.microsoftband.sensors;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
-import android.widget.Toast;
 
 import com.microsoft.band.BandClient;
 
@@ -137,7 +136,6 @@ public abstract class Sensor {
         } catch (DataKitException e) {
             Intent intentRestart = new Intent("microsoftband_stop");
             LocalBroadcastManager.getInstance(context).sendBroadcast(intentRestart);
-            Toast.makeText(context, "Send Data Error", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
     }
@@ -145,7 +143,6 @@ public abstract class Sensor {
         try {
             DataKitAPI.getInstance(context).insert(dataSourceClient, dataType);
         } catch (DataKitException e) {
-            Toast.makeText(context, "Send Status Error", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
     }
