@@ -8,6 +8,7 @@ import android.support.v4.content.LocalBroadcastManager;
 
 import com.microsoft.band.BandIOException;
 
+import org.md2k.datakitapi.source.METADATA;
 import org.md2k.datakitapi.source.datasource.DataSource;
 import org.md2k.microsoftband.sensors.Sensor;
 import org.md2k.microsoftband.sensors.Sensors;
@@ -79,6 +80,10 @@ public class MicrosoftBand extends Device {
 
     public void setEnabled(DataSource dataSource, boolean enabled) {
         sensors.setEnable(dataSource.getType(), enabled);
+        if(dataSource.getMetadata()!=null && dataSource.getMetadata().containsKey(METADATA.FREQUENCY)){
+            sensors.setFrequency(dataSource.getType(), dataSource.getMetadata().get(METADATA.FREQUENCY));
+
+        }
     }
 
     public boolean equals(String deviceId) {

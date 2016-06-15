@@ -1,6 +1,5 @@
 package org.md2k.microsoftband;
 
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
@@ -25,6 +24,7 @@ import android.widget.Toast;
 import org.md2k.datakitapi.source.datasource.DataSourceType;
 import org.md2k.utilities.Apps;
 import org.md2k.utilities.Report.Log;
+import org.md2k.utilities.UI.AlertDialogs;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -64,60 +64,9 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(progressDialog!=null)
+            if (progressDialog != null)
                 progressDialog.dismiss();
             getActivity().finish();
-        }
-    };
-    private DialogInterface.OnClickListener dialogChangeBackgroundListener = new DialogInterface.OnClickListener() {
-        @Override
-        public void onClick(DialogInterface dialog, int which) {
-            switch (which) {
-                case DialogInterface.BUTTON_POSITIVE:
-                    for (int i = 0; i < microsoftBands.find().size(); i++) {
-                        if (!microsoftBands.find().get(i).enabled)
-                            continue;
-                        final String location = microsoftBands.find().get(i).getPlatformId();
-                        if (location == null) continue;
-                        progressDialog = new ProgressDialog(getActivity());
-                        progressDialog.setMessage("Updating Background theme ... (" + location.toLowerCase().replace("_", " ") + ")");
-                        progressDialog.show();
-                        final int finalI = i;
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                microsoftBands.find().get(finalI).configureMicrosoftBand(getActivity(), location);
-                            }
-                        });
-                    }
-                    break;
-                case DialogInterface.BUTTON_NEGATIVE:
-                    getActivity().finish();
-                    break;
-                default:
-                    break;
-            }
-        }
-    };
-    private DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-        @Override
-        public void onClick(DialogInterface dialog, int which) {
-            switch (which) {
-                case DialogInterface.BUTTON_POSITIVE:
-                    Intent intent = new Intent(getActivity(), ServiceMicrosoftBands.class);
-                    getActivity().stopService(intent);
-                    saveConfigurationFile();
-                    intent = new Intent(getActivity(), ServiceMicrosoftBands.class);
-                    getActivity().startService(intent);
-                    break;
-
-                case DialogInterface.BUTTON_NEGATIVE:
-                    Toast.makeText(getActivity(), "Configuration file is not saved.", Toast.LENGTH_LONG).show();
-                    getActivity().finish();
-                    break;
-                default:
-                    break;
-            }
         }
     };
 
@@ -248,36 +197,29 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
                 isNew = microsoftBand.enabled;
                 Log.d(TAG, deviceId + " " + microsoftBand.enabled);
                 if (isNew) {
-                    AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-                    alertDialog.setTitle("Edit/Delete Selected Device");
-                    alertDialog.setMessage("Edit/Delete Device (" + preference.getTitle() + ")?");
-                    alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Cancel",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
+                    AlertDialogs.AlertDialog(getActivity(), "Edit/Delete Selected Device", "Edit/Delete Device (" + preference.getTitle() + ")?", R.drawable.ic_info_teal_48dp, "Cancel", "Delete", "Edit", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which) {
+                                case DialogInterface.BUTTON_POSITIVE:
                                     dialog.dismiss();
-                                }
-                            });
-                    alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Delete",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
+                                    break;
+                                case DialogInterface.BUTTON_NEGATIVE:
                                     microsoftBands.deleteMicrosoftBandPlatform(deviceId);
                                     setupPreferenceScreenMicrosoftBand();
-                                }
-                            });
-                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Edit",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    if(preference.getSummary().equals("ERROR: BandOff/PairProblem"))
-                                        Toast.makeText(getActivity(),"ERROR: BandOff/PairProblem",Toast.LENGTH_SHORT).show();
+                                    break;
+                                case DialogInterface.BUTTON_NEUTRAL:
+                                    if (preference.getSummary().equals("ERROR: BandOff/PairProblem"))
+                                        Toast.makeText(getActivity(), "ERROR: BandOff/PairProblem", Toast.LENGTH_SHORT).show();
                                     else
                                         startActivityForResult(intent, ADD_DEVICE);
-                                }
-                            });
-
-                    alertDialog.show();
+                                    break;
+                            }
+                        }
+                    });
                 } else {
-                    if(preference.getSummary().equals("ERROR: BandOff/PairProblem"))
-                        Toast.makeText(getActivity(),"ERROR: BandOff/PairProblem",Toast.LENGTH_SHORT).show();
+                    if (preference.getSummary().equals("ERROR: BandOff/PairProblem"))
+                        Toast.makeText(getActivity(), "ERROR: BandOff/PairProblem", Toast.LENGTH_SHORT).show();
                     else
                         startActivityForResult(intent, ADD_DEVICE);
                 }
@@ -376,15 +318,44 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
     }
 
     private void updateMicrosoftBand() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         int count = 0;
         for (int i = 0; i < microsoftBands.find().size(); i++)
             if (microsoftBands.find().get(i).enabled) count++;
         if (count == 0)
             getActivity().finish();
-        else
-            builder.setMessage("Configure MicrosoftBand (Change Background)?").setPositiveButton("Yes", dialogChangeBackgroundListener)
-                    .setNegativeButton("No", dialogChangeBackgroundListener).show();
+        else {
+            AlertDialogs.AlertDialog(getActivity(), "Change Background", "Change background of Microsoft Band?", R.drawable.ic_info_teal_48dp, "Yes", "No", null, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    switch (which) {
+                        case DialogInterface.BUTTON_POSITIVE:
+                            for (int i = 0; i < microsoftBands.find().size(); i++) {
+                                if (!microsoftBands.find().get(i).enabled)
+                                    continue;
+                                final String location = microsoftBands.find().get(i).getPlatformId();
+                                if (location == null) continue;
+                                progressDialog = new ProgressDialog(getActivity());
+                                progressDialog.setMessage("Updating Background theme ... (" + location.toLowerCase().replace("_", " ") + ")");
+                                progressDialog.show();
+                                final int finalI = i;
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        microsoftBands.find().get(finalI).configureMicrosoftBand(getActivity(), location);
+                                    }
+                                });
+                            }
+                            break;
+                        case DialogInterface.BUTTON_NEGATIVE:
+                            getActivity().finish();
+                            break;
+                        default:
+                            break;
+                    }
+
+                }
+            });
+        }
     }
 
     private String getLocationSummary(MicrosoftBand microsoftBand) {
@@ -419,9 +390,27 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (Apps.isServiceRunning(getActivity(), Constants.SERVICE_NAME)) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                    builder.setMessage("Save configuration file and restart the MicrosoftBand Service?").setPositiveButton("Yes", dialogClickListener)
-                            .setNegativeButton("No", dialogClickListener).show();
+                    AlertDialogs.AlertDialog(getActivity(), "Save and Restart?", "Save configuration file and restart MicrosoftBand App?", R.drawable.ic_info_teal_48dp, "Yes", "Cancel", null, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which) {
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    Intent intent = new Intent(getActivity(), ServiceMicrosoftBands.class);
+                                    getActivity().stopService(intent);
+                                    saveConfigurationFile();
+                                    intent = new Intent(getActivity(), ServiceMicrosoftBands.class);
+                                    getActivity().startService(intent);
+                                    break;
+
+                                case DialogInterface.BUTTON_NEGATIVE:
+                                    Toast.makeText(getActivity(), "Configuration file is not saved.", Toast.LENGTH_LONG).show();
+                                    getActivity().finish();
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    });
                 } else {
                     saveConfigurationFile();
                 }

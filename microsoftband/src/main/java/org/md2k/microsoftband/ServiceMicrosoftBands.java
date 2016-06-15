@@ -10,13 +10,12 @@ import android.content.IntentFilter;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.view.WindowManager;
-import android.widget.Toast;
 
 import org.md2k.datakitapi.DataKitAPI;
 import org.md2k.datakitapi.exception.DataKitException;
 import org.md2k.datakitapi.messagehandler.OnConnectionListener;
 import org.md2k.microsoftband.notification.NotificationManager;
+import org.md2k.utilities.UI.AlertDialogs;
 
 /*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
@@ -144,7 +143,7 @@ public class ServiceMicrosoftBands extends Service {
         if(readSettings())
             setDataKit();
         else {
-            showAlertDialogSettings();
+            showAlertDialogConfiguration(this);
             Log.d(TAG,"setSettingsDataKit()...");
             close();
         }
@@ -170,29 +169,16 @@ public class ServiceMicrosoftBands extends Service {
         Log.d(TAG,"close()..");
         stopSelf();
     }
-
-    private void showAlertDialogSettings() {
-        AlertDialog alertDialog = new AlertDialog.Builder(this)
-                .setTitle("Error: Settings")
-                .setIcon(R.drawable.ic_error_red_50dp)
-                .setMessage("Microsoft Band is not configured.\n\n Please go to Menu -> Settings (or, click Settings below)")
-                .setPositiveButton("Settings", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(ServiceMicrosoftBands.this, ActivityMicrosoftBandSettings.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        ServiceMicrosoftBands.this.startActivity(intent);
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-//                        close();
-                    }
-                })
-                .create();
-
-        alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
-        alertDialog.show();
+    void showAlertDialogConfiguration(final Context context){
+        AlertDialogs.AlertDialog(this, "Error: MicrosoftBand Settings", "Please configure Microsoft Band", R.drawable.ic_error_red_50dp, "Settings", "Cancel", null, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if(which== AlertDialog.BUTTON_POSITIVE){
+                    Intent intent = new Intent(context, ActivityMicrosoftBandSettings.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(intent);
+                }
+            }
+        });
     }
 }

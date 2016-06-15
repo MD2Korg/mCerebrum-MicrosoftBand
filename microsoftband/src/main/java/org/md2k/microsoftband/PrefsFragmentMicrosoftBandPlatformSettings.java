@@ -1,6 +1,5 @@
 package org.md2k.microsoftband;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -23,6 +21,7 @@ import android.widget.Toast;
 import org.md2k.datakitapi.source.datasource.DataSource;
 import org.md2k.datakitapi.source.datasource.DataSourceType;
 import org.md2k.utilities.Report.Log;
+import org.md2k.utilities.UI.AlertDialogs;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -79,9 +78,9 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
     }
 
     private int getBandVersion() {
-        String version=mySharedPreference.getSharedPreferenceString("version");
-        int versionInt=1;
-        if(version==null)
+        String version = mySharedPreference.getSharedPreferenceString("version");
+        int versionInt = 1;
+        if (version == null)
             return 0;
         else {
             versionInt = Integer.valueOf(version);
@@ -91,18 +90,18 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
     }
 
     private void updatePreferenceScreen() {
-        int versionFirmwareInt=getBandVersion();
+        int versionFirmwareInt = getBandVersion();
         findPreference("platformName").setSummary(mySharedPreference.getSharedPreferenceString("platformName"));
         findPreference("deviceId").setSummary(mySharedPreference.getSharedPreferenceString("deviceId"));
         findPreference("platformId").setSummary(getLocationSummary(mySharedPreference.getSharedPreferenceString("platformId")));
-        ListPreference lpLocation=(ListPreference)findPreference("platformId");
+        ListPreference lpLocation = (ListPreference) findPreference("platformId");
         lpLocation.setValue(mySharedPreference.getSharedPreferenceString("platformId"));
-        MicrosoftBand microsoftBand=new MicrosoftBand(getActivity(),null,null);
+        MicrosoftBand microsoftBand = new MicrosoftBand(getActivity(), null, null);
 
         for (int i = 0; i < microsoftBand.getSensors().size(); i++) {
             String dataSourceType = microsoftBand.getSensors().get(i).getDataSourceType();
             ((SwitchPreference) findPreference(dataSourceType)).setChecked(mySharedPreference.getSharedPreferenceBoolean(dataSourceType));
-            if(microsoftBand.getSensors().get(i).getVersion()>versionFirmwareInt)
+            if (microsoftBand.getSensors().get(i).getVersion() > versionFirmwareInt)
                 findPreference(dataSourceType).setEnabled(false);
             else
                 findPreference(dataSourceType).setEnabled(true);
@@ -113,7 +112,7 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
         }
     }
 
-    private void createMySharedPreference(){
+    private void createMySharedPreference() {
         mySharedPreference = MySharedPreference.getInstance(getActivity());
         mySharedPreference.setListener(onSharedPreferenceChangeListener);
     }
@@ -122,39 +121,40 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
         PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference("dataSourceType");
         Log.d(TAG, "Preference category: " + preferenceCategory);
         preferenceCategory.removeAll();
-        int versionHardwareInt=getBandVersion();
-        MicrosoftBand microsoftBand=new MicrosoftBand(getActivity(),null,null);
-        for (int i = 0; i <microsoftBand.getSensors().size(); i++) {
+        int versionHardwareInt = getBandVersion();
+        MicrosoftBand microsoftBand = new MicrosoftBand(getActivity(), null, null);
+        for (int i = 0; i < microsoftBand.getSensors().size(); i++) {
             final String dataSourceType = microsoftBand.getSensors().get(i).getDataSourceType();
             SwitchPreference switchPreference = new SwitchPreference(getActivity());
             switchPreference.setKey(dataSourceType);
-            String title=dataSourceType;
-            title=title.replace("_"," ");
-            title=title.substring(0,1).toUpperCase() + title.substring(1).toLowerCase();
+            String title = dataSourceType;
+            title = title.replace("_", " ");
+            title = title.substring(0, 1).toUpperCase() + title.substring(1).toLowerCase();
             switchPreference.setTitle(title);
             if (dataSourceType.equals(DataSourceType.ACCELEROMETER) || dataSourceType.equals(DataSourceType.GYROSCOPE)) {
                 switchPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                     @Override
                     public boolean onPreferenceClick(Preference preference) {
                         SwitchPreference switchPreference = (SwitchPreference) preference;
-//                        switchPreference.setChecked(!switchPreference.isChecked());
-                        String[] string = getResources().getStringArray(R.array.frequency_entries);//{"8 Hz", "31 Hz", "62 Hz"};
-                        String curFreq=mySharedPreference.getSharedPreferenceString(dataSourceType+"_frequency");
-                        int curIndex=1;
-                        for(int ii=0;ii<string.length;ii++)
-                            if(curFreq.equals(string[ii])) curIndex=ii;
-                        AlertDialogFrequency(getActivity(), string, preference.getKey() + "_frequency",curIndex);
+                        if(switchPreference.isChecked()) {
+                            String[] string = getResources().getStringArray(R.array.frequency_entries);//{"8 Hz", "31 Hz", "62 Hz"};
+                            String curFreq = mySharedPreference.getSharedPreferenceString(dataSourceType + "_frequency");
+                            int curIndex = 1;
+                            for (int ii = 0; ii < string.length; ii++)
+                                if (curFreq.equals(string[ii])) curIndex = ii;
+                            AlertDialogFrequency(getActivity(), string, preference.getKey() + "_frequency", curIndex);
+                        }
                         return false;
                     }
                 });
             }
-            if(microsoftBand.getSensors().get(i).getVersion()>versionHardwareInt)
+            if (microsoftBand.getSensors().get(i).getVersion() > versionHardwareInt)
                 switchPreference.setEnabled(false);
             else
                 switchPreference.setEnabled(true);
             preferenceCategory.addPreference(switchPreference);
         }
-        if(dataSourcesDefault!=null)
+        if (dataSourcesDefault != null)
             preferenceCategory.setEnabled(false);
         else preferenceCategory.setEnabled(true);
     }
@@ -162,7 +162,7 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v=super.onCreateView(inflater, container,savedInstanceState);
+        View v = super.onCreateView(inflater, container, savedInstanceState);
         ListView lv = (ListView) v.findViewById(android.R.id.list);
         lv.setPadding(0, 0, 0, 0);
         return v;
@@ -181,21 +181,21 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 boolean enabled;
-                MicrosoftBand microsoftBand=new MicrosoftBand(getActivity(),null,null);
+                MicrosoftBand microsoftBand = new MicrosoftBand(getActivity(), null, null);
                 final String location = mySharedPreference.getSharedPreferenceString("platformId");
                 if (deviceId == null || deviceId.equals("")) {
                     Toast.makeText(getActivity(), "!!! Device ID is missing !!!", Toast.LENGTH_LONG).show();
                 } else if (location == null || location.equals("")) {
                     Toast.makeText(getActivity(), "!!! Band Placement is missing !!!", Toast.LENGTH_LONG).show();
                 } else {
-                    enabled=false;
-                    for(int i=0;i< microsoftBand.getSensors().size();i++)
-                        if(mySharedPreference.getSharedPreferenceBoolean(microsoftBand.getSensors().get(i).getDataSourceType()))
-                            enabled=true;
-                    mySharedPreference.setSharedPreferencesBoolean("enabled",enabled);
-                    if(!enabled){
+                    enabled = false;
+                    for (int i = 0; i < microsoftBand.getSensors().size(); i++)
+                        if (mySharedPreference.getSharedPreferenceBoolean(microsoftBand.getSensors().get(i).getDataSourceType()))
+                            enabled = true;
+                    mySharedPreference.setSharedPreferencesBoolean("enabled", enabled);
+                    if (!enabled) {
                         Toast.makeText(getActivity(), "!!! No Sensor is enabled !!!", Toast.LENGTH_LONG).show();
-                    }else {
+                    } else {
                         Intent returnIntent = new Intent();
                         getActivity().setResult(getActivity().RESULT_OK, returnIntent);
                         getActivity().finish();
@@ -229,51 +229,35 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
         return summary;
     }
 
-    public void AlertDialogFrequency(final Context context, String[] string, final String key, final int curIndex) {
-        Log.d(TAG, "Context=" + context);
-        AlertDialog.Builder builderSingle = new AlertDialog.Builder(context);
-        builderSingle.setTitle("Select Frequency");
-        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(
-                context,
-                android.R.layout.select_dialog_singlechoice);
-        for (String aString : string) arrayAdapter.add(aString);
-        builderSingle.setNegativeButton("cancel",
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-        builderSingle.setSingleChoiceItems(arrayAdapter,curIndex,
-                new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String strName = arrayAdapter.getItem(which);
-                        MySharedPreference.getInstance(context).setSharedPreferencesString(key, strName);
-                        dialog.dismiss();
-                    }
-                });
-        builderSingle.show();
+    public void AlertDialogFrequency(final Context context, final String[] strings, final String key, final int curIndex) {
+        AlertDialogs.AlertDialogSingleChoice(context, "Select Frequency", strings, curIndex, "Select", "Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (which >= 0) {
+                    String strName = strings[which];
+                    MySharedPreference.getInstance(context).setSharedPreferencesString(key, strName);
+                }
+            }
+        });
     }
 
     private void readDefaultDataSources() {
         try {
-            dataSourcesDefault=Configuration.readDefault();
+            dataSourcesDefault = Configuration.readDefault();
         } catch (FileNotFoundException e) {
-            dataSourcesDefault=null;
+            dataSourcesDefault = null;
         }
     }
 
     private void updateDefaultConfiguration() {
-        if(dataSourcesDefault==null) return;
-        String curPlatformId=mySharedPreference.getSharedPreferenceString("platformId");
-        for(int i=0;i<dataSourcesDefault.size();i++){
-            if(dataSourcesDefault.get(i).getPlatform().getId()!=null && !dataSourcesDefault.get(i).getPlatform().getId().equals(curPlatformId))
+        if (dataSourcesDefault == null) return;
+        String curPlatformId = mySharedPreference.getSharedPreferenceString("platformId");
+        for (int i = 0; i < dataSourcesDefault.size(); i++) {
+            if (dataSourcesDefault.get(i).getPlatform().getId() != null && !dataSourcesDefault.get(i).getPlatform().getId().equals(curPlatformId))
                 continue;
-            SwitchPreference switchPreference= (SwitchPreference) findPreference(dataSourcesDefault.get(i).getType());
+            SwitchPreference switchPreference = (SwitchPreference) findPreference(dataSourcesDefault.get(i).getType());
             switchPreference.setChecked(true);
-            mySharedPreference.setSharedPreferencesBoolean(dataSourcesDefault.get(i).getType(),true);
+            mySharedPreference.setSharedPreferencesBoolean(dataSourcesDefault.get(i).getType(), true);
         }
     }
 }

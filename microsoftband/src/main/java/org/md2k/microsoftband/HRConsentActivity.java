@@ -1,15 +1,10 @@
 package org.md2k.microsoftband;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 
 import com.microsoft.band.BandClient;
 import com.microsoft.band.sensors.HeartRateConsentListener;
@@ -40,9 +35,9 @@ import com.microsoft.band.sensors.HeartRateConsentListener;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class HRConsentActivity extends Activity implements HeartRateConsentListener{
+public class HRConsentActivity extends Activity implements HeartRateConsentListener {
     private static final String TAG = HRConsentActivity.class.getSimpleName();
-    public static final String HRCONSENT="HRCONSENT";
+    public static final String HRCONSENT = "HRCONSENT";
     public static BandClient bandClient;
     String type;
 
@@ -50,15 +45,16 @@ public class HRConsentActivity extends Activity implements HeartRateConsentListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_hrconsent);
-        type=getIntent().getStringExtra("type");
-        bandClient.getSensorManager().requestHeartRateConsent(this,this);
+        type = getIntent().getStringExtra("type");
+        bandClient.getSensorManager().requestHeartRateConsent(this, this);
     }
+
     @Override
     public void userAccepted(boolean b) {
         Log.d(TAG, "HR Concent:" + b);
-        Intent intent=new Intent(HRCONSENT);
-        intent.putExtra("type",type);
-        intent.putExtra("value",b);
+        Intent intent = new Intent(HRCONSENT);
+        intent.putExtra("type", type);
+        intent.putExtra("value", b);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         this.finish();
     }

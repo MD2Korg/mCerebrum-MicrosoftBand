@@ -91,6 +91,15 @@ public class Sensors {
             }
         }
     }
+    public void setFrequency(String dataSourceType, String frequency){
+        for(int i=0;i<sensors.size();i++){
+            if(sensors.get(i).getDataSourceType().equals(dataSourceType)) {
+                sensors.get(i).setFrequency(frequency);
+                break;
+            }
+        }
+    }
+
     public void register(final BandClient bandClient, final Platform platform) {
 //        this.bandClient=bandClient;
         this.platform=platform;
