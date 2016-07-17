@@ -9,8 +9,11 @@ import android.support.v4.content.LocalBroadcastManager;
 
 import com.microsoft.band.BandClient;
 
+import org.md2k.datakitapi.DataKitAPI;
+import org.md2k.datakitapi.datatype.DataType;
 import org.md2k.datakitapi.datatype.DataTypeDoubleArray;
 import org.md2k.datakitapi.datatype.DataTypeInt;
+import org.md2k.datakitapi.exception.DataKitException;
 import org.md2k.datakitapi.source.METADATA;
 import org.md2k.datakitapi.source.datasource.DataSourceBuilder;
 import org.md2k.datakitapi.source.datasource.DataSourceType;
@@ -125,6 +128,13 @@ public class DataQuality extends Sensor {
         handler.removeCallbacks(runnableGetStatus);
         LocalBroadcastManager.getInstance(context).unregisterReceiver(mMessageReceiver);
         unregisterDataSource(context);
+    }
+    public void sendDataStatus(DataType dataType){
+        try {
+            DataKitAPI.getInstance(context).insert(dataSourceClient, dataType);
+        } catch (DataKitException e) {
+            e.printStackTrace();
+        }
     }
 
 }

@@ -7,7 +7,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import com.microsoft.band.BandClient;
 
 import org.md2k.datakitapi.DataKitAPI;
-import org.md2k.datakitapi.datatype.DataType;
 import org.md2k.datakitapi.datatype.DataTypeDoubleArray;
 import org.md2k.datakitapi.exception.DataKitException;
 import org.md2k.datakitapi.source.METADATA;
@@ -15,6 +14,7 @@ import org.md2k.datakitapi.source.datasource.DataSourceBuilder;
 import org.md2k.datakitapi.source.datasource.DataSourceClient;
 import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.microsoftband.CallBack;
+import org.md2k.microsoftband.ServiceMicrosoftBands;
 import org.md2k.utilities.Report.Log;
 
 import java.util.HashMap;
@@ -53,7 +53,7 @@ public abstract class Sensor {
     protected boolean enabled;
     protected Context context;
     private int version;
-    private DataSourceClient dataSourceClient;
+    protected DataSourceClient dataSourceClient;
 
 
     Sensor(String dataSourceType,String frequency,int version){
@@ -125,8 +125,6 @@ public abstract class Sensor {
         try {
             DataKitAPI.getInstance(context).unregister(dataSourceClient);
         } catch (DataKitException e) {
-            Intent intentRestart = new Intent("microsoftband_stop");
-            LocalBroadcastManager.getInstance(context).sendBroadcast(intentRestart);
             e.printStackTrace();
         }
     }
@@ -134,15 +132,8 @@ public abstract class Sensor {
         try {
             DataKitAPI.getInstance(context).insertHighFrequency(dataSourceClient, dataType);
         } catch (DataKitException e) {
-            Intent intentRestart = new Intent("microsoftband_stop");
+            Intent intentRestart = new Intent(ServiceMicrosoftBands.INTENT_STOP);
             LocalBroadcastManager.getInstance(context).sendBroadcast(intentRestart);
-            e.printStackTrace();
-        }
-    }
-    public void sendDataStatus(DataType dataType){
-        try {
-            DataKitAPI.getInstance(context).insert(dataSourceClient, dataType);
-        } catch (DataKitException e) {
             e.printStackTrace();
         }
     }

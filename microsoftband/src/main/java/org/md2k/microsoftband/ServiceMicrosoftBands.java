@@ -46,6 +46,7 @@ import org.md2k.utilities.UI.AlertDialogs;
 
 public class ServiceMicrosoftBands extends Service {
     private static final String TAG = ServiceMicrosoftBands.class.getSimpleName();
+    public static final String INTENT_STOP="microsoftband_stop";
     private MyBlueTooth myBlueTooth = null;
     private MicrosoftBands microsoftBands;
     private DataKitAPI dataKitAPI = null;
@@ -53,8 +54,6 @@ public class ServiceMicrosoftBands extends Service {
     private BroadcastReceiver mMessageReceiverStop = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            org.md2k.utilities.Report.Log.d(TAG, "onStop");
-            org.md2k.utilities.Report.Log.d(TAG, "Stop msband ...");
 //            Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand DataKit Disconnected, Data collection stopped", Toast.LENGTH_LONG).show();
             disconnectDataKit();
             close();
@@ -66,7 +65,7 @@ public class ServiceMicrosoftBands extends Service {
         super.onCreate();
         setBluetoothSettingsDataKit();
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(mMessageReceiverStop,
-                new IntentFilter("microsoftband_stop"));
+                new IntentFilter(INTENT_STOP));
     }
 
     private boolean readSettings(){

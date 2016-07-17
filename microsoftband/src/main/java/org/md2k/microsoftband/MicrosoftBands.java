@@ -143,7 +143,7 @@ public class MicrosoftBands {
     }
     public void disconnect(){
         for(int i=0;i< microsoftBands.size();i++) {
-            if (microsoftBands.get(i).isConnected)
+//            if (microsoftBands.get(i).isConnected)
                 microsoftBands.get(i).disconnect();
         }
 

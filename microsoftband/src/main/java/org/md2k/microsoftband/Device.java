@@ -79,7 +79,6 @@ public abstract class Device {
     Thread connectThread;
     Handler handlerVibration;
     Handler handlerMessage;
-    int curMessage=0;
     int curVibration=0;
     BandCallBack bandCallBack;
     Runnable connectRunnable = new Runnable() {
@@ -92,8 +91,9 @@ public abstract class Device {
                     Log.d(TAG, deviceId + " connect run() status= CONNECTED");
 
                     try {
-                        bandCallBack.onBandConnected();
-                    } catch (BandIOException e) {
+                        if(bandCallBack!=null)
+                            bandCallBack.onBandConnected();
+                    } catch (Exception e) {
 //                        e.printStackTrace();
                     }
                     break;
@@ -197,7 +197,8 @@ public abstract class Device {
                 else version = 2;
             }
             return ConnectionState.CONNECTED == state;
-        } catch (InterruptedException | BandException e) {
+        } catch (Exception e) {
+            if(bandClient.isConnected()) return true;
             Log.d(TAG, deviceId + " exception1");
             Log.d(TAG, deviceId + " ...connectDataKit");
             return false;

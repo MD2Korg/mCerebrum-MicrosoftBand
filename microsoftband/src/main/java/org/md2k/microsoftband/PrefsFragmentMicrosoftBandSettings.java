@@ -26,7 +26,6 @@ import org.md2k.utilities.Apps;
 import org.md2k.utilities.Report.Log;
 import org.md2k.utilities.UI.AlertDialogs;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 /*
@@ -121,10 +120,10 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
 
     @Override
     public void onDestroy() {
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
         myBlueTooth.close();
         if (microsoftBands != null)
             microsoftBands.disconnect();
-        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
         super.onDestroy();
     }
 
@@ -372,11 +371,12 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
 
     private void saveConfigurationFile() {
         try {
+
             microsoftBands.writeDataSourceToFile();
             updateMicrosoftBand();
 
             Toast.makeText(getActivity(), "Configuration file is saved.", Toast.LENGTH_LONG).show();
-        } catch (IOException e) {
+        } catch (Exception e) {
             Toast.makeText(getActivity(), "!!!Error:" + e.getMessage(), Toast.LENGTH_LONG).show();
             e.printStackTrace();
             getActivity().finish();

@@ -27,7 +27,8 @@
             android:id="@+id/tableLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:stretchColumns="*">
+            android:stretchColumns="*"
+            android:padding="10dp">
 
         </TableLayout>
     </ScrollView>

@@ -107,15 +107,15 @@ public class MicrosoftBand extends Device {
 
     public void unregister(){
         if(bandClient==null) return;
+        LocalBroadcastManager.getInstance(context).unregisterReceiver(mMessageReceiver);
         if (bandClient.isConnected()) {
             try {
-                LocalBroadcastManager.getInstance(context).unregisterReceiver(mMessageReceiver);
                 sensors.unregister(bandClient);
             } catch (BandIOException e) {
                 e.printStackTrace();
             }
-            disconnect();
         }
+        disconnect();
     }
 
 }
