@@ -164,13 +164,21 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
             microsoftBands.get(i).connect(new BandCallBack() {
                 @Override
                 public void onBandConnected() {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            updatePreference(microsoftBands.get(finalI));
-                            microsoftBands.get(finalI).disconnect();
-                        }
-                    });
+                    try {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    microsoftBands.get(finalI).disconnect();
+                                    updatePreference(microsoftBands.get(finalI));
+                                }catch (Exception ignored){
+
+                                }
+                            }
+                        });
+                    }catch (Exception ignored){
+
+                    }
                 }
             });
         }
