@@ -214,6 +214,7 @@ public abstract class Device {
     }
 
     public void connect(BandCallBack bandCallBack) {
+        Log.d(TAG, "connect...");
         this.bandCallBack = bandCallBack;
         if (bandClient != null) {
             connectThread = new Thread(connectRunnable);

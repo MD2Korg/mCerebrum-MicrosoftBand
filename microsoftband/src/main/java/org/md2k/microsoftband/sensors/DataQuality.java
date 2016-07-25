@@ -20,6 +20,7 @@ import org.md2k.datakitapi.source.datasource.DataSourceType;
 import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.datakitapi.time.DateTime;
 import org.md2k.microsoftband.CallBack;
+import org.md2k.microsoftband.Constants;
 import org.md2k.utilities.Report.Log;
 import org.md2k.utilities.data_format.DATA_QUALITY;
 
@@ -53,8 +54,8 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class DataQuality extends Sensor {
-    public static final long PERIOD = 5000;
-    public static final long RESTART = 30000;
+    public static final long PERIOD = 3000;
+    public static final long RESTART = 15000;
     private static final String TAG = DataQuality.class.getSimpleName();
     private long lastReceivedTimestamp;
     private Handler handler;
@@ -62,7 +63,7 @@ public class DataQuality extends Sensor {
     private Runnable runnableGetStatus = new Runnable() {
         @Override
         public void run() {
-            int dataQuality = 0;
+            int dataQuality;
             if (DateTime.getDateTime() - lastReceivedTimestamp > PERIOD)
                 dataQuality = DATA_QUALITY.BAND_OFF;
             else if (lastBandContact != 0)
@@ -71,6 +72,7 @@ public class DataQuality extends Sensor {
                 dataQuality = DATA_QUALITY.GOOD;
 
             DataTypeInt dataTypeInt = new DataTypeInt(DateTime.getDateTime(), dataQuality);
+            Log.d(TAG, "DataQuality = " + dataQuality);
             sendDataStatus(dataTypeInt);
 
             callBack.onReceivedData(dataTypeInt);
@@ -119,7 +121,7 @@ public class DataQuality extends Sensor {
         registerDataSource(context, platform);
         this.callBack = callBack;
         LocalBroadcastManager.getInstance(context).registerReceiver(mMessageReceiver,
-                new IntentFilter("microsoftBand"));
+                new IntentFilter(Constants.INTENT_RECEIVED_DATA));
         handler.post(runnableGetStatus);
     }
 
@@ -133,7 +135,7 @@ public class DataQuality extends Sensor {
         try {
             DataKitAPI.getInstance(context).insert(dataSourceClient, dataType);
         } catch (DataKitException e) {
-            e.printStackTrace();
+            LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(Constants.INTENT_STOP));
         }
     }
 

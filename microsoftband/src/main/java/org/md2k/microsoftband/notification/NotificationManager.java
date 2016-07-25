@@ -1,8 +1,9 @@
 package org.md2k.microsoftband.notification;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
-import android.widget.Toast;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.google.gson.Gson;
 
@@ -17,6 +18,7 @@ import org.md2k.datakitapi.source.datasource.DataSourceBuilder;
 import org.md2k.datakitapi.source.datasource.DataSourceClient;
 import org.md2k.datakitapi.source.datasource.DataSourceType;
 import org.md2k.datakitapi.source.platform.PlatformType;
+import org.md2k.microsoftband.Constants;
 import org.md2k.microsoftband.MicrosoftBand;
 import org.md2k.utilities.Report.Log;
 import org.md2k.utilities.data_format.notification.NotificationRequest;
@@ -59,6 +61,7 @@ public class NotificationManager {
     private ArrayList<DataSourceClient> dataSourceClietNotificationRequests;
     private Handler handler;
     int RERUN = 60;
+    Thread t;
     Runnable runnableSubscribe = new Runnable() {
         @Override
         public void run() {
@@ -72,13 +75,12 @@ public class NotificationManager {
                     if (RERUN > 0) {
                         RERUN--;
                         handler.postDelayed(this, 1000);
-                    }
+                    } else handler.postDelayed(this, 60000);
                 } else {
                     subscribe();
                 }
             } catch (DataKitException e) {
-                Toast.makeText(context, "DataSource Not Found Error", Toast.LENGTH_LONG).show();
-                e.printStackTrace();
+                LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(Constants.INTENT_STOP));
             }
         }
     };
@@ -96,8 +98,7 @@ public class NotificationManager {
             dataSourceClientAcknowledge = DataKitAPI.getInstance(context).register(dataSourceBuilder);
             handler.post(runnableSubscribe);
         } catch (DataKitException e) {
-            Toast.makeText(context, "Notification Registration Error", Toast.LENGTH_LONG).show();
-            e.printStackTrace();
+            LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(Constants.INTENT_STOP));
         }
     }
 
@@ -108,12 +109,12 @@ public class NotificationManager {
 
     private void unsubscribe() {
         try {
+            if (t != null && t.isAlive()) t.interrupt();
             if (dataSourceClietNotificationRequests != null)
                 for (int i = 0; i < dataSourceClietNotificationRequests.size(); i++) {
                     dataKitAPI.unsubscribe(dataSourceClietNotificationRequests.get(i));
                 }
-        } catch (Exception e) {
-
+        } catch (Exception ignored) {
         }
     }
 
@@ -125,16 +126,21 @@ public class NotificationManager {
                     dataKitAPI.subscribe(dataSourceClietNotificationRequests.get(i), new OnReceiveListener() {
                         @Override
                         public void onReceived(final DataType dataType) {
-                            try {
-                                processMessage(dataType);
-                            } catch (DataKitException e) {
-                                e.printStackTrace();
-                            }
+                            t = new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        processMessage(dataType);
+                                    } catch (DataKitException e) {
+                                        LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(Constants.INTENT_STOP));
+                                    }
+                                }
+                            });
+                            t.start();
                         }
                     });
                 } catch (DataKitException e) {
-                    Toast.makeText(context, "Subscribe Error: " + dataSourceClietNotificationRequests.get(i).getDataSource().toString(), Toast.LENGTH_LONG).show();
-                    e.printStackTrace();
+                    LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(Constants.INTENT_STOP));
                 }
             }
         }

@@ -8,12 +8,13 @@ import com.microsoft.band.BandClient;
 import com.microsoft.band.BandIOException;
 
 import org.md2k.datakitapi.datatype.DataType;
-import org.md2k.datakitapi.datatype.DataTypeIntArray;
+import org.md2k.datakitapi.datatype.DataTypeInt;
 import org.md2k.datakitapi.source.METADATA;
 import org.md2k.datakitapi.source.datasource.DataSourceType;
 import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.datakitapi.time.DateTime;
 import org.md2k.microsoftband.CallBack;
+import org.md2k.microsoftband.Constants;
 import org.md2k.utilities.Report.Log;
 import org.md2k.utilities.data_format.DATA_QUALITY;
 
@@ -114,7 +115,7 @@ public class Sensors {
                     @Override
                     public void onReceivedData(DataType data) {
                         String dataSourceType = sensors.get(finalI).getDataSourceType();
-                        Intent intent = new Intent("microsoftBand");
+                        Intent intent = new Intent(Constants.INTENT_RECEIVED_DATA);
                         intent.putExtra("operation", "data");
                         if (!hm.containsKey(dataSourceType)) {
                             hm.put(dataSourceType, 0);
@@ -128,16 +129,15 @@ public class Sensors {
                         intent.putExtra("deviceid", Sensors.this.platform.getMetadata().get(METADATA.DEVICE_ID));
                         intent.putExtra("platformid", Sensors.this.platform.getId());
                         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
-                        if(dataSourceType.equals(DataSourceType.STATUS)){
-                            int status[]=((DataTypeIntArray) data).getSample();
-                            if(status[0]== DATA_QUALITY.BAND_OFF){
+                        if (dataSourceType.equals(DataSourceType.DATA_QUALITY)) {
+                            int status = ((DataTypeInt) data).getSample();
+                            if (status == DATA_QUALITY.BAND_OFF) {
                                 countOff+= DataQuality.PERIOD;
                             }
                             else countOff=0;
                             if(countOff> DataQuality.RESTART){
-                                Log.d(TAG,"localbroadcast...platformId="+platform.getId());
-                                Intent intentRestart = new Intent("microsoftband_restart");
-                                intentRestart.putExtra("platformid",platform.getId());
+                                Log.d(TAG, "restart..as no data for 30 sec");
+                                Intent intentRestart = new Intent(Constants.INTENT_STOP);
                                 LocalBroadcastManager.getInstance(context).sendBroadcast(intentRestart);
                                 countOff=0;
                             }

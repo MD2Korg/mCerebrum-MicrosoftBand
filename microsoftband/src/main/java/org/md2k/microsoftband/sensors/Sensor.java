@@ -14,7 +14,7 @@ import org.md2k.datakitapi.source.datasource.DataSourceBuilder;
 import org.md2k.datakitapi.source.datasource.DataSourceClient;
 import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.microsoftband.CallBack;
-import org.md2k.microsoftband.ServiceMicrosoftBands;
+import org.md2k.microsoftband.Constants;
 import org.md2k.utilities.Report.Log;
 
 import java.util.HashMap;
@@ -115,26 +115,20 @@ public abstract class Sensor {
         try {
             dataSourceClient = DataKitAPI.getInstance(context).register(createDataSourceBuilder(platform));
         } catch (DataKitException e) {
-            Intent intentRestart = new Intent("microsoftband_restart");
-            intentRestart.putExtra("platformid", dataSourceClient.getDataSource().getPlatform().getId());
-            LocalBroadcastManager.getInstance(context).sendBroadcast(intentRestart);
-            e.printStackTrace();
+            LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(Constants.INTENT_STOP));
         }
     }
     public void unregisterDataSource(Context context){
         try {
             DataKitAPI.getInstance(context).unregister(dataSourceClient);
         } catch (DataKitException e) {
-            e.printStackTrace();
         }
     }
     public void sendData(DataTypeDoubleArray dataType){
         try {
             DataKitAPI.getInstance(context).insertHighFrequency(dataSourceClient, dataType);
         } catch (DataKitException e) {
-            Intent intentRestart = new Intent(ServiceMicrosoftBands.INTENT_STOP);
-            LocalBroadcastManager.getInstance(context).sendBroadcast(intentRestart);
-            e.printStackTrace();
+            LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(Constants.INTENT_STOP));
         }
     }
 

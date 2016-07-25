@@ -46,50 +46,55 @@ import org.md2k.utilities.UI.AlertDialogs;
 
 public class ServiceMicrosoftBands extends Service {
     private static final String TAG = ServiceMicrosoftBands.class.getSimpleName();
-    public static final String INTENT_STOP="microsoftband_stop";
     private MyBlueTooth myBlueTooth = null;
     private MicrosoftBands microsoftBands;
     private DataKitAPI dataKitAPI = null;
     private NotificationManager notificationManager;
-    private BroadcastReceiver mMessageReceiverStop = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-//            Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand DataKit Disconnected, Data collection stopped", Toast.LENGTH_LONG).show();
-            disconnectDataKit();
-            close();
-        }
-    };
-
     @Override
     public void onCreate() {
         super.onCreate();
-        setBluetoothSettingsDataKit();
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(mMessageReceiverStop,
-                new IntentFilter(INTENT_STOP));
+                new IntentFilter(Constants.INTENT_STOP));
+        if (readSettings())
+            setBluetooth();
+        else {
+            showAlertDialogConfiguration(this);
+            stopSelf();
+        }
     }
 
-    private boolean readSettings(){
+    void setBluetooth() {
+        myBlueTooth = new MyBlueTooth(ServiceMicrosoftBands.this, new BlueToothCallBack() {
+            @Override
+            public void onConnected() {
+                connectDataKit();
+            }
+            @Override
+            public void onDisconnected() {
+                stopSelf();
+            }
+        });
+        if (myBlueTooth.isEnabled())
+            connectDataKit();
+        else {
+            myBlueTooth.enable();
+        }
+    }
+
+    private boolean readSettings() {
         microsoftBands = new MicrosoftBands(getApplicationContext());
         return microsoftBands.size(true) != 0;
     }
 
-    private void initializeBluetoothConnection() {
-        myBlueTooth = new MyBlueTooth(ServiceMicrosoftBands.this, new BlueToothCallBack() {
-            @Override
-            public void onConnected() {
-                setSettingsDataKit();
-            }
-            @Override
-            public void onDisconnected() {
-                Log.d(TAG,"bluetooth disconnected...");
-                stopSelf();
-            }
-        });
-    }
+    private BroadcastReceiver mMessageReceiverStop = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            stopSelf();
+        }
+    };
 
     private void connectDataKit() {
         dataKitAPI = DataKitAPI.getInstance(getApplicationContext());
-        Log.d(TAG,"datakitapi connected="+dataKitAPI.isConnected());
         try {
             dataKitAPI.connect(new OnConnectionListener() {
                 @Override
@@ -97,30 +102,20 @@ public class ServiceMicrosoftBands extends Service {
                     microsoftBands.register();
                     notificationManager = new NotificationManager(ServiceMicrosoftBands.this, microsoftBands.find());
                     notificationManager.start();
-//                    Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand Started successfully", Toast.LENGTH_SHORT).show();
                 }
             });
         } catch (DataKitException e) {
             Log.d(TAG, "onException...");
-//            Toast.makeText(ServiceMicrosoftBands.this, "MicrosoftBand Stopped. Error: " + e.toString(), Toast.LENGTH_SHORT).show();
-            stopSelf();
+            LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(Constants.INTENT_STOP));
         }
 
     }
 
-    private void disconnectDataKit() {
-        Log.d(TAG,"disconnectDataKit()...");
-        if(microsoftBands !=null)
-            microsoftBands.unregister();
-        if(notificationManager!=null) notificationManager.clear();
-        if(dataKitAPI!=null) {
-            dataKitAPI.disconnect();
-        }
-    }
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy()...");
-        clearDataKitSettingsBluetooth();
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(mMessageReceiverStop);
+        clear();
         super.onDestroy();
     }
 
@@ -128,46 +123,19 @@ public class ServiceMicrosoftBands extends Service {
     public IBinder onBind(Intent intent) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
-    private void setBluetoothSettingsDataKit() {
-        initializeBluetoothConnection();
-        if (myBlueTooth.isEnabled())
-            setSettingsDataKit();
-        else {
-            myBlueTooth.enable();
-            Log.d(TAG,"bluetooth not enabled..");
-            close();
+
+    void clear() {
+        Log.d(TAG, "disconnectDataKit()...");
+        if (microsoftBands != null)
+            microsoftBands.unregister();
+        if (notificationManager != null) notificationManager.clear();
+        if (dataKitAPI != null) {
+            dataKitAPI.disconnect();
         }
-    }
-    private void setSettingsDataKit() {
-        if(readSettings())
-            setDataKit();
-        else {
-            showAlertDialogConfiguration(this);
-            Log.d(TAG,"setSettingsDataKit()...");
-            close();
-        }
+        if (myBlueTooth != null)
+            myBlueTooth.close();
     }
 
-    private void setDataKit() {
-        connectDataKit();
-    }
-    private void clearDataKitSettingsBluetooth(){
-        Log.d(TAG,"clearDataKitSettingsBluetooth...");
-        disconnectDataKit();
-        clearSettingsBluetooth();
-    }
-    private void clearSettingsBluetooth(){
-        microsoftBands =null;
-        clearBlueTooth();
-    }
-    private void clearBlueTooth(){
-        myBlueTooth.close();
-    }
-
-    private void close() {
-        Log.d(TAG,"close()..");
-        stopSelf();
-    }
     void showAlertDialogConfiguration(final Context context){
         AlertDialogs.AlertDialog(this, "Error: MicrosoftBand Settings", "Please configure Microsoft Band", R.drawable.ic_error_red_50dp, "Settings", "Cancel", null, new DialogInterface.OnClickListener() {
             @Override
