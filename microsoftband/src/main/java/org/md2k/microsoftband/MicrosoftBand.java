@@ -57,13 +57,13 @@ public class MicrosoftBand extends Device {
         return sensors.getSensors();
     }
 
-    public void setEnabled(boolean enabled){
-        this.enabled=enabled;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public void setEnabled(DataSource dataSource, boolean enabled) {
         sensors.setEnable(dataSource.getType(), enabled);
-        if(dataSource.getMetadata()!=null && dataSource.getMetadata().containsKey(METADATA.FREQUENCY)){
+        if (dataSource.getMetadata() != null && dataSource.getMetadata().containsKey(METADATA.FREQUENCY)) {
             sensors.setFrequency(dataSource.getType(), dataSource.getMetadata().get(METADATA.FREQUENCY));
 
         }
@@ -74,28 +74,25 @@ public class MicrosoftBand extends Device {
     }
 
     public void register() {
-        Log.d(TAG, "MicrosoftBand...register()...enabled=" + enabled+" bandCLient="+bandClient);
+        Log.d(TAG, "MicrosoftBand...register()...id=" + deviceId + " enabled=" + enabled + " bandClient=" + bandClient);
         if (!enabled) return;
         connect(new BandCallBack() {
             @Override
             public void onBandConnected() throws BandIOException {
-                Log.d(TAG,"band connected...");
+                Log.d(TAG, "band connected...");
                 sensors.register(bandClient, getPlatform());
             }
         });
     }
 
-    public void unregister(){
+    public void unregister() {
         if (!enabled) return;
-        if(bandClient==null) return;
-        if (bandClient.isConnected()) {
-            try {
-                sensors.unregister(bandClient);
-            } catch (BandIOException e) {
-                e.printStackTrace();
-            }
+        try {
+            sensors.unregister(bandClient);
+            disconnect();
+        } catch (BandIOException e) {
+            e.printStackTrace();
         }
-        disconnect();
     }
 
 }

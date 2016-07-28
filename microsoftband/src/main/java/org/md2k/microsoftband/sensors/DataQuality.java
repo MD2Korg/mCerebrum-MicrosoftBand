@@ -60,33 +60,6 @@ public class DataQuality extends Sensor {
     private long lastReceivedTimestamp;
     private Handler handler;
     private double lastBandContact;
-    private Runnable runnableGetStatus = new Runnable() {
-        @Override
-        public void run() {
-            int dataQuality;
-            if (DateTime.getDateTime() - lastReceivedTimestamp > PERIOD)
-                dataQuality = DATA_QUALITY.BAND_OFF;
-            else if (lastBandContact != 0)
-                dataQuality = DATA_QUALITY.NOT_WORN;
-            else
-                dataQuality = DATA_QUALITY.GOOD;
-
-            DataTypeInt dataTypeInt = new DataTypeInt(DateTime.getDateTime(), dataQuality);
-            Log.d(TAG, "DataQuality = " + dataQuality);
-            sendDataStatus(dataTypeInt);
-
-            callBack.onReceivedData(dataTypeInt);
-            handler.postDelayed(runnableGetStatus, PERIOD);
-        }
-    };
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            lastReceivedTimestamp = intent.getLongExtra("timestamp", 0);
-            if (DataSourceType.BAND_CONTACT.equals(intent.getStringExtra("datasourcetype")))
-                lastBandContact = ((DataTypeDoubleArray) intent.getParcelableExtra("data")).getSample()[0];
-        }
-    };
 
     DataQuality() {
         super(DataSourceType.DATA_QUALITY, String.valueOf(1.0/(PERIOD/1000))+" Hz", 1);
@@ -119,14 +92,15 @@ public class DataQuality extends Sensor {
 
     public void register(Context context, final BandClient bandClient, Platform platform, CallBack callBack) {
         registerDataSource(context, platform);
+        Log.d(TAG, "DataQuality...register()");
         this.callBack = callBack;
         LocalBroadcastManager.getInstance(context).registerReceiver(mMessageReceiver,
                 new IntentFilter(Constants.INTENT_RECEIVED_DATA));
+        handler.removeCallbacks(runnableGetStatus);
         handler.post(runnableGetStatus);
     }
 
     public void unregister(Context context, final BandClient bandClient) {
-        if (!enabled) return;
         handler.removeCallbacks(runnableGetStatus);
         LocalBroadcastManager.getInstance(context).unregisterReceiver(mMessageReceiver);
         unregisterDataSource(context);
@@ -138,5 +112,33 @@ public class DataQuality extends Sensor {
             LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(Constants.INTENT_STOP));
         }
     }
+
+    private Runnable runnableGetStatus = new Runnable() {
+        @Override
+        public void run() {
+            int dataQuality;
+            if (DateTime.getDateTime() - lastReceivedTimestamp > PERIOD)
+                dataQuality = DATA_QUALITY.BAND_OFF;
+            else if (lastBandContact != 0)
+                dataQuality = DATA_QUALITY.NOT_WORN;
+            else
+                dataQuality = DATA_QUALITY.GOOD;
+
+            DataTypeInt dataTypeInt = new DataTypeInt(DateTime.getDateTime(), dataQuality);
+            Log.d(TAG, "DataQuality = " + dataQuality);
+            sendDataStatus(dataTypeInt);
+
+            callBack.onReceivedData(dataTypeInt);
+            handler.postDelayed(this, PERIOD);
+        }
+    };
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            lastReceivedTimestamp = intent.getLongExtra("timestamp", 0);
+            if (DataSourceType.BAND_CONTACT.equals(intent.getStringExtra("datasourcetype")))
+                lastBandContact = ((DataTypeDoubleArray) intent.getParcelableExtra("data")).getSample()[0];
+        }
+    };
 
 }

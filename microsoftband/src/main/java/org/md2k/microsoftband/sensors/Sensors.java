@@ -48,7 +48,7 @@ import java.util.HashMap;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class Sensors {
-    private static final String TAG =Sensors.class.getSimpleName() ;
+    private static final String TAG = Sensors.class.getSimpleName();
     private Context context;
     private ArrayList<Sensor> sensors;
     private HashMap<String, Integer> hm = new HashMap<>();
@@ -57,10 +57,10 @@ public class Sensors {
     private Platform platform;
 //    private BandClient bandClient;
 
-    public Sensors(Context context, Platform platform){
-        this.context=context;
-        this.platform=platform;
-        sensors=new ArrayList<>();
+    public Sensors(Context context, Platform platform) {
+        this.context = context;
+        this.platform = platform;
+        sensors = new ArrayList<>();
         sensors.add(new DataQuality());
         sensors.add(new Accelerometer());
         sensors.add(new Gyroscope());
@@ -80,21 +80,24 @@ public class Sensors {
         sensors.add(new StepCount());
         sensors.add(new UltraVioletRadiation());
         sensors.add(new Altimeter());
-        }
-    public ArrayList<Sensor> getSensors(){
+    }
+
+    public ArrayList<Sensor> getSensors() {
         return sensors;
     }
-    public void setEnable(String dataSourceType,boolean enable){
-        for(int i=0;i<sensors.size();i++){
-            if(sensors.get(i).getDataSourceType().equals(dataSourceType)) {
+
+    public void setEnable(String dataSourceType, boolean enable) {
+        for (int i = 0; i < sensors.size(); i++) {
+            if (sensors.get(i).getDataSourceType().equals(dataSourceType)) {
                 sensors.get(i).setEnabled(enable);
                 break;
             }
         }
     }
-    public void setFrequency(String dataSourceType, String frequency){
-        for(int i=0;i<sensors.size();i++){
-            if(sensors.get(i).getDataSourceType().equals(dataSourceType)) {
+
+    public void setFrequency(String dataSourceType, String frequency) {
+        for (int i = 0; i < sensors.size(); i++) {
+            if (sensors.get(i).getDataSourceType().equals(dataSourceType)) {
                 sensors.get(i).setFrequency(frequency);
                 break;
             }
@@ -103,15 +106,15 @@ public class Sensors {
 
     public void register(final BandClient bandClient, final Platform platform) {
 //        this.bandClient=bandClient;
-        this.platform=platform;
+        this.platform = platform;
         hm.clear();
         starttimestamp = DateTime.getDateTime();
 
         for (int i = 0; i < sensors.size(); i++) {
             if (sensors.get(i).isEnabled()) {
                 final int finalI = i;
-                Log.d(TAG, "sensor=" + sensors.get(i).dataSourceType+" freq="+sensors.get(i).frequency);
-                sensors.get(i).register(context,bandClient, platform, new CallBack() {
+                Log.d(TAG, "sensor=" + sensors.get(i).dataSourceType + " freq=" + sensors.get(i).frequency);
+                sensors.get(i).register(context, bandClient, platform, new CallBack() {
                     @Override
                     public void onReceivedData(DataType data) {
                         String dataSourceType = sensors.get(finalI).getDataSourceType();
@@ -132,14 +135,12 @@ public class Sensors {
                         if (dataSourceType.equals(DataSourceType.DATA_QUALITY)) {
                             int status = ((DataTypeInt) data).getSample();
                             if (status == DATA_QUALITY.BAND_OFF) {
-                                countOff+= DataQuality.PERIOD;
-                            }
-                            else countOff=0;
-                            if(countOff> DataQuality.RESTART){
+                                countOff += DataQuality.PERIOD;
+                            } else countOff = 0;
+                            if (countOff > DataQuality.RESTART) {
                                 Log.d(TAG, "restart..as no data for 30 sec");
-                                Intent intentRestart = new Intent(Constants.INTENT_STOP);
-                                LocalBroadcastManager.getInstance(context).sendBroadcast(intentRestart);
-                                countOff=0;
+                                LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(Constants.INTENT_STOP));
+                                countOff = 0;
                             }
                         }
                     }
@@ -148,9 +149,11 @@ public class Sensors {
         }
 
     }
+
     public void unregister(BandClient bandClient) throws BandIOException {
-        if(!bandClient.isConnected()) return;
-        for(int i=0;i<sensors.size();i++)
-            sensors.get(i).unregister(context, bandClient);
+        for (int i = 0; i < sensors.size(); i++) {
+            if (sensors.get(i).isEnabled())
+                sensors.get(i).unregister(context, bandClient);
+        }
     }
 }

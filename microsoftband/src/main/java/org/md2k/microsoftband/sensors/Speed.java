@@ -4,7 +4,6 @@ import android.content.Context;
 
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandException;
-import com.microsoft.band.BandIOException;
 import com.microsoft.band.sensors.BandDistanceEvent;
 import com.microsoft.band.sensors.BandDistanceEventListener;
 
@@ -97,19 +96,16 @@ public class Speed extends Sensor{
     }
 
     public void unregister(Context context, final BandClient bandClient) {
-        if (!enabled) return;
-        unregisterDataSource(context);
-        if (bandClient == null) return;
         final Thread background = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     bandClient.getSensorManager().unregisterDistanceEventListener(mSpeedEventListener);
-                } catch (BandIOException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
                 }
             }
         });
         background.start();
+        unregisterDataSource(context);
     }
 }
