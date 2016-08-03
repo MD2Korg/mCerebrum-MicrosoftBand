@@ -169,7 +169,7 @@ public class NotificationManager {
                                 microsoftBands.get(m).vibrate();
                                 break;
                             case NotificationRequest.MESSAGE:
-                                microsoftBands.get(m).setNotificationRequestMessage(notificationRequests.getNotification_option().get(m));
+                                microsoftBands.get(m).setNotificationRequestMessage(notificationRequests.getNotification_option().get(r));
                                 microsoftBands.get(m).sendMessage();
                                 break;
                         }
