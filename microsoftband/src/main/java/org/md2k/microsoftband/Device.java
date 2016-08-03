@@ -101,7 +101,7 @@ public abstract class Device {
                 } else {
                     Log.d(TAG, deviceId + " connect run() status=NOTCONNECTED post delayed()");
                     try {
-                        Thread.sleep(2000);
+                        Thread.sleep(3000);
                     } catch (InterruptedException e) {
                         Log.d(TAG, "Sleep Error");
                     }
@@ -185,6 +185,7 @@ public abstract class Device {
     }
 
     private boolean connectDevice() {
+        if (bandClient == null) return false;
         Log.d(TAG, "bandClient=" + bandClient);
         if (bandClient.getConnectionState() == ConnectionState.CONNECTED) return true;
         try {
@@ -225,15 +226,15 @@ public abstract class Device {
     }
 
     public void stopConnectThread() {
-        if (connectThread.isAlive())
+        tryConnect = false;
+        if (connectThread != null && connectThread.isAlive())
             connectThread.interrupt();
     }
 
     public void disconnect() {
         Log.d(TAG, deviceId + "disconnect...");
-        tryConnect = false;
         stopConnectThread();
-        if (bandClient.isConnected())
+        if (bandClient != null && bandClient.isConnected())
             try {
                 bandClient.disconnect().await();
             } catch (InterruptedException | BandException e) {
