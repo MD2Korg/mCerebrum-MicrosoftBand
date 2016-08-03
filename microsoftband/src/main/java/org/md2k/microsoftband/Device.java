@@ -81,11 +81,12 @@ public abstract class Device {
     Handler handlerMessage;
     int curVibration=0;
     BandCallBack bandCallBack;
+    boolean tryConnect = false;
     Runnable connectRunnable = new Runnable() {
         @Override
         public void run() {
             Log.d(TAG, deviceId + " connect run()...");
-            while (true) {
+            while (tryConnect) {
                 boolean res = connectDevice();
                 if (res) {
                     Log.d(TAG, deviceId + " connect run() status= CONNECTED");
@@ -217,6 +218,7 @@ public abstract class Device {
         Log.d(TAG, "connect...");
         this.bandCallBack = bandCallBack;
         if (bandClient != null) {
+            tryConnect = true;
             connectThread = new Thread(connectRunnable);
             connectThread.start();
         }
@@ -229,6 +231,7 @@ public abstract class Device {
 
     public void disconnect() {
         Log.d(TAG, deviceId + "disconnect...");
+        tryConnect = false;
         stopConnectThread();
         if (bandClient.isConnected())
             try {

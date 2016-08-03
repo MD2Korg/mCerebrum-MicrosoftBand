@@ -87,12 +87,7 @@ public class MicrosoftBand extends Device {
 
     public void unregister() {
         if (!enabled) return;
-        try {
-            sensors.unregister(bandClient);
-            disconnect();
-        } catch (BandIOException e) {
-            e.printStackTrace();
-        }
+        sensors.unregister(bandClient);
     }
 
 }

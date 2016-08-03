@@ -122,8 +122,9 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
     public void onDestroy() {
         LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
         myBlueTooth.close();
-        if (microsoftBands != null)
+        if (microsoftBands != null) {
             microsoftBands.disconnect();
+        }
         super.onDestroy();
     }
 
@@ -280,7 +281,9 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
     }
 
     private void disablePage() {
-        if (microsoftBands != null) microsoftBands.unregister();
+        if (microsoftBands != null) {
+            microsoftBands.disconnect();
+        }
         microsoftBands = null;
         setupPreferenceScreenBluetooth(false);
         clearPreferenceScreenMicrosoftBand();
@@ -442,6 +445,7 @@ public class PrefsFragmentMicrosoftBandSettings extends PreferenceFragment {
             public void onClick(View v) {
                 if (microsoftBands != null) {
                     microsoftBands.unregister();
+                    microsoftBands.disconnect();
                     microsoftBands = null;
                 }
                 getActivity().finish();

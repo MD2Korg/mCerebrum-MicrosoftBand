@@ -121,7 +121,7 @@ public abstract class Sensor {
     public void unregisterDataSource(Context context){
         try {
             DataKitAPI.getInstance(context).unregister(dataSourceClient);
-        } catch (DataKitException e) {
+        } catch (DataKitException ignored) {
         }
     }
     public void sendData(DataTypeDoubleArray dataType){

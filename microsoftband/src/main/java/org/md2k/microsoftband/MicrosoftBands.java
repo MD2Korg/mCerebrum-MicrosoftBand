@@ -132,6 +132,7 @@ public class MicrosoftBands {
     }
 
     public void register() {
+        Log.d(TAG, "register...");
         for(int i=0;i< microsoftBands.size();i++) {
             microsoftBands.get(i).register();
         }

@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.microsoft.band.BandClient;
-import com.microsoft.band.BandIOException;
 
 import org.md2k.datakitapi.datatype.DataType;
 import org.md2k.datakitapi.datatype.DataTypeInt;
@@ -150,7 +149,7 @@ public class Sensors {
 
     }
 
-    public void unregister(BandClient bandClient) throws BandIOException {
+    public void unregister(BandClient bandClient) {
         for (int i = 0; i < sensors.size(); i++) {
             if (sensors.get(i).isEnabled())
                 sensors.get(i).unregister(context, bandClient);

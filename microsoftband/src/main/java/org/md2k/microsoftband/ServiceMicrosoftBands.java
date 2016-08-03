@@ -128,8 +128,10 @@ public class ServiceMicrosoftBands extends Service {
         Log.d(TAG, "disconnectDataKit()...");
         Log.d(TAG, "disconnectDataKit()...microsoftBands=" + microsoftBands);
 
-        if (microsoftBands != null)
+        if (microsoftBands != null) {
             microsoftBands.unregister();
+            microsoftBands.disconnect();
+        }
         if (notificationManager != null) notificationManager.clear();
         if (dataKitAPI != null) {
             dataKitAPI.disconnect();
