@@ -52,9 +52,9 @@ public class Accelerometer extends Sensor {
         @Override
         public void onBandAccelerometerChanged(final BandAccelerometerEvent event) {
             double[] samples = new double[3];
-            samples[0] = event.getAccelerationX() * 9.81;
-            samples[1] = event.getAccelerationY() * 9.81;
-            samples[2] = event.getAccelerationZ() * 9.81;
+            samples[0] = event.getAccelerationX();
+            samples[1] = event.getAccelerationY();
+            samples[2] = event.getAccelerationZ();
             DataTypeDoubleArray dataTypeDoubleArray = new DataTypeDoubleArray(DateTime.getDateTime(), samples);
             sendData(dataTypeDoubleArray);
             callBack.onReceivedData(dataTypeDoubleArray);
@@ -72,7 +72,7 @@ public class Accelerometer extends Sensor {
         dataSourceBuilder = dataSourceBuilder.setDataDescriptors(createDataDescriptors());
         dataSourceBuilder = dataSourceBuilder.setMetadata(METADATA.FREQUENCY, frequency);
         dataSourceBuilder = dataSourceBuilder.setMetadata(METADATA.NAME, "Accelerometer");
-        dataSourceBuilder = dataSourceBuilder.setMetadata(METADATA.UNIT, "meter/second^2");
+        dataSourceBuilder = dataSourceBuilder.setMetadata(METADATA.UNIT, "g");
         dataSourceBuilder = dataSourceBuilder.setMetadata(METADATA.DESCRIPTION, "measures the acceleration applied to the device");
         dataSourceBuilder = dataSourceBuilder.setMetadata(METADATA.DATA_TYPE, DataTypeDoubleArray.class.getName());
         dataSourceBuilder = dataSourceBuilder.setPlatform(platform);
@@ -81,9 +81,9 @@ public class Accelerometer extends Sensor {
 
     private ArrayList<HashMap<String, String>> createDataDescriptors() {
         ArrayList<HashMap<String, String>> dataDescriptors = new ArrayList<>();
-        dataDescriptors.add(createDataDescriptor("Accelerometer X", "The x-axis acceleration of the Band in 9.81 m/s^2", "meter/second^2)", frequency, double.class.getName(), "-50", "50"));
-        dataDescriptors.add(createDataDescriptor("Accelerometer Y", "The y-axis acceleration of the Band in 9.81 m/s^2", "meter/second^2)", frequency, double.class.getName(), "-50", "50"));
-        dataDescriptors.add(createDataDescriptor("Accelerometer Z", "The z-axis acceleration of the Band in 9.81 m/s^2", "meter/second^2)", frequency, double.class.getName(), "-50", "50"));
+        dataDescriptors.add(createDataDescriptor("Accelerometer X", "The x-axis acceleration of the Band in +-g (g = 9.81 m/s^2)", "g", frequency, double.class.getName(), "-3", "3"));
+        dataDescriptors.add(createDataDescriptor("Accelerometer Y", "The y-axis acceleration of the Band in +-g (g = 9.81 m/s^2)", "g", frequency, double.class.getName(), "-3", "3"));
+        dataDescriptors.add(createDataDescriptor("Accelerometer Z", "The z-axis acceleration of the Band in +-g (g = 9.81 m/s^2)", "g", frequency, double.class.getName(), "-3", "3"));
         return dataDescriptors;
     }
 
