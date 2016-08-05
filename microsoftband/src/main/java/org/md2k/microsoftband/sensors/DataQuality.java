@@ -91,7 +91,7 @@ public class DataQuality extends Sensor {
 
 
     public void register(Context context, final BandClient bandClient, Platform platform, CallBack callBack) {
-        registerDataSource(context, platform);
+        if (!registerDataSource(context, platform)) return;
         Log.d(TAG, "DataQuality...register()");
         this.callBack = callBack;
         LocalBroadcastManager.getInstance(context).registerReceiver(mMessageReceiver,

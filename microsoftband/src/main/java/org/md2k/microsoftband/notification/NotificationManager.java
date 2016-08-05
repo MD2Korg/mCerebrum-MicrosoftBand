@@ -55,21 +55,19 @@ import java.util.ArrayList;
 public class NotificationManager {
     private static final String TAG = NotificationManager.class.getSimpleName();
     DataSourceClient dataSourceClientAcknowledge;
-    private DataKitAPI dataKitAPI;
     private Context context;
     private ArrayList<MicrosoftBand> microsoftBands;
     private ArrayList<DataSourceClient> dataSourceClietNotificationRequests;
     private Handler handler;
-    int RERUN = 60;
+    int RERUN;
     Thread t;
     Runnable runnableSubscribe = new Runnable() {
         @Override
         public void run() {
-            dataKitAPI = DataKitAPI.getInstance(context);
             Application application = new ApplicationBuilder().setId("org.md2k.notificationmanager").build();
             DataSourceBuilder dataSourceBuilder = new DataSourceBuilder().setType(DataSourceType.NOTIFICATION_REQUEST).setApplication(application);
             try {
-                dataSourceClietNotificationRequests = dataKitAPI.find(dataSourceBuilder);
+                dataSourceClietNotificationRequests = DataKitAPI.getInstance(context).find(dataSourceBuilder);
                 Log.d(TAG, "datasourceclient=" + dataSourceClietNotificationRequests.size());
                 if (dataSourceClietNotificationRequests.size() == 0) {
                     if (RERUN > 0) {
@@ -92,6 +90,7 @@ public class NotificationManager {
     }
 
     public void start() {
+        RERUN = 60;
         dataSourceClietNotificationRequests = null;
         DataSourceBuilder dataSourceBuilder = new DataSourceBuilder().setType(DataSourceType.NOTIFICATION_ACKNOWLEDGE);
         try {
@@ -102,28 +101,37 @@ public class NotificationManager {
         }
     }
 
-    public void clear() {
+    public void stop() {
         handler.removeCallbacks(runnableSubscribe);
+        try {
+            if (dataSourceClientAcknowledge != null)
+                DataKitAPI.getInstance(context).unregister(dataSourceClientAcknowledge);
+        } catch (DataKitException e) {
+            e.printStackTrace();
+        }
         unsubscribe();
     }
 
     private void unsubscribe() {
         try {
             if (t != null && t.isAlive()) t.interrupt();
-            if (dataSourceClietNotificationRequests != null)
-                for (int i = 0; i < dataSourceClietNotificationRequests.size(); i++) {
-                    dataKitAPI.unsubscribe(dataSourceClietNotificationRequests.get(i));
-                }
         } catch (Exception ignored) {
         }
+        if (dataSourceClietNotificationRequests != null)
+            for (int i = 0; i < dataSourceClietNotificationRequests.size(); i++) {
+                try {
+                    DataKitAPI.getInstance(context).unsubscribe(dataSourceClietNotificationRequests.get(i));
+                } catch (Exception ignored) {
+                }
+            }
     }
 
     private void subscribe() {
         if (dataSourceClietNotificationRequests.size() > 0) {
             for (int i = 0; i < dataSourceClietNotificationRequests.size(); i++) {
-                Log.d(TAG, "ds_id=" + dataSourceClietNotificationRequests.get(i).getDs_id());
+                Log.d(TAG, "subscribe ... ds_id=" + dataSourceClietNotificationRequests.get(i).getDs_id());
                 try {
-                    dataKitAPI.subscribe(dataSourceClietNotificationRequests.get(i), new OnReceiveListener() {
+                    DataKitAPI.getInstance(context).subscribe(dataSourceClietNotificationRequests.get(i), new OnReceiveListener() {
                         @Override
                         public void onReceived(final DataType dataType) {
                             t = new Thread(new Runnable() {
@@ -149,7 +157,7 @@ public class NotificationManager {
     void processMessage(DataType dataType) throws DataKitException {
         DataTypeJSONObject dataTypeJSONObject = (DataTypeJSONObject) dataType;
         Gson gson = new Gson();
-        dataKitAPI.insert(dataSourceClientAcknowledge,dataTypeJSONObject);
+        DataKitAPI.getInstance(context).insert(dataSourceClientAcknowledge, dataTypeJSONObject);
         NotificationRequests notificationRequests = gson.fromJson(dataTypeJSONObject.getSample().toString(), NotificationRequests.class);
         for (int r = 0; r < notificationRequests.getNotification_option().size(); r++) {
             if (notificationRequests.getNotification_option().get(r).getDatasource().getPlatform() == null)

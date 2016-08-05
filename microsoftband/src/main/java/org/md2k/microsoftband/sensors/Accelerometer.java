@@ -88,7 +88,7 @@ public class Accelerometer extends Sensor {
     }
 
     public void register(Context context, final BandClient bandClient, Platform platform, CallBack callBack) {
-        registerDataSource(context, platform);
+        if (!registerDataSource(context, platform)) return;
         this.callBack = callBack;
         Log.d(TAG, "register: ACCELEROMETER freq=" + frequency);
 

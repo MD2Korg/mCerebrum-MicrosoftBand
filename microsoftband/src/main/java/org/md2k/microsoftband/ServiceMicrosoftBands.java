@@ -131,8 +131,9 @@ public class ServiceMicrosoftBands extends Service {
         if (microsoftBands != null) {
             microsoftBands.unregister();
             microsoftBands.disconnect();
+            microsoftBands = null;
         }
-        if (notificationManager != null) notificationManager.clear();
+        if (notificationManager != null) notificationManager.stop();
         if (dataKitAPI != null) {
             dataKitAPI.disconnect();
         }

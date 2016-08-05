@@ -109,18 +109,21 @@ public abstract class Sensor {
         return version;
     }
 
-    public void registerDataSource(Context context, Platform platform){
+    public boolean registerDataSource(Context context, Platform platform) {
         Log.d(TAG, "context=" + context+" connected="+DataKitAPI.getInstance(context).isConnected());
         this.context=context;
         try {
             dataSourceClient = DataKitAPI.getInstance(context).register(createDataSourceBuilder(platform));
+            return true;
         } catch (DataKitException e) {
             LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(Constants.INTENT_STOP));
+            return false;
         }
     }
     public void unregisterDataSource(Context context){
         try {
             DataKitAPI.getInstance(context).unregister(dataSourceClient);
+            dataSourceClient = null;
         } catch (DataKitException ignored) {
         }
     }
