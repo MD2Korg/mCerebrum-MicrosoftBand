@@ -14,7 +14,9 @@ import android.util.Log;
 import org.md2k.datakitapi.DataKitAPI;
 import org.md2k.datakitapi.exception.DataKitException;
 import org.md2k.datakitapi.messagehandler.OnConnectionListener;
+import org.md2k.datakitapi.time.DateTime;
 import org.md2k.microsoftband.notification.NotificationManager;
+import org.md2k.utilities.Report.LogStorage;
 import org.md2k.utilities.UI.AlertDialogs;
 
 /*
@@ -50,9 +52,14 @@ public class ServiceMicrosoftBands extends Service {
     private MicrosoftBands microsoftBands;
     private DataKitAPI dataKitAPI = null;
     private NotificationManager notificationManager;
+    private boolean isStopping = false;
     @Override
     public void onCreate() {
         super.onCreate();
+        isStopping = false;
+        LogStorage.startLogFileStorageProcess(getApplicationContext().getPackageName());
+        org.md2k.utilities.Report.Log.w(TAG, "time=" + DateTime.convertTimeStampToDateTime(DateTime.getDateTime()) + ",timestamp=" + DateTime.getDateTime() + ",service_start");
+
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(mMessageReceiverStop,
                 new IntentFilter(Constants.INTENT_STOP));
         if (readSettings())
@@ -81,7 +88,7 @@ public class ServiceMicrosoftBands extends Service {
         }
     }
 
-    private boolean readSettings() {
+    private synchronized boolean readSettings() {
         microsoftBands = new MicrosoftBands(getApplicationContext());
         return microsoftBands.size(true) != 0;
     }
@@ -89,6 +96,9 @@ public class ServiceMicrosoftBands extends Service {
     private BroadcastReceiver mMessageReceiverStop = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            org.md2k.utilities.Report.Log.w(TAG, "time=" + DateTime.convertTimeStampToDateTime(DateTime.getDateTime()) + ",timestamp=" + DateTime.getDateTime() + ",broadcast_receiver_stop_service");
+
+            clear();
             stopSelf();
         }
     };
@@ -114,8 +124,8 @@ public class ServiceMicrosoftBands extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy()...");
-        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(mMessageReceiverStop);
         clear();
+        org.md2k.utilities.Report.Log.w(TAG, "time=" + DateTime.convertTimeStampToDateTime(DateTime.getDateTime()) + ",timestamp=" + DateTime.getDateTime() + ",service_stop");
         super.onDestroy();
     }
 
@@ -124,21 +134,29 @@ public class ServiceMicrosoftBands extends Service {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    void clear() {
+    synchronized void clear() {
+        if (isStopping) return;
+        isStopping = true;
         Log.d(TAG, "disconnectDataKit()...");
         Log.d(TAG, "disconnectDataKit()...microsoftBands=" + microsoftBands);
-
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(mMessageReceiverStop);
         if (microsoftBands != null) {
             microsoftBands.unregister();
             microsoftBands.disconnect();
             microsoftBands = null;
         }
-        if (notificationManager != null) notificationManager.stop();
+        if (notificationManager != null) {
+            notificationManager.stop();
+            notificationManager = null;
+        }
         if (dataKitAPI != null) {
             dataKitAPI.disconnect();
+            dataKitAPI = null;
         }
-        if (myBlueTooth != null)
+        if (myBlueTooth != null) {
             myBlueTooth.close();
+            myBlueTooth = null;
+        }
     }
 
     void showAlertDialogConfiguration(final Context context){

@@ -55,7 +55,7 @@ import java.util.HashMap;
  */
 public class DataQuality extends Sensor {
     public static final long PERIOD = 3000;
-    public static final long RESTART = 15000;
+    public static final long RESTART = 30000;
     private static final String TAG = DataQuality.class.getSimpleName();
     private long lastReceivedTimestamp;
     private Handler handler;

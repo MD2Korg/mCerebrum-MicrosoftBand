@@ -137,10 +137,11 @@ public class Sensors {
                                 countOff += DataQuality.PERIOD;
                             } else countOff = 0;
                             if (countOff > DataQuality.RESTART) {
-                                Log.d(TAG, "restart..as no data for 30 sec");
+                                Log.d(TAG, "restart..as no data in 30 sec");
                                 LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(Constants.INTENT_STOP));
                                 countOff = 0;
                             }
+                            Log.d(TAG, "no data(sec)=" + countOff);
                         }
                     }
                 });
