@@ -1,14 +1,11 @@
 language: android
-
 before_cache:
 - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
-
 cache:
   directories:
   - "$HOME/.gradle/caches/"
   - "$HOME/.gradle/wrapper/"
   - "$HOME/.m2/"
-
 android:
   components:
   - platform-tools
@@ -17,17 +14,31 @@ android:
   - android-23
   - extra-android-support
   - extra-android-m2repository
-
 before_install:
+- openssl aes-256-cbc -K $encrypted_41c5c299b3ba_key -iv $encrypted_41c5c299b3ba_iv -in microsoftband/release-key.keystore.enc -out microsoftband/release-key.keystore -d
 - git clone https://github.com/MD2Korg/mCerebrum-Utilities.git /home/travis/build/MD2Korg/mCerebrum-Utilities
 - git clone https://github.com/MD2Korg/mCerebrum-DataKitAPI.git /home/travis/build/MD2Korg/mCerebrum-DataKitAPI
-
 script:
-  - ./gradlew assembleRelease
-
+- "./gradlew assembleRelease"
 notifications:
   slack:
     secure: drSaLEsi+xlUePocfcDTLO9S/5XSBsnR6h7OzPhU4xsO+mBjH3qb93Qe4Jwzz9IZQ0UFzDcmu7ObHOksd6fDgvnIcmznowuABs7QFSF5dodF3eXuF/NJc5J3SqptrOZhlPhGQJcan8siBpLw5z+UBal9ORQPJ8e0SN2bxvRH30GzOlaBOrS0w9hGmtoIY/c8ZIjxGn7BK+b7qL6pNqD4tTg3BImh4Q8Q0icjlT/Pe4kq9pJuYP+Ph4B6THE5PY6W5kmaPSZT2wk72tbNa+1f0lxkO106+Fi4X/qEf6BNQ/2ufUi8cGyjYhu8ZRfGEQVwmwtk0goZvPRyxzHx94tc0/utmW+ZvEEdXOTfs1cE84xGvsYOmoMaMacJC0DPSRTJ269LnmUlTYZoZPyEaqEJp0vFLnS7ZwYcYBzEQ/coS1zKOEWX5a29ijvCOxeFGWF9NcEvaGfpoP/RiLJXjguKfrQLQiek+xkzmubSRWpP9LFoqtXwVMxle/zi/99Ry02nvmEUSK3BbAM57LBnrT+0lYDC/ocxTpQ3Gvd52qFoZBzb8Fshu2+3UYCSCHROkOdHtBmBvRKE4LiTz8/6xtzeL1n+1RSrbN13tbk01gkNIHagSLWUildtFkvok2pJXawslE88ZhRzOOK8ViWFenbhca6sPfvBebXccTJKnzi4GQc=
-    on_success: change  # options: [always|never|change] default: always
-    on_failure: always  # options: [always|never|change] default: always
-    on_start: false     # default: false
+    on_success: change
+    on_failure: always
+    on_start: false
+deploy:
+  file_glob: true
+  provider: releases
+  api_key:
+    secure: IVH1K1/3nEhiyJw/s3wYo8yy3W0iQevyXQi4gmx0HQEP7DlKykRWaZpNPB3Xmkp1ZR91Wjugq15QV7VAPdC1qhaieMemg3UjxTaB/gxZu/2D5sgyOq2aS5nmiMwYByaZQ/8gqmyvcgyxZ+K3hOMMsuq4NLOlIDfuYVdfTJzsbqBzWN5QRZ6mOcdFjVGGNG1wOkX1G9fWoBKve3ufJYED10SLfxxAer8jIsqXCjOe1N60PkU2UhcC22DfdFCdimJ0cEszhozYjv1KqThK/vBOu0QpRKmDjjGgUJ07PTHzs8ejV4pwLOg92tow4YKxD8je35JhcpnPak5hSOOAUvR4Zpx1oglM/xZjiGuMqZA6q84aY6xfthrbDXRjH7PZ2vQ0SOIzBwGKWPsQ4hgknaY/iN0t0NSSOhaYNi/ozY/y/gtk2BpqK5wFZMdqIc2Ge/Izyg80zVFa0sEZL2+m5XDBVtyfXy4PMF3o6IgzDnxA3ZJ7/WeCcjpiuBpt15jSIwQ+5fcGxpM55FSmjksfsy6ICjGR9uIfBOLI6COp19g4TibUw2fbEVuKbIFPm9hTIFjkylnIKuPNHRCsny7NSc7+3HRals1kyXWz+ShNFag6Qg+dnorwtqp1sysotq6UlzbMvKhIJad14lz0eD7grrwS92HR4ho5+6gBBGoEdUCKeNg=
+  file: microsoftband/build/outputs/apk/microsoftband*.*.*.apk
+  on:
+    repo: MD2Korg/mCerebrum-MicrosoftBand
+    tags: true
+  skip_cleanup: true
+env:
+  global:
+  - secure: KFu1w3XoaKc0CGCWWL76URxvlJOifYGJ936f/+k4mwSVOZd3fC/DUybzAlNHgUNQB0ASZldDO2KBZ7W2sNNQufJ8k8b+FWE7/PN3uZkosDgBw3kjINbJ59tGALz8e5dtIAZGApRaETx6Fjy4ApZA+OLVYZ3iCqlBmGdCCBipb0KEQKwMwHIzXW+pRsFGDCwH1hoZlgIKRJCXOSUBelcyOoOQ8gP9I91AfwXxkZkRBBt9tf57LyoVEwWt90c3QggqA2bpEOY2Lc3U7Z8+J/Rg0JZG1cIY+ZJ0x/TXeNT/7KB5tM5tyX/mjCb8EuyiHpZPteNlXBYVKds+/iaYdp8q80ruci0ImgqwsQ15O+sP8xyhUSl/sIL/2ZNmVrYkGES2pCGNkj/xNvs62CbTBm/fhazvXPpAI1o0P4jmHFjRSH5OJ13o7O/yXphaEN6ZmhIh/nveSBgZqBGyPJ/ZLMH2JvmM1x6YeOnI+8lrzPOQAQ+h9dLS2xFarwNE+RuJRnH9A4xrvXHkmxAZGbcyokq1watXexTNPoET1Hfq63gVKIvq9Ay/bvhCuwr+xnUek0g4Exmeb0vAlpR/XOpLTcldq4ghZPvAL6AJPM6X7x9c8sGMS7vIUNoBc7Ey32pwjyk+2BcqNvuYdhgoOWUDf2E/H8HpGe9xvC/waVoS+9W4mP4=
+  - secure: xwRi/KXUxdsK3ALghC7AHQxz9bqKvcZw1xxBxFNkWF/BR3WEdfuv2CW93BrHmgn/YcqIuOhQakwUcK56dnaELW1es3N3WJa7jBUz6bgwHL1sasTHn81RToODsQEgCqqrTYRmN4rEDzWHRR+2DpFVNk46r2lTHGyJ9z8E/DzDpY1ZUExpWhM4C6kmwqzjvM9x2Z5cdoNCdcZjjfFeLjrEBJjNHMP8h3frUtYBxw+uF5942PJP5Y4ZylHgvlKBHm4u10i0qmp47Z6xCliZEtjQi05vZjsZhIt/ocq3v1A75pGHqV+6a2++FXbOfJZTJTG5AlnlK0Q98R/Xq6cSPhxpsAlJnO8OF0n27eJvryA0isalxkGLYWXBccPfdqdSlcNKFyADx+KPIXMx3oRf/M2Ag6jj/Mnb3L25SddLQg1/3B0it4bpsZtXF/I3s9aMKrPv8uK+doMnEj6Ybyb4lZ6ap03+y5bXeMtqHC+n19jNwEIC+SFqbKTxaxgu957v4IFsYH5S+NASbvGVOMttGXKsQg6o+EuQymPxMqhVlGT12vl5E2piwoBDpKhhF/YslDe/zfdy/RSLWyX1FydHAh65zwmUxjcSZUzqj1r2ToyTo2QbpaIwRM8EGl0pBAU+5m7Jf4L0OahVjItz/UVjgd6bZKcTldy3wq8ygonzTGXJ/G4=
+  - secure: sVDWm9Nug1EGbHLHcRG/EOml+toB+bZ+SlX6URR7Lgvww/ifcZjw9ZaFPbWCYL8XGYIJMmywQEr+7pbIctz2MRUVFVJ3FKq+fzGakxUxTGREG2HHIwqN1HEUdE0tfLi6XlPHdl0GtxSpQuiiNNWScSxyx3LBuaK6K1My4Tx6QkO3YzG/sLdFaw2XQUJ3hVoyvAyjJYcNIQ8c8teeCs0JNJJn2WLmLI4/TunRRqOZkOOzkX6nzJPN1zDMHW27hwMXt7majYfRu0e3QTBHzW9WKmBBNDSQPIzDMAdAdxKsZ7jgyZGJfdljIJ0dpPF1/g41BLPf3QVov+pZtCKp5L2pu5PYNNTZ2kFeo1fX4n8S2YSjtxrZY+gYxTBBs+bznh0ciucg2+FnKzu27fr116HxUAjUp5RxemB9vp3pcm5L+bvubLoCN/nJa+cdh9d2xEArcMRgFYSboENVagBCAzJzF1yco0Nv9DNvMeO2ixaAlhPMsYuz0bldR+pQzi5IpBHpom1XbP+VkjXQ9Rtw4VjSZSesYRjRTQwghoaSsaoGFoPAV7QWlBqJkIgi7oXNOERDO19Fp75ly/FzjrCXHi0IJZu/lO4ar+cbU/dErfYnmt1II6FYBsSQb7lGxAlr1zDQMfBOJX1YMwYn+n52Si84aLqBCpIxauj8NuoMFZcHcQ4=
+  - secure: w3ur+3OBtxOCYfch0zmzgpbJIfARKkodd1CLlAKZjs6NlaUlBxNTsAnLa5e6TzkV2VrwZrzmfnzF/YmpoIXPfZJz/5CSRM/nERLeFXwvmROZjNwD0MHJ7a/cPvvy6P2GOIJfgzhR4QXGvJK8Ag14PRRQwSoEPirwHzfFRil0Xc25bfLrx9kC828Wn8qUP10s9GHvEV6kxl8fqRCzApoQ40kSUntN+wf5Op5td3pLr7YA/ga2j8NrBbr+0k1g4t9m7JXBtN0t6BkjF8CahxhDHUtFGLbyOq9Lh46AbPsBW9R/L5cX4RdGt8dGBZTUKyHgD2sJmdqBmT/Oti03ZZ12Gk3PryhQ5yC9Yz6N91ksnFA1cqcLq7RPbNpgz0vHnULC4LEtdD7J/1XdIzS0aKvsMK1eJxQIcQoXIYG6jM5Ia3MnPbCI9RUCQswrEaAl2ut39+PEKqhGnWzxcTj7jUkWj854RnET5df671NpcP4GbjDkDVS82t1VKIvCmrMPzfcLKhMElhhkbA3/QWoeXMaJklBjFvqbn5kg3Bu9iYiQh7GPz+SEdhYE/sUgvFB4xowK3gywmhcgp3XlcGIm/kWkoeC7wR7HKM4U5tuHst1aUL5SKCw/gz/NPiSqjT7QiFVOMf/wAXlHu4kJyA/V18WR5Y1pAOlr8orlYWNzylBA4a4=
