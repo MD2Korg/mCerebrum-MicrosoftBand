@@ -109,9 +109,13 @@ public class ServiceMicrosoftBands extends Service {
             dataKitAPI.connect(new OnConnectionListener() {
                 @Override
                 public void onConnected() {
-                    microsoftBands.register();
-                    notificationManager = new NotificationManager(ServiceMicrosoftBands.this, microsoftBands.find());
-                    notificationManager.start();
+                    try {
+                        microsoftBands.register();
+                        notificationManager = new NotificationManager(ServiceMicrosoftBands.this, microsoftBands.find());
+                        notificationManager.start();
+                    } catch (Exception e) {
+                        LocalBroadcastManager.getInstance(ServiceMicrosoftBands.this).sendBroadcast(new Intent(Constants.INTENT_STOP));
+                    }
                 }
             });
         } catch (DataKitException e) {
