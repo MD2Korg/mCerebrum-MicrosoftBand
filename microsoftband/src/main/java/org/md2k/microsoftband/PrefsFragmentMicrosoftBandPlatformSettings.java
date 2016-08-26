@@ -42,10 +42,10 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
                     updateDefaultConfiguration();
                     break;
                 case DataSourceType.ACCELEROMETER + "_frequency":
-                    findPreference(DataSourceType.ACCELEROMETER).setSummary(mySharedPreference.getSharedPreferenceString(key));
+                    findPreference(DataSourceType.ACCELEROMETER).setSummary(mySharedPreference.getSharedPreferenceString(key) + " Hz");
                     break;
                 case DataSourceType.GYROSCOPE + "_frequency":
-                    findPreference(DataSourceType.GYROSCOPE).setSummary(mySharedPreference.getSharedPreferenceString(key));
+                    findPreference(DataSourceType.GYROSCOPE).setSummary(mySharedPreference.getSharedPreferenceString(key) + " Hz");
                     break;
                 default:
                     break;
@@ -106,7 +106,7 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
             else
                 findPreference(dataSourceType).setEnabled(true);
             if (dataSourceType.equals(DataSourceType.ACCELEROMETER) || dataSourceType.equals(DataSourceType.GYROSCOPE)) {
-                findPreference(dataSourceType).setSummary(mySharedPreference.getSharedPreferenceString(dataSourceType + "_frequency"));
+                findPreference(dataSourceType).setSummary(mySharedPreference.getSharedPreferenceString(dataSourceType + "_frequency") + " Hz");
                 findPreference(dataSourceType).setDefaultValue(mySharedPreference.getSharedPreferenceString(dataSourceType + "_frequency"));
             }
         }
@@ -138,7 +138,7 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
                         SwitchPreference switchPreference = (SwitchPreference) preference;
                         if(switchPreference.isChecked()) {
                             String[] string = getResources().getStringArray(R.array.frequency_entries);//{"8 Hz", "31 Hz", "62 Hz"};
-                            String curFreq = mySharedPreference.getSharedPreferenceString(dataSourceType + "_frequency");
+                            String curFreq = mySharedPreference.getSharedPreferenceString(dataSourceType + "_frequency") + " Hz";
                             int curIndex = 1;
                             for (int ii = 0; ii < string.length; ii++)
                                 if (curFreq.equals(string[ii])) curIndex = ii;
@@ -235,7 +235,8 @@ public class PrefsFragmentMicrosoftBandPlatformSettings extends PreferenceFragme
             public void onClick(DialogInterface dialog, int which) {
                 if (which >= 0) {
                     String strName = strings[which];
-                    MySharedPreference.getInstance(context).setSharedPreferencesString(key, strName);
+                    String[] splitName = strName.split(" ");
+                    MySharedPreference.getInstance(context).setSharedPreferencesString(key, splitName[0]);
                 }
             }
         });

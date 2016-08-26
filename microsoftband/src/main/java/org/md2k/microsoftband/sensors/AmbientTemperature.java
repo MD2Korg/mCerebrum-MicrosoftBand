@@ -56,7 +56,7 @@ public class AmbientTemperature extends Sensor {
     };
 
     AmbientTemperature() {
-        super(DataSourceType.AMBIENT_TEMPERATURE,"1 Hz",2);
+        super(DataSourceType.AMBIENT_TEMPERATURE, "1", 2);
     }
 
     public DataSourceBuilder createDataSourceBuilder(Platform platform) {

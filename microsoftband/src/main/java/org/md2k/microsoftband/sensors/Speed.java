@@ -56,7 +56,7 @@ public class Speed extends Sensor{
     };
 
     Speed() {
-        super(DataSourceType.SPEED,"1 Hz",1);
+        super(DataSourceType.SPEED, "1", 1);
     }
 
     public DataSourceBuilder createDataSourceBuilder(Platform platform) {

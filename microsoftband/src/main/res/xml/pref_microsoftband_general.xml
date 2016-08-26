@@ -1,5 +1,5 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="Bluetooth"></PreferenceCategory>
+    <PreferenceCategory android:title="Bluetooth" />
     <Preference
         android:key="bluetooth_onoff"
         android:icon="@drawable/ic_bluetooth_teal_48dp"
@@ -11,7 +11,7 @@
         android:title="Pair Device" />
     <PreferenceCategory
         android:key="microsoftband_configured"
-        android:title="Configured Devices"></PreferenceCategory>
+        android:title="Configured Devices" />
     <PreferenceCategory
         android:key="microsoftband_available"
         android:title="Available Devices" />

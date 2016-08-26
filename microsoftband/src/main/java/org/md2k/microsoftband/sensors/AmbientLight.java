@@ -56,7 +56,7 @@ public class AmbientLight extends Sensor{
     };
 
     AmbientLight() {
-        super(DataSourceType.AMBIENT_LIGHT,"2 Hz",2);
+        super(DataSourceType.AMBIENT_LIGHT, "2", 2);
     }
 
     public DataSourceBuilder createDataSourceBuilder(Platform platform) {

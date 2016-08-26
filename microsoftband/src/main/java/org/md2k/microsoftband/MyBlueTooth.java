@@ -97,11 +97,8 @@ public class MyBlueTooth {
 
     public boolean isEnabled() {
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (mBluetoothAdapter == null) {
-            // Device does not support Bluetooth
-            return false;
-        }
-        return mBluetoothAdapter.isEnabled();
+        // Device does not support Bluetooth
+        return mBluetoothAdapter != null && mBluetoothAdapter.isEnabled();
     }
 
 }

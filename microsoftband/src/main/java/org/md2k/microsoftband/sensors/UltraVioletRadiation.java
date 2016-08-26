@@ -63,7 +63,7 @@ public class UltraVioletRadiation extends Sensor{
     };
 
     UltraVioletRadiation() {
-        super(DataSourceType.ULTRA_VIOLET_RADIATION, "1 Hz",1);
+        super(DataSourceType.ULTRA_VIOLET_RADIATION, "1", 1);
     }
 
     public DataSourceBuilder createDataSourceBuilder(Platform platform) {

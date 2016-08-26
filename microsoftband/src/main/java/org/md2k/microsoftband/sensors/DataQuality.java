@@ -62,7 +62,7 @@ public class DataQuality extends Sensor {
     private double lastBandContact;
 
     DataQuality() {
-        super(DataSourceType.DATA_QUALITY, String.valueOf(1.0/(PERIOD/1000))+" Hz", 1);
+        super(DataSourceType.DATA_QUALITY, String.valueOf(1.0 / (PERIOD / 1000)), 1);
         lastReceivedTimestamp = 0;
         lastBandContact = DATA_QUALITY.BAND_OFF;
         handler = new Handler();

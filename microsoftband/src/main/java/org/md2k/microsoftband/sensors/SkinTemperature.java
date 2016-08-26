@@ -56,7 +56,7 @@ public class SkinTemperature extends Sensor{
     };
 
     SkinTemperature() {
-        super(DataSourceType.SKIN_TEMPERATURE,"1 Hz",1);
+        super(DataSourceType.SKIN_TEMPERATURE, "1", 1);
     }
 
     public DataSourceBuilder createDataSourceBuilder(Platform platform) {

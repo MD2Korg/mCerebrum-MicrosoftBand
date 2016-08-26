@@ -60,7 +60,7 @@ public class Gyroscope extends Sensor {
     };
 
     Gyroscope() {
-        super(DataSourceType.GYROSCOPE, "31 Hz", 1);
+        super(DataSourceType.GYROSCOPE, "31", 1);
     }
 
     public DataSourceBuilder createDataSourceBuilder(Platform platform) {
@@ -93,13 +93,13 @@ public class Gyroscope extends Sensor {
                 try {
 
                     switch (frequency) {
-                        case "8 Hz":
+                        case "8":
                             bandClient.getSensorManager().registerGyroscopeEventListener(mGyroscopeEventListener, SampleRate.MS128);
                             break;
-                        case "31 Hz":
+                        case "31":
                             bandClient.getSensorManager().registerGyroscopeEventListener(mGyroscopeEventListener, SampleRate.MS32);
                             break;
-                        case "62 Hz":
+                        case "62":
                             bandClient.getSensorManager().registerGyroscopeEventListener(mGyroscopeEventListener, SampleRate.MS16);
                             break;
                         default:

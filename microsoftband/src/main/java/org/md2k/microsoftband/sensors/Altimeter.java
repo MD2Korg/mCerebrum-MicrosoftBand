@@ -65,7 +65,7 @@ public class Altimeter extends Sensor{
     };
 
     Altimeter() {
-        super(DataSourceType.ALTIMETER,"1 Hz",2);
+        super(DataSourceType.ALTIMETER, "1", 2);
     }
 
     public DataSourceBuilder createDataSourceBuilder(Platform platform) {
