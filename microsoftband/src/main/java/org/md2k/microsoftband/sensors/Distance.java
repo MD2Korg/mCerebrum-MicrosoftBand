@@ -56,7 +56,7 @@ public class Distance  extends Sensor{
     };
 
     Distance() {
-        super(DataSourceType.DISTANCE,"1 Hz",1);
+        super(DataSourceType.DISTANCE, "1", 1);
     }
 
     public DataSourceBuilder createDataSourceBuilder(Platform platform) {

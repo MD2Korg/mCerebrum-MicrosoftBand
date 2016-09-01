@@ -56,7 +56,7 @@ public class Pace extends Sensor{
     };
 
     Pace() {
-        super(DataSourceType.PACE,"1 Hz",1);
+        super(DataSourceType.PACE, "1", 1);
     }
 
     public DataSourceBuilder createDataSourceBuilder(Platform platform) {

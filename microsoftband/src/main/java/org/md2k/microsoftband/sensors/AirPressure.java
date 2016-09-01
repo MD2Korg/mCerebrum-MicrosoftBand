@@ -56,7 +56,7 @@ public class AirPressure  extends Sensor{
     };
 
     AirPressure() {
-        super(DataSourceType.AIR_PRESSURE,"1 Hz",2);
+        super(DataSourceType.AIR_PRESSURE, "1", 2);
     }
 
     public DataSourceBuilder createDataSourceBuilder(Platform platform) {

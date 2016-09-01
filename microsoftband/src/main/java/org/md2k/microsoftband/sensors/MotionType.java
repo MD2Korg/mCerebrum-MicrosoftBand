@@ -67,7 +67,7 @@ public class MotionType extends Sensor{
     };
 
     MotionType() {
-        super(DataSourceType.MOTION_TYPE,"1 Hz",1);
+        super(DataSourceType.MOTION_TYPE, "1", 1);
     }
 
     public DataSourceBuilder createDataSourceBuilder(Platform platform) {

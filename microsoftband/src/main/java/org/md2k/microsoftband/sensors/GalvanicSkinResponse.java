@@ -56,7 +56,7 @@ public class GalvanicSkinResponse  extends Sensor{
     };
 
     GalvanicSkinResponse() {
-        super(DataSourceType.GALVANIC_SKIN_RESPONSE,"0.2 Hz",2);
+        super(DataSourceType.GALVANIC_SKIN_RESPONSE, "0.2", 2);
     }
 
     public DataSourceBuilder createDataSourceBuilder(Platform platform) {

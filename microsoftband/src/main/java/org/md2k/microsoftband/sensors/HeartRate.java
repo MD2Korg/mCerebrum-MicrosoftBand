@@ -58,7 +58,7 @@ public class HeartRate extends Sensor {
     boolean isRegistered;
 
     HeartRate() {
-        super(DataSourceType.HEART_RATE, "1 Hz", 1);
+        super(DataSourceType.HEART_RATE, "1", 1);
         handler = new Handler();
         isRegistered = false;
     }

@@ -62,7 +62,7 @@ public class Accelerometer extends Sensor {
     };
 
     Accelerometer() {
-        super(DataSourceType.ACCELEROMETER, "31 Hz", 1);
+        super(DataSourceType.ACCELEROMETER, "31", 1);
     }
 
     public DataSourceBuilder createDataSourceBuilder(Platform platform) {
@@ -97,13 +97,13 @@ public class Accelerometer extends Sensor {
             public void run() {
                 try {
                     switch (frequency) {
-                        case "8 Hz":
+                        case "8":
                             bandClient.getSensorManager().registerAccelerometerEventListener(mAccelerometerEventListener, SampleRate.MS128);
                             break;
-                        case "31 Hz":
+                        case "31":
                             bandClient.getSensorManager().registerAccelerometerEventListener(mAccelerometerEventListener, SampleRate.MS32);
                             break;
-                        case "62 Hz":
+                        case "62":
                             bandClient.getSensorManager().registerAccelerometerEventListener(mAccelerometerEventListener, SampleRate.MS16);
                             break;
                         default:
