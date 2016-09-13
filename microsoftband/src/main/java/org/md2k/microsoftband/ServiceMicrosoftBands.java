@@ -10,14 +10,17 @@ import android.content.IntentFilter;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.md2k.datakitapi.DataKitAPI;
 import org.md2k.datakitapi.exception.DataKitException;
 import org.md2k.datakitapi.messagehandler.OnConnectionListener;
+import org.md2k.datakitapi.messagehandler.ResultCallback;
 import org.md2k.datakitapi.time.DateTime;
 import org.md2k.microsoftband.notification.NotificationManager;
 import org.md2k.utilities.Report.LogStorage;
 import org.md2k.utilities.UI.AlertDialogs;
+import org.md2k.utilities.permission.PermissionInfo;
 
 /*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
@@ -57,6 +60,21 @@ public class ServiceMicrosoftBands extends Service {
     public void onCreate() {
         super.onCreate();
         isStopping = false;
+        PermissionInfo permissionInfo = new PermissionInfo();
+        permissionInfo.getPermissions(this, new ResultCallback<Boolean>() {
+            @Override
+            public void onResult(Boolean result) {
+                if (!result) {
+                    Toast.makeText(getApplicationContext(), "!PERMISSION DENIED !!! Could not continue...", Toast.LENGTH_SHORT).show();
+                    stopSelf();
+                } else {
+                    load();
+                }
+            }
+        });
+    }
+
+    void load() {
         LogStorage.startLogFileStorageProcess(getApplicationContext().getPackageName());
         org.md2k.utilities.Report.Log.w(TAG, "time=" + DateTime.convertTimeStampToDateTime(DateTime.getDateTime()) + ",timestamp=" + DateTime.getDateTime() + ",service_start");
 
