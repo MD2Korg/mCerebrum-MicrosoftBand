@@ -142,10 +142,30 @@ public class MicrosoftBands {
             microsoftBands.get(i).unregister();
         }
     }
+
+    public void unregister(String deviceId) {
+        for (int i = 0; i < microsoftBands.size(); i++)
+            if (microsoftBands.get(i).getPlatform().getMetadata().get(METADATA.DEVICE_ID).equals(deviceId))
+                microsoftBands.get(i).unregister();
+    }
+
+    public void register(String deviceId) {
+        for (int i = 0; i < microsoftBands.size(); i++)
+            if (microsoftBands.get(i).getPlatform().getMetadata().get(METADATA.DEVICE_ID).equals(deviceId))
+                microsoftBands.get(i).register();
+    }
+
     public void disconnect(){
         for(int i=0;i< microsoftBands.size();i++) {
                 microsoftBands.get(i).disconnect();
         }
-
     }
+
+    public void disconnect(String deviceId) {
+        for (int i = 0; i < microsoftBands.size(); i++) {
+            if (microsoftBands.get(i).getPlatform().getMetadata().get(METADATA.DEVICE_ID).equals(deviceId))
+                microsoftBands.get(i).disconnect();
+        }
+    }
+
 }

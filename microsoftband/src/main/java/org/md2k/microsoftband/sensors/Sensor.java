@@ -116,7 +116,9 @@ public abstract class Sensor {
             dataSourceClient = DataKitAPI.getInstance(context).register(createDataSourceBuilder(platform));
             return true;
         } catch (DataKitException e) {
-            LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(Constants.INTENT_STOP));
+            Intent intent = new Intent(Constants.INTENT_STOP);
+            intent.putExtra("type", "Sensor.java...registerDataSource()");
+            LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
             return false;
         }
     }
@@ -131,7 +133,9 @@ public abstract class Sensor {
         try {
             DataKitAPI.getInstance(context).insertHighFrequency(dataSourceClient, dataType);
         } catch (DataKitException e) {
-            LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(Constants.INTENT_STOP));
+            Intent intent = new Intent(Constants.INTENT_STOP);
+            intent.putExtra("type", "Sensor.java...sendData()");
+            LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
         }
     }
 

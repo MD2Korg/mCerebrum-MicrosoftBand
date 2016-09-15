@@ -109,7 +109,9 @@ public class DataQuality extends Sensor {
         try {
             DataKitAPI.getInstance(context).insert(dataSourceClient, dataType);
         } catch (DataKitException e) {
-            LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(Constants.INTENT_STOP));
+            Intent intent = new Intent(Constants.INTENT_STOP);
+            intent.putExtra("type", "DataQuality.java...sendDataStatus()");
+            LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
         }
     }
 
@@ -117,6 +119,7 @@ public class DataQuality extends Sensor {
         @Override
         public void run() {
             int dataQuality;
+            Log.d(TAG, "lastReceivedTime=" + lastReceivedTimestamp);
             if (DateTime.getDateTime() - lastReceivedTimestamp > PERIOD)
                 dataQuality = DATA_QUALITY.BAND_OFF;
             else if (lastBandContact != 0)
@@ -127,7 +130,6 @@ public class DataQuality extends Sensor {
             DataTypeInt dataTypeInt = new DataTypeInt(DateTime.getDateTime(), dataQuality);
             Log.d(TAG, "DataQuality = " + dataQuality);
             sendDataStatus(dataTypeInt);
-
             callBack.onReceivedData(dataTypeInt);
             handler.postDelayed(this, PERIOD);
         }
@@ -135,6 +137,13 @@ public class DataQuality extends Sensor {
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+//            if(dataSourceClient.getDataSource().getPlatform())
+//            String deviceId=intent.get
+            String myDeviceId = dataSourceClient.getDataSource().getPlatform().getMetadata().get(METADATA.DEVICE_ID);
+            String receivedDeviceId = intent.getStringExtra("deviceid");
+            String receivedDataSourceType = intent.getStringExtra("datasourcetype");
+            if (!myDeviceId.equals(receivedDeviceId)) return;
+            if (dataSourceType.equals(receivedDataSourceType)) return;
             lastReceivedTimestamp = intent.getLongExtra("timestamp", 0);
             if (DataSourceType.BAND_CONTACT.equals(intent.getStringExtra("datasourcetype")))
                 lastBandContact = ((DataTypeDoubleArray) intent.getParcelableExtra("data")).getSample()[0];

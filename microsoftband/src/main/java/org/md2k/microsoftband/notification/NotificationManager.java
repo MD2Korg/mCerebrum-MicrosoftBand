@@ -78,7 +78,9 @@ public class NotificationManager {
                     subscribe();
                 }
             } catch (DataKitException e) {
-                LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(Constants.INTENT_STOP));
+                Intent intent = new Intent(Constants.INTENT_STOP);
+                intent.putExtra("type", "NotificationManager.java...runnableSubscribe()");
+                LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
             }
         }
     };
@@ -97,7 +99,9 @@ public class NotificationManager {
             dataSourceClientAcknowledge = DataKitAPI.getInstance(context).register(dataSourceBuilder);
             handler.post(runnableSubscribe);
         } catch (DataKitException e) {
-            LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(Constants.INTENT_STOP));
+            Intent intent = new Intent(Constants.INTENT_STOP);
+            intent.putExtra("type", "NotificationManager.java...start()");
+            LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
         }
     }
 
@@ -140,7 +144,9 @@ public class NotificationManager {
                                     try {
                                         processMessage(dataType);
                                     } catch (DataKitException e) {
-                                        LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(Constants.INTENT_STOP));
+                                        Intent intent = new Intent(Constants.INTENT_STOP);
+                                        intent.putExtra("type", "NotificationManager.java...subscribe()..after getting data");
+                                        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
                                     }
                                 }
                             });
@@ -148,7 +154,9 @@ public class NotificationManager {
                         }
                     });
                 } catch (DataKitException e) {
-                    LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(Constants.INTENT_STOP));
+                    Intent intent = new Intent(Constants.INTENT_STOP);
+                    intent.putExtra("type", "NotificationManager.java...subscribe()");
+                    LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
                 }
             }
         }

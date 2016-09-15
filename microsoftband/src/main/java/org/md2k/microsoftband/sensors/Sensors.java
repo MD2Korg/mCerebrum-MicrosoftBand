@@ -138,7 +138,11 @@ public class Sensors {
                             } else countOff = 0;
                             if (countOff > DataQuality.RESTART) {
                                 Log.d(TAG, "restart..as no data in 30 sec");
-                                LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(Constants.INTENT_STOP));
+                                Intent intentt = new Intent(Constants.INTENT_RESTART);
+                                intentt.putExtra("deviceid", Sensors.this.platform.getMetadata().get(METADATA.DEVICE_ID));
+                                intentt.putExtra("platformid", Sensors.this.platform.getId());
+                                intentt.putExtra("type", "Sensors.java...no data in 30 sec");
+                                LocalBroadcastManager.getInstance(context).sendBroadcast(intentt);
                                 countOff = 0;
                             }
                             Log.d(TAG, "no data(sec)=" + countOff);

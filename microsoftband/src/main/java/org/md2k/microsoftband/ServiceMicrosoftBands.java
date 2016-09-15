@@ -80,6 +80,9 @@ public class ServiceMicrosoftBands extends Service {
 
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(mMessageReceiverStop,
                 new IntentFilter(Constants.INTENT_STOP));
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(mMessageReceiverRestart,
+                new IntentFilter(Constants.INTENT_RESTART));
+
         if (readSettings())
             setBluetooth();
         else {
@@ -114,10 +117,23 @@ public class ServiceMicrosoftBands extends Service {
     private BroadcastReceiver mMessageReceiverStop = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            org.md2k.utilities.Report.Log.w(TAG, "time=" + DateTime.convertTimeStampToDateTime(DateTime.getDateTime()) + ",timestamp=" + DateTime.getDateTime() + ",broadcast_receiver_stop_service");
-
+            org.md2k.utilities.Report.Log.w(TAG, "time=" + DateTime.convertTimeStampToDateTime(DateTime.getDateTime()) + ",timestamp=" + DateTime.getDateTime() + ",broadcast_receiver_stop_service" + ", msg=" + intent.getStringExtra("type"));
             clear();
             stopSelf();
+        }
+    };
+    private BroadcastReceiver mMessageReceiverRestart = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            org.md2k.utilities.Report.Log.w(TAG, "time=" + DateTime.convertTimeStampToDateTime(DateTime.getDateTime()) + ",timestamp=" + DateTime.getDateTime() + ",broadcast_receiver_restart_service");
+            String deviceId = intent.getStringExtra("deviceid");
+            microsoftBands.unregister(deviceId);
+            microsoftBands.disconnect();
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ignored) {
+            }
+            microsoftBands.register(deviceId);
         }
     };
 
@@ -132,13 +148,17 @@ public class ServiceMicrosoftBands extends Service {
                         notificationManager = new NotificationManager(ServiceMicrosoftBands.this, microsoftBands.find());
                         notificationManager.start();
                     } catch (Exception e) {
-                        LocalBroadcastManager.getInstance(ServiceMicrosoftBands.this).sendBroadcast(new Intent(Constants.INTENT_STOP));
+                        Intent intent = new Intent(Constants.INTENT_STOP);
+                        intent.putExtra("type", "ServiceMicrosoftBands.java...register error after connection");
+                        LocalBroadcastManager.getInstance(ServiceMicrosoftBands.this).sendBroadcast(intent);
                     }
                 }
             });
         } catch (DataKitException e) {
             Log.d(TAG, "onException...");
-            LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(Constants.INTENT_STOP));
+            Intent intent = new Intent(Constants.INTENT_STOP);
+            intent.putExtra("type", "ServiceMicrosoftBands.java...Connection Error");
+            LocalBroadcastManager.getInstance(ServiceMicrosoftBands.this).sendBroadcast(intent);
         }
 
     }
@@ -162,6 +182,7 @@ public class ServiceMicrosoftBands extends Service {
         Log.d(TAG, "disconnectDataKit()...");
         Log.d(TAG, "disconnectDataKit()...microsoftBands=" + microsoftBands);
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(mMessageReceiverStop);
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(mMessageReceiverRestart);
         if (microsoftBands != null) {
             microsoftBands.unregister();
             microsoftBands.disconnect();
