@@ -31,7 +31,7 @@ public class Constants {
     public static final String RIGHT_WRIST = "RIGHT_WRIST";
     public static final String SERVICE_NAME = "org.md2k.microsoftband.ServiceMicrosoftBands";
     public static final String INTENT_RECEIVED_DATA = "received_data";
-    public static String FILENAME_TILEINFO = "tile_info.json";
+    public static final String FILENAME_TILEINFO = "tile_info.json";
     public static final String INTENT_STOP = "microsoftband_stop";
     public static final String INTENT_RESTART = "microsoftband_restart";
 }

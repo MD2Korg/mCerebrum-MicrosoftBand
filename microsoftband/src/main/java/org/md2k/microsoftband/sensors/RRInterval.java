@@ -9,6 +9,7 @@ import android.support.v4.content.LocalBroadcastManager;
 
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandException;
+import com.microsoft.band.InvalidBandVersionException;
 import com.microsoft.band.UserConsent;
 import com.microsoft.band.sensors.BandRRIntervalEvent;
 import com.microsoft.band.sensors.BandRRIntervalEventListener;
@@ -99,6 +100,8 @@ public class RRInterval extends Sensor {
                     isRegistered = true;
                 }
             } catch (BandException e) {
+                e.printStackTrace();
+            } catch (InvalidBandVersionException e) {
                 e.printStackTrace();
             }
         }

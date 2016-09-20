@@ -107,12 +107,13 @@ public class NotificationManager {
 
     public void stop() {
         handler.removeCallbacks(runnableSubscribe);
-        try {
-            if (dataSourceClientAcknowledge != null)
-                DataKitAPI.getInstance(context).unregister(dataSourceClientAcknowledge);
-        } catch (DataKitException e) {
-            e.printStackTrace();
-        }
+        dataSourceClientAcknowledge=null;
+//        try {
+//            if (dataSourceClientAcknowledge != null)
+//                DataKitAPI.getInstance(context).unregister(dataSourceClientAcknowledge);
+//        } catch (DataKitException e) {
+//            e.printStackTrace();
+//        }
         unsubscribe();
     }
 

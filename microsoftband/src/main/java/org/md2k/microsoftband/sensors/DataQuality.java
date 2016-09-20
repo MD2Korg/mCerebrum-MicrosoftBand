@@ -55,7 +55,12 @@ import java.util.HashMap;
  */
 public class DataQuality extends Sensor {
     public static final long PERIOD = 3000;
-    public static final long RESTART = 30000;
+    public static final long[] RESTART = new long[]{
+            3000,3000,3000, 3000, 3000, 3000, 3000, 3000, 3000, 3000,
+            6000,6000,6000, 6000, 6000, 9000, 9000, 9000, 9000, 9000,
+            15000,15000,15000, 15000, 15000, 15000, 15000, 15000, 15000, 15000,
+            30000};
+    public static int INDEX_RESTART=0;
     private static final String TAG = DataQuality.class.getSimpleName();
     private long lastReceivedTimestamp;
     private Handler handler;
@@ -139,6 +144,7 @@ public class DataQuality extends Sensor {
         public void onReceive(Context context, Intent intent) {
 //            if(dataSourceClient.getDataSource().getPlatform())
 //            String deviceId=intent.get
+            if(dataSourceClient==null || dataSourceClient.getDataSource()==null) return;
             String myDeviceId = dataSourceClient.getDataSource().getPlatform().getMetadata().get(METADATA.DEVICE_ID);
             String receivedDeviceId = intent.getStringExtra("deviceid");
             String receivedDataSourceType = intent.getStringExtra("datasourcetype");

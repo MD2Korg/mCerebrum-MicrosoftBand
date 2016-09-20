@@ -123,11 +123,11 @@ public abstract class Sensor {
         }
     }
     public void unregisterDataSource(Context context){
-        try {
-            DataKitAPI.getInstance(context).unregister(dataSourceClient);
-            dataSourceClient = null;
-        } catch (DataKitException ignored) {
-        }
+//        try {
+//            DataKitAPI.getInstance(context).unregister(dataSourceClient);
+//            dataSourceClient = null;
+ //       } catch (DataKitException ignored) {
+ //       }
     }
     public void sendData(DataTypeDoubleArray dataType){
         try {

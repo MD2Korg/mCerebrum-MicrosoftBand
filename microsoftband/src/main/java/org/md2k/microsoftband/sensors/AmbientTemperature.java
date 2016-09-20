@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandException;
+import com.microsoft.band.InvalidBandVersionException;
 import com.microsoft.band.sensors.BandBarometerEvent;
 import com.microsoft.band.sensors.BandBarometerEventListener;
 
@@ -87,6 +88,8 @@ public class AmbientTemperature extends Sensor {
                 try {
                     bandClient.getSensorManager().registerBarometerEventListener(mAmbientTemperatureEventListener);
                 } catch (BandException e) {
+                    e.printStackTrace();
+                } catch (InvalidBandVersionException e) {
                     e.printStackTrace();
                 }
             }

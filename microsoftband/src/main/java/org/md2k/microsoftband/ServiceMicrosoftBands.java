@@ -128,7 +128,7 @@ public class ServiceMicrosoftBands extends Service {
             org.md2k.utilities.Report.Log.w(TAG, "time=" + DateTime.convertTimeStampToDateTime(DateTime.getDateTime()) + ",timestamp=" + DateTime.getDateTime() + ",broadcast_receiver_restart_service");
             String deviceId = intent.getStringExtra("deviceid");
             microsoftBands.unregister(deviceId);
-            microsoftBands.disconnect();
+            microsoftBands.disconnect(deviceId);
             try {
                 Thread.sleep(500);
             } catch (InterruptedException ignored) {

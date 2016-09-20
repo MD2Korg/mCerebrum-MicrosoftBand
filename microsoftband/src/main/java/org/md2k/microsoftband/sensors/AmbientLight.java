@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandException;
+import com.microsoft.band.InvalidBandVersionException;
 import com.microsoft.band.sensors.BandAmbientLightEvent;
 import com.microsoft.band.sensors.BandAmbientLightEventListener;
 
@@ -87,6 +88,8 @@ public class AmbientLight extends Sensor{
                 try {
                     bandClient.getSensorManager().registerAmbientLightEventListener(mAmbientLightEventListener);
                 } catch (BandException e) {
+                    e.printStackTrace();
+                } catch (InvalidBandVersionException e) {
                     e.printStackTrace();
                 }
             }
