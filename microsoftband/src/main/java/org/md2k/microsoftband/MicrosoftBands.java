@@ -42,21 +42,23 @@ import java.util.EmptyStackException;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class MicrosoftBands {
+class MicrosoftBands {
     private static final String TAG = MicrosoftBands.class.getSimpleName();
     private Context context;
     private ArrayList<MicrosoftBand> microsoftBands;
-    public MicrosoftBands(Context context) {
+    MicrosoftBands(Context context) {
         Log.d(TAG,"Constructor()...");
         this.context=context;
         microsoftBands =new ArrayList<>();
         readDataSourceFromFile();
         addOthers();
     }
+/*
     public int size(){
         return microsoftBands.size();
     }
-    public int size(boolean enabled){
+*/
+    int size(boolean enabled){
         int count=0;
         for(int i=0;i< microsoftBands.size();i++)
             if(microsoftBands.get(i).enabled==enabled)
@@ -64,7 +66,7 @@ public class MicrosoftBands {
         return count;
     }
 
-    public void addOthers() {
+    void addOthers() {
         BandInfo[] bandInfos=Device.findBandInfo();
         for (BandInfo bandInfo : bandInfos) {
             String deviceId = bandInfo.getMacAddress();
@@ -72,14 +74,14 @@ public class MicrosoftBands {
                 microsoftBands.add(new MicrosoftBand(context, null,deviceId));
         }
     }
-    public MicrosoftBand find(String deviceId){
+    MicrosoftBand find(String deviceId){
         for (int i = 0; i < microsoftBands.size(); i++)
             if (microsoftBands.get(i).equals(deviceId))
                 return microsoftBands.get(i);
         return null;
     }
 
-    public void readDataSourceFromFile(){
+    private void readDataSourceFromFile(){
         try {
             Log.d(TAG, "readDataSourceFromFile()...");
             ArrayList<DataSource> dataSources = Configuration.getDataSources();
@@ -101,17 +103,17 @@ public class MicrosoftBands {
         }
         Log.d(TAG,"...readDataSourceFromFile()");
     }
-    public void deleteMicrosoftBandPlatform(String deviceId) {
+    void deleteMicrosoftBandPlatform(String deviceId) {
         MicrosoftBand microsoftBand=find(deviceId);
         if(microsoftBand==null) return;
         microsoftBand.enabled=false;
         microsoftBand.platformId=null;
         microsoftBand.resetDataSource();
     }
-    public ArrayList<MicrosoftBand> find() {
+    ArrayList<MicrosoftBand> find() {
         return microsoftBands;
     }
-    public void writeDataSourceToFile() throws IOException {
+    void writeDataSourceToFile() throws IOException {
         ArrayList<DataSource> dataSources = new ArrayList<>();
         if (microsoftBands == null) throw new NullPointerException();
         if (microsoftBands.size() == 0) throw new EmptyStackException();
@@ -155,13 +157,13 @@ public class MicrosoftBands {
                 microsoftBands.get(i).register();
     }
 
-    public void disconnect(){
+    void disconnect(){
         for(int i=0;i< microsoftBands.size();i++) {
                 microsoftBands.get(i).disconnect();
         }
     }
 
-    public void disconnect(String deviceId) {
+    void disconnect(String deviceId) {
         for (int i = 0; i < microsoftBands.size(); i++) {
             if (microsoftBands.get(i).getPlatform().getMetadata().get(METADATA.DEVICE_ID).equals(deviceId))
                 microsoftBands.get(i).disconnect();

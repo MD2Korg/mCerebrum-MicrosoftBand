@@ -55,11 +55,10 @@ public class ServiceMicrosoftBands extends Service {
     private MicrosoftBands microsoftBands;
     private DataKitAPI dataKitAPI = null;
     private NotificationManager notificationManager;
-    private boolean isStopping = false;
+
     @Override
     public void onCreate() {
         super.onCreate();
-        isStopping = false;
         PermissionInfo permissionInfo = new PermissionInfo();
         permissionInfo.getPermissions(this, new ResultCallback<Boolean>() {
             @Override
@@ -77,18 +76,7 @@ public class ServiceMicrosoftBands extends Service {
     void load() {
         LogStorage.startLogFileStorageProcess(getApplicationContext().getPackageName());
         org.md2k.utilities.Report.Log.w(TAG, "time=" + DateTime.convertTimeStampToDateTime(DateTime.getDateTime()) + ",timestamp=" + DateTime.getDateTime() + ",service_start");
-
-        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(mMessageReceiverStop,
-                new IntentFilter(Constants.INTENT_STOP));
-        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(mMessageReceiverRestart,
-                new IntentFilter(Constants.INTENT_RESTART));
-
-        if (readSettings())
-            setBluetooth();
-        else {
-            showAlertDialogConfiguration(this);
-            stopSelf();
-        }
+        setBluetooth();
     }
 
     void setBluetooth() {
@@ -97,9 +85,11 @@ public class ServiceMicrosoftBands extends Service {
             public void onConnected() {
                 connectDataKit();
             }
+
             @Override
             public void onDisconnected() {
-                stopSelf();
+                clear();
+                myBlueTooth.enable();
             }
         });
         if (myBlueTooth.isEnabled())
@@ -138,28 +128,38 @@ public class ServiceMicrosoftBands extends Service {
     };
 
     private void connectDataKit() {
-        dataKitAPI = DataKitAPI.getInstance(getApplicationContext());
-        try {
-            dataKitAPI.connect(new OnConnectionListener() {
-                @Override
-                public void onConnected() {
-                    try {
-                        microsoftBands.register();
-                        notificationManager = new NotificationManager(ServiceMicrosoftBands.this, microsoftBands.find());
-                        notificationManager.start();
-                    } catch (Exception e) {
-                        Intent intent = new Intent(Constants.INTENT_STOP);
-                        intent.putExtra("type", "ServiceMicrosoftBands.java...register error after connection");
-                        LocalBroadcastManager.getInstance(ServiceMicrosoftBands.this).sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(mMessageReceiverStop,
+                new IntentFilter(Constants.INTENT_STOP));
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(mMessageReceiverRestart,
+                new IntentFilter(Constants.INTENT_RESTART));
+        if (readSettings()) {
+            dataKitAPI = DataKitAPI.getInstance(getApplicationContext());
+            try {
+                dataKitAPI.connect(new OnConnectionListener() {
+                    @Override
+                    public void onConnected() {
+                        try {
+                            microsoftBands.register();
+                            notificationManager = new NotificationManager(ServiceMicrosoftBands.this, microsoftBands.find());
+                            notificationManager.start();
+                        } catch (Exception e) {
+                            Intent intent = new Intent(Constants.INTENT_STOP);
+                            intent.putExtra("type", "ServiceMicrosoftBands.java...register error after connection");
+                            LocalBroadcastManager.getInstance(ServiceMicrosoftBands.this).sendBroadcast(intent);
+                        }
                     }
-                }
-            });
-        } catch (DataKitException e) {
-            Log.d(TAG, "onException...");
-            Intent intent = new Intent(Constants.INTENT_STOP);
-            intent.putExtra("type", "ServiceMicrosoftBands.java...Connection Error");
-            LocalBroadcastManager.getInstance(ServiceMicrosoftBands.this).sendBroadcast(intent);
+                });
+            } catch (DataKitException e) {
+                Log.d(TAG, "onException...");
+                Intent intent = new Intent(Constants.INTENT_STOP);
+                intent.putExtra("type", "ServiceMicrosoftBands.java...Connection Error");
+                LocalBroadcastManager.getInstance(ServiceMicrosoftBands.this).sendBroadcast(intent);
+            }
+        } else {
+            showAlertDialogConfiguration(this);
+            stopSelf();
         }
+
 
     }
 
@@ -167,6 +167,10 @@ public class ServiceMicrosoftBands extends Service {
     public void onDestroy() {
         Log.d(TAG, "onDestroy()...");
         clear();
+        if (myBlueTooth != null) {
+            myBlueTooth.close();
+            myBlueTooth = null;
+        }
         org.md2k.utilities.Report.Log.w(TAG, "time=" + DateTime.convertTimeStampToDateTime(DateTime.getDateTime()) + ",timestamp=" + DateTime.getDateTime() + ",service_stop");
         super.onDestroy();
     }
@@ -177,8 +181,6 @@ public class ServiceMicrosoftBands extends Service {
     }
 
     synchronized void clear() {
-        if (isStopping) return;
-        isStopping = true;
         Log.d(TAG, "disconnectDataKit()...");
         Log.d(TAG, "disconnectDataKit()...microsoftBands=" + microsoftBands);
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(mMessageReceiverStop);
@@ -196,17 +198,13 @@ public class ServiceMicrosoftBands extends Service {
             dataKitAPI.disconnect();
             dataKitAPI = null;
         }
-        if (myBlueTooth != null) {
-            myBlueTooth.close();
-            myBlueTooth = null;
-        }
     }
 
-    void showAlertDialogConfiguration(final Context context){
+    void showAlertDialogConfiguration(final Context context) {
         AlertDialogs.AlertDialog(this, "Error: MicrosoftBand Settings", "Please configure Microsoft Band", R.drawable.ic_error_red_50dp, "Settings", "Cancel", null, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if(which== AlertDialog.BUTTON_POSITIVE){
+                if (which == AlertDialog.BUTTON_POSITIVE) {
                     Intent intent = new Intent(context, ActivityMicrosoftBandSettings.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(intent);
