@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandException;
+import com.microsoft.band.InvalidBandVersionException;
 import com.microsoft.band.sensors.BandGsrEvent;
 import com.microsoft.band.sensors.BandGsrEventListener;
 
@@ -87,6 +88,8 @@ public class GalvanicSkinResponse  extends Sensor{
                 try {
                     bandClient.getSensorManager().registerGsrEventListener(mGSREventListener);
                 } catch (BandException e) {
+                    e.printStackTrace();
+                } catch (InvalidBandVersionException e) {
                     e.printStackTrace();
                 }
             }

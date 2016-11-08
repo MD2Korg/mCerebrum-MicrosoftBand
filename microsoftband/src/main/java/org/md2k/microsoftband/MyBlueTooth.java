@@ -34,10 +34,10 @@ import android.content.IntentFilter;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class MyBlueTooth {
+class MyBlueTooth {
     //    private static final String TAG = MyBlueTooth.class.getSimpleName();
     private BlueToothCallBack blueToothCallBack;
-    public final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
@@ -69,16 +69,17 @@ public class MyBlueTooth {
         context.registerReceiver(mReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
     }
 
-    public void enable() {
+    void enable() {
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) return;
         if (!mBluetoothAdapter.isEnabled()) {
-            Intent btIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            btIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(btIntent);
+            mBluetoothAdapter.enable();
+//            Intent btIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+//            btIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//            context.startActivity(btIntent);
         }
     }
-
+/*
     public void disable() {
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) return;
@@ -86,8 +87,8 @@ public class MyBlueTooth {
             mBluetoothAdapter.disable();
         }
     }
-
-    public void close() {
+*/
+    void close() {
         try {
             context.unregisterReceiver(mReceiver);
         }catch (Exception ignored){

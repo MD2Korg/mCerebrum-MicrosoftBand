@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandException;
+import com.microsoft.band.InvalidBandVersionException;
 import com.microsoft.band.sensors.BandAltimeterEvent;
 import com.microsoft.band.sensors.BandAltimeterEventListener;
 
@@ -103,6 +104,8 @@ public class Altimeter extends Sensor{
                 try {
                     bandClient.getSensorManager().registerAltimeterEventListener(mAltimeterListener);
                 } catch (BandException e) {
+                    e.printStackTrace();
+                } catch (InvalidBandVersionException e) {
                     e.printStackTrace();
                 }
             }

@@ -49,7 +49,7 @@ public class MicrosoftBand extends Device {
 
     }
 
-    public void resetDataSource() {
+    void resetDataSource() {
         sensors = new Sensors(context, getPlatform());
     }
 
@@ -61,7 +61,7 @@ public class MicrosoftBand extends Device {
         this.enabled = enabled;
     }
 
-    public void setEnabled(DataSource dataSource, boolean enabled) {
+    void setEnabled(DataSource dataSource, boolean enabled) {
         sensors.setEnable(dataSource.getType(), enabled);
         if (dataSource.getMetadata() != null && dataSource.getMetadata().containsKey(METADATA.FREQUENCY)) {
             sensors.setFrequency(dataSource.getType(), dataSource.getMetadata().get(METADATA.FREQUENCY));
